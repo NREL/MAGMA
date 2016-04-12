@@ -68,14 +68,14 @@ text.plot = 11
 
 # -----------------------------------------------------------------------
 # Read CSV file with all inputs
-inputs = read.csv('input_data.csv')
+inputs = read.csv(file.path(input.csv))
 inputs[inputs==""]=NA
 
 # -----------------------------------------------------------------------
 # Read in the data from the input_data.csv file that was just loaded
 
 # location of database
-db.loc = as.character(na.exclude(inputs$Database.Location)) 
+db.loc = file.path(as.character(na.exclude(inputs$Database.Location))) 
 
 # Using CSV file to map generator types to names?
 use.gen.type.mapping.csv = as.logical(na.exclude(inputs$Using.Gen.Type.Mapping.CSV))
