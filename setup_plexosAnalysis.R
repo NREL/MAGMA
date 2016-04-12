@@ -90,7 +90,7 @@ text.plot = 11
 
 # -----------------------------------------------------------------------
 # Read CSV file with all inputs
-inputs = read.csv('input_data.csv')
+inputs = read.csv('../vis_input_data.csv')
 inputs[inputs==""]=NA
 
 # -----------------------------------------------------------------------
