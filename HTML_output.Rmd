@@ -257,11 +257,16 @@ if (15 %in% run.sections) {
 ```
 `r reserves.plots`
 
-
-
-
-
-
+***
+### Region and Zone Generation
+```{r region-zone-gen-table}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (16 %in% run.sections) {
+  region.zone.gen.table = knit_child('source_scripts/t_region_zone_gen.Rmd')
+} else { region.zone.gen.table = 'Section not run according to input file.' }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+`r region.zone.gen.table`
 
 
 
