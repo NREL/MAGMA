@@ -10,10 +10,6 @@ output:
 
 ```{r setOptions, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Sourcing the setup file and required functions
-source('query_functions.R')
-source('setup_plexosAnalysis.R')
-
 r.z.load = region_zone_load(db)
 
 # Set up default options for chunks, turn off error or warning messages.
