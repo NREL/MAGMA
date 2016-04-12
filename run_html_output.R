@@ -35,5 +35,6 @@ input.csv = 'vis_input_data.csv'
 # Sourcing the setup file and required functions
 source(file.path(master.script.dir,'query_functions.R'))
 source(file.path(master.script.dir,'setup_plexosAnalysis.R'))
-
-render(file.path(master.script.dir,'HTML_output.Rmd'))
+output.dir = file.path(na.exclude(inputs$Fig.Path))
+render(input=file.path(master.script.dir,'HTML_output.Rmd'), c("html_document"),
+       output_dir = output.dir)
