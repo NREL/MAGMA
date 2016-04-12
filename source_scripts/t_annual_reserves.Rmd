@@ -1,0 +1,7 @@
+
+```{r annual_reserves, include=TRUE}
+
+annual.reserves = tryCatch( annual_reserves(db), error = function(cond) { return('ERROR: annual_reserves function not returning correct results.') })
+kable(annual.reserves, format.args = list(big.mark = ','))
+
+```

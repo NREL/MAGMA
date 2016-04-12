@@ -1,0 +1,37 @@
+
+```{r key-period-dispatch-{{period.name}}, results='asis', include=TRUE}
+p.name = '{{period.name}}'
+cat("#### ", p.name)
+text.plot=11
+figure.width = 9
+figure.height = 6
+```
+
+```{r key-period-dispatch-plots-{{period.name}}, fig.width=figure.width, fig.height=figure.height, include=TRUE}
+ggplot(filter(gen.type, gen.type$Period==p.name), aes(time, value/1000, group=Type, fill=Type, order=as.numeric(Type)), color="black")+
+      geom_area(color=NA)+
+      geom_line(position="stack", size=0.3)+            
+      labs(y="Generation (GWh)", x=NULL)+
+      geom_line(data=filter(gen.load, gen.load$Period==p.name), linetype="longdash", aes(color="load"),size=1)+
+      scale_fill_manual("",values = gen.color, limits=rev(gen.order))+
+      scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
+      scale_x_datetime(breaks = date_breaks(width = "1 day"), labels = date_format("%b %d\n%I %p"), expand = c(0, 0))+
+      scale_y_continuous(breaks=seq.py, limits=c(0, max(py)), expand=c(0,0))+
+      theme(legend.key = element_rect(color = "grey80", size = 0.4),
+            legend.key.size = grid::unit(0.9, "lines"), 
+            legend.text = element_text(size=text.plot/1.1),
+            strip.text=element_text(size=rel(0.7)),
+            axis.text=element_text(size=text.plot/1.2), 
+            axis.title=element_text(size=text.plot, face=2), 
+            axis.title.x=element_text(vjust=-0.3),
+            panel.grid.major = element_line(colour = "grey85"),
+            panel.grid.minor = element_line(colour = "grey93"),
+            aspect.ratio = 0.5)
+#                           panel.margin = unit(1.0, "lines"))+
+#                           facet_wrap(~Season, nrow = 4, scales = "free_x")
+```
+
+
+
+  
+  

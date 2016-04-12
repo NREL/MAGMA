@@ -1,0 +1,18 @@
+
+```{r region_zone_flow_tables, include=TRUE}
+
+r.z.stats = tryCatch( region_zone_stats(db), error = function(cond) { return('ERROR: region_zone_stats function not returning correct results.') })
+
+r.stats = filter(r.z.stats, Type == 'Region')
+z.stats = filter(r.z.stats, Type == 'Zone')
+
+r.stats$Type = NULL
+colnames(r.stats)[which(colnames(r.stats)=='name')] = 'Region Name'
+
+z.stats$Type = NULL
+colnames(z.stats)[which(colnames(z.stats)=='name')] = 'Zone Name'
+
+kable(r.stats, format.args = list(big.mark = ','), digits=2)
+kable(z.stats, format.args = list(big.mark = ','), digits=2)
+
+```

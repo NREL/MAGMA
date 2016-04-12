@@ -1,0 +1,273 @@
+---
+title: "PLEXOS Run General Analysis"
+author: 'MO'
+date: "April, 2016"
+output: 
+  html_document: 
+    css: custom.css
+    toc: yes
+---
+
+```{r setOptions, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# -----------------------------------------------------------------------
+# Set up default options for chunks, turn off error or warning messages.
+fig.path.name = 'plots/'
+knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, include=FALSE,
+                      fig.path=fig.path.name, cache.path='caches/', dev='png')
+
+# -----------------------------------------------------------------------
+# Sourcing the setup file and required functions
+source('query_functions.R')
+source('setup_plexosAnalysis.R')
+
+r.z.load = region_zone_load(db)
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## Annual Dispatch Stacks 
+***
+## Total Generation
+```{r total-gen-stack}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (1 %in% run.sections){
+  total.gen.stack = knit_child('source_scripts/p_total_gen_stack.Rmd')
+} else { total.gen.stack = 'Section not run according to input file.' }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+`r total.gen.stack`
+
+***
+## Zonal Generation
+```{r zone-gen-stacks}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (2 %in% run.sections) {
+  zone.gen.stacks = knit_child('source_scripts/p_zone_gen_stacks.Rmd')
+} else { zone.gen.stacks = 'Section not run according to input file.' }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+`r zone.gen.stacks`
+
+***
+## Regional Generation
+```{r region-gen-stacks}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %%%%%%%%%%%%% *** Requires running "zone-gen-stacks" *** %%%%%%%%%%%%%%%%
+if (3 %in% run.sections) {
+  region.gen.stacks = knit_child('source_scripts/p_region_gen_stacks.Rmd')
+} else { region.gen.stacks = 'Section not run according to input file.' }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+`r region.gen.stacks`
+
+***
+## Individual Regions
+```{r individual-region-stacks}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %%%%%%%%%%%%%% *** Rquires running "region-gen-stacks" %%%%%%%%%%%%%%%%%%%%
+if (4 %in% run.sections) {
+  
+if ( exists('region.gen.plot') ) {
+# If the regional query didn't work, return an error. Else create plots.
+if ( typeof(region.gen.plot)=='character' ) {
+  print('ERROR: Zonal and regional query not returning correct results.')
+} else {
+
+    region.names = unique(region.gen.plot$Region) # List of all regions to make plots for
+    key.plots = list() # Creates empty list for plot data
+
+    # Create plot for each region in region.names
+    for ( p in 1:length(region.names) )  {
+      region.name = region.names[p]
+      key.plots[p] = knit_expand(file = 'source_scripts/p_individual_region_stacks.Rmd', region.name=region.name)
+    }
+
+    # Reconstruct the plot data into a format that will be output into the HTML below
+    individual.region.stacks = knit_child(text = unlist(key.plots))
+
+  }
+} else { individual.region.stacks = 'Region generation not found. Make sure "region-gen-stacks" chunk is running.' }
+} else { individual.region.stacks = 'Section not run according to input file.' }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+`r individual.region.stacks`
+
+***
+## Specified Period Dispatch Stacks
+``` {r key-period-dispatch, cache=TRUE}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (5 %in% run.sections){  
+
+  # Call interval_gen function and proces data for plots
+  source('source_scripts/d_key_period_dispatch.R')
+
+if ( typeof(key.period.gen)=='character' ) {
+  
+} else {
+
+  key.plots = list() # Creates empty list for plot data
+
+  # Create data for each plot for the interesting periods
+  for ( p in 1:n.periods ) {
+    period.name = period.names[p]
+    key.plots[[p]] = knit_expand(file = 'source_scripts/p_key_period_dispatch.Rmd', period.name = period.name)
+  }
+
+  # Reconstruct the plot data into a format that will be output into the HTML below
+  key.period.dispatch = knit_child(text = unlist(key.plots))
+}
+} else { key.period.dispatch = 'Section not run according to input file.' }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+`r key.period.dispatch`
+
+***
+## Curtailment
+***
+### Average Daily Curtailment
+```{r yearly-curtailment, cahce=TRUE}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (6 %in% run.sections) {
+  avg.year.curt = knit_child('source_scripts/p_yearly_curtailment.Rmd')
+} else { avg.year.curt = 'Section not run according to input file.' }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+`r avg.year.curt`
+
+***
+### Average Interval Curtailment
+```{r daily-curtailment}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %%%%%%%%%% *** Requires running "yearly-curtailment" chunk *** %%%%%%%%%%%
+if (7 %in% run.sections){
+  avg.day.curt = knit_child('source_scripts/p_daily_curtailment.Rmd')
+} else { avg.day.curt = 'Section not run according to input file.' }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+`r avg.day.curt`
+
+***
+## Total Gen
+```{r annual-generation-table}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %%%%%%%%%% *** Requires running "total-gen-stack" chunk *** %%%%%%%%%%%%%%
+if (8 %in% run.sections){
+  annual.gen.table = knit_child('source_scripts/t_annual_generation.Rmd')
+} else { annual.gen.table = 'Section not run according to input file.' }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+`r annual.gen.table`
+
+***
+## Total Costs
+```{r annual-cost-table}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (9 %in% run.sections) {
+  annual.cost.table = knit_child('source_scripts/t_annual_cost.Rmd')
+} else { annual.cost.table = 'Section not run according to input file.' }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+`r annual.cost.table`
+
+***
+## Region and Zone Info (GWh)
+``` {r region-zone-flow-tables}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (10 %in% run.sections) {
+  region.zone.flow.tables = knit_child('source_scripts/t_region_zone_flow.Rmd')
+} else { region.zone.flow.tables = 'Section not run according to input file.' }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+`r region.zone.flow.tables`
+
+***
+## Zone Interface Flow
+```{r zone-flow-table}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (11 %in% run.sections) {
+  zone.flow.table = knit_child('source_scripts/t_zone_flow.Rmd')
+} else { zone.flow.table = 'Section not run according to input file.' }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+`r zone.flow.table`
+
+***
+```{r zone-flow-plots}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %%%%%%%%%% *** Requires running "zone-flow-table" chunk *** %%%%%%%%%%%%%%
+if (12 %in% run.sections) {
+  zone.flow.plots = knit_child('source_scripts/p_zone_interface_flow.Rmd')
+} else { zone.flow.plots = 'Section not run according to input file.' }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+`r zone.flow.plots`
+
+
+***
+```{r zonal-flow-plots}
+if (13 %in% run.sections) {
+# interchange.flows = tryCatch( interchange.flow(db), error=function(cond) {return('ERROR: Interface flows not found in query. Check initial setup file and PLEXOS outputs.')})
+
+# for ( i in 1:n.periods) {
+#   if (i==1) {  
+#     plot.time = data.frame(time = seq(start.end.times$start[i], start.end.times$end[i], by = "1 hour"), Period = period.names[i]) 
+#   } else {
+#     plot.time = rbind(plot.time, data.frame(time = seq(start.end.times$start[i], start.end.times$end[i], by = "1 hour"), Period = period.names[i]))
+#   }
+# }
+#     
+# zonal.flows = zonal.flows %>%
+#   join(plot.time, by = 'time') %>%
+#   filter(time %in% plot.time$time)
+# 
+# key.plots = list()
+# 
+#   for ( p in 1:n.periods ) {
+#     period.name = period.names[p]
+#     key.plots[[p]] = knit_expand(file = '//plexossql/Data/moconnel/gtg/flow_plots.Rmd', period.name = period.name)
+#   }
+# 
+#   # Reconstruct the plot data into a format that will be output into the HTML below
+#   key.period.flow = knit_child(text = unlist(key.plots))
+
+
+} else { key.period.flow = 'Section not run according to input file.' }
+```
+
+
+***
+## Reserves
+***
+### Annual Reserve Provisions and Shortage
+```{r annual-reserves-table}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (14 %in% run.sections) {
+  annual.reserves.table = knit_child('source_scripts/t_annual_reserves.Rmd')
+} else { annual.reserves.table = 'Section not run according to input file.' }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+`r annual.reserves.table`
+
+***
+### Average Interval and Daily Reserve Provisions
+```{r reserves-plots}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (15 %in% run.sections) {
+  reserves.plots = knit_child('source_scripts/p_reserves.Rmd')
+} else { reserves.plots = 'Section not run according to input file.' }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+`r reserves.plots`
+
+
+
+
+
+
+
+
+
+
+
+
