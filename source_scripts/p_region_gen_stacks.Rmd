@@ -28,7 +28,10 @@ if ( typeof(zone.gen)=='character' ) {
   colnames(region.load)[which(colnames(region.load)=='name')]='Region'
   region.load$value = region.load$value/1000
   region.load$Type = NULL
-  region.load = join(region.load, zone.gen[,c('Zone', 'Region')], by = 'Region', type='left', match='first')
+  region.load = region.load %>%
+    join(region.zone.mapping[,c('Zone', 'Region')], by = 'Region', type='left', match='first') %>%
+    filter(Zone != 'BHUTAN')
+  region.load = region.load[complete.cases(region.load),]
   
   # *** Not needed for these plots as y-axis is varying. ***
   # # This automatically creates the y-axis scaling
@@ -38,12 +41,12 @@ if ( typeof(zone.gen)=='character' ) {
   # Create plot
   ggplot() +
     geom_bar(data = region.gen.plot, aes(x = Region, y = TWh, fill=Type, order=as.numeric(Type)), stat='identity', position="stack" ) +
-    # geom_errorbar(aes(x=Region, y=value, ymin=value, ymax=value, color='load'), data=region.load, linetype='longdash', size=0.45)+
+    geom_errorbar(aes(x=Region, y=value, ymin=value, ymax=value, color='load'), data=region.load, linetype='longdash', size=0.45)+
     scale_fill_manual(values = gen.color, guide = guide_legend(reverse = TRUE))+
-    # scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
+    scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
     labs(y="Generation (TWh)", x=NULL)+
     # scale_y_continuous(breaks=seq.py, expand=c(0,0), label=comma)+
-    # guides(color = guide_legend(order=1), fill = guide_legend(order=2, reverse=TRUE))+
+    guides(color = guide_legend(order=1), fill = guide_legend(order=2, reverse=TRUE))+
          theme(    legend.key =      element_rect(color="grey80", size = 0.8), 
                    legend.key.size = grid::unit(1.0, "lines"),
                    legend.text =     element_text(size=text.plot), 

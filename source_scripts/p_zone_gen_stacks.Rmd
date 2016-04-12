@@ -6,7 +6,6 @@ zone.gen = tryCatch( region_zone_gen(db), error = function(cond) { return('ERROR
 
 # If the query doesn't work, return an error. Else run code to create plot.
 if ( typeof(zone.gen)=='character' ) {
-  print(zone.gen)
   print('ERROR: region_zone_gen function not returning correct results.')
 } else {
 

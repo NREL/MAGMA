@@ -1,5 +1,5 @@
 ***
-```{r Period-flow-{{period.name}}, results='asis', echo=FALSE}
+```{r Period-flow-{{period.name}}, results='asis'}
 cat("#### {{period.name}}")
 text.plot=11
 figure.width = 9

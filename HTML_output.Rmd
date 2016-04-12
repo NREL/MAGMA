@@ -10,18 +10,15 @@ output:
 
 ```{r setOptions, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# -----------------------------------------------------------------------
-# Set up default options for chunks, turn off error or warning messages.
-fig.path.name = 'plots/'
-knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, include=FALSE,
-                      fig.path=fig.path.name, cache.path='caches/', dev='png')
-
-# -----------------------------------------------------------------------
 # Sourcing the setup file and required functions
 source('query_functions.R')
 source('setup_plexosAnalysis.R')
 
 r.z.load = region_zone_load(db)
+
+# Set up default options for chunks, turn off error or warning messages.
+knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, include=FALSE,
+                      fig.path=fig.path.name, cache.path=cache.path.name, dev='png')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -126,7 +123,7 @@ if ( typeof(key.period.gen)=='character' ) {
 ## Curtailment
 ***
 ### Average Daily Curtailment
-```{r yearly-curtailment, cahce=TRUE}
+```{r yearly-curtailment}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (6 %in% run.sections) {
   avg.year.curt = knit_child('source_scripts/p_yearly_curtailment.Rmd')
