@@ -140,20 +140,4 @@ attributes(db)$class = c("rplexos","data.frame","tbl_df")
 # Set ggplot theme
 theme_set(theme_bw())
 
-rainbow12equal = c("#BF4D4D", "#BF864D", "#BFBF4D", "#86BF4D", "#4DBF4D", "#4DBF86", "#4DBFBF", "#4D86BF", "#4D4DBF", "#864DBF", "#BF4DBF", "#BF4D86")
-tol3qualitative=c("#4477AA", "#DDCC77", "#CC6677")
-tol4qualitative=c("#4477AA", "#117733", "#DDCC77", "#CC6677")
-tol5qualitative=c("#332288", "#88CCEE", "#117733", "#DDCC77", "#CC6677")
-tol6qualitative=c("#332288", "#88CCEE", "#117733", "#DDCC77", "#CC6677","#AA4499")
-tol7qualitative=c("#332288", "#88CCEE", "#44AA99", "#117733", "#DDCC77", "#CC6677","#AA4499")
-tol12qualitative=c("#332288", "#6699CC", "#88CCEE", "#44AA99", "#117733", "#999933", "#DDCC77", "#661100", "#CC6677", "#AA4466", "#882255", "#AA4499")
-tol21rainbow= c("#771155", "#AA4488", "#CC99BB", "#114477", "#4477AA", "#77AADD", "#117777", "#44AAAA", "#77CCCC", "#117744", "#44AA77", "#88CCAA", "#777711", "#AAAA44", "#DDDD77", "#774411", "#AA7744", "#DDAA77", "#771122", "#AA4455", "#DD7788")
-
-pales=c("lightsteelblue1", "lightsalmon", "honeydew1", "darkseagreen1", "plum1", "thistle", "mistyrose1", "honeydew2", "khaki", "sienna1", "rosybrown1", "lightcyan1", "lightgoldenrod1")
-
-Map.pal<-brewer.pal(9,'YlOrBr')
 scen.pal = c("goldenrod2", "blue", "darkblue", "firebrick3", "deeppink", "chartreuse2", "seagreen4")
-
-theme.PPT = theme(legend.key = element_rect(color = "grey80", size = 0.4),
-                  legend.key.size = grid::unit(0.6, "lines"), text=element_text(size=12),
-                  axis.text=element_text(size=7), axis.title=element_text(size=8, face=2), axis.title.x=element_text(vjust=-0.3))
