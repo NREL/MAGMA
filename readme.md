@@ -10,6 +10,7 @@ This package creates figures and an HTML file with all of those figures for plex
 2. Edit input_data.csv to point to the required databases, input files, and generator categories for your project.
 3. Edit run_html_output.R to point to your input_data.csv
 4. Run: ```source('run_html_output.R')```
+5. If you have trouble with the render function, make sure the "rmarkdown" package is installed. If there are issues locating or sourcing files, make sure the appropriate working directories and paths are setup correctly.
 
 ##### input_data.csv columns:
 1. Database.Location
