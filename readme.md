@@ -58,7 +58,7 @@ This package creates figures and an HTML file with all of those figures for plex
 
 ##### About cache=TRUE
 
-Setting cache=TRUE makes the markdown script save the data before it outputs it into an HTML for an individual chunk. The "key-period-dispatch" and "yearly-curtailment" chunks take a long time to process due to the interval queries (instead of yearly queries) required. With cache=TRUE, the first time still takes the full length to run, but subsequent runs of the script just load the saved cache data. However, if anything in the file or chunk (not sure) changes that has cache=TRUE, it will overwrite the cache and take the full length of time to process. 
+Setting cache=TRUE makes the markdown script save the data before it outputs it into an HTML for an individual chunk. The "key-period-dispatch" and "yearly-curtailment" chunks take a long time to process due to the interval queries (instead of yearly queries) required. With cache=TRUE, the first time still takes the full length to run, but subsequent runs of the script just load the saved cache data. However, if anything in the file in which cache=TRUE changes (maybe just chunk, but not sure), it will overwrite the cache and take the full length of time to process. So beware of that as well.
 	
 For "key-period-dispatch", to set cache=TRUE, change ```{r key-period-dispatch}``` to ```{r key-period-dispatch, cache=TRUE}```
 
