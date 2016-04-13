@@ -61,6 +61,7 @@ library(extrafont, quietly = TRUE, warn.conflicts = FALSE)
 library(tidyr, quietly = T, warn.conflicts = T)
 library(stringr, quietly = T, warn.conflicts = T)
 library(rplexos, quietly = F, warn.conflicts = F)
+library(rmarkdown)
 
 # -----------------------------------------------------------------------
 # Size for plot text
