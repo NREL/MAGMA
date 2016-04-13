@@ -7,16 +7,18 @@ if ( typeof(zone.gen)=='character' ) {
 print('ERROR: region_zone_gen function in "zone-gen-stacks" chunk not returning correct results.')
 } else {
 
-  zone.gen = select(zone.gen, Region, Zone, Type, GWh=value)
-  
-  # reorder the levels of Type to plot them in order
-  zone.gen$Type = factor(zone.gen$Type, levels = gen.order)
-    
   zone.gen.table = zone.gen %>%
     dcast(Zone+Region~Type, value.var = 'GWh', fun.aggregate = sum) %>%
     filter(Zone != 'BHUTAN')
+  
+  zone.load = r.z.load %>%
+    filter(Type == 'Region') %>%
+    select(Region = name, Load = value)
+  zone.load$Load = zone.load$Load
 
-  knitr::kable(zone.gen, digits=2)
+  zone.gen.table = join(zone.gen.table, zone.load, by = 'Region')
+  
+  knitr::kable(zone.gen.table, digits=2, format.args = list(big.mark = ','))
 
 }
 } else { print('Region and Zone generation data not found. Make sure "zone-gen-stacks" chunk is running.')  }

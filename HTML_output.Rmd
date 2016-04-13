@@ -254,7 +254,7 @@ if (15 %in% run.sections) {
 `r reserves.plots`
 
 ***
-### Region and Zone Generation
+### Region and Zone Generation (GWh)
 ```{r region-zone-gen-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (16 %in% run.sections) {
