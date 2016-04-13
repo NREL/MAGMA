@@ -9,7 +9,7 @@
 
 yr_gen_query = function(database) {
   yr.data.generator = select(query_year(database, 'Generator', 
-                                        prop = c('Generation', 'Available Energy', 'Emissions Cost', 'Fuel Cost', 'Start & Shutdown Cost', 'VO&M Cost', 'Max Capacity'),
+                                        prop = c('Generation', 'Available Energy', 'Emissions Cost', 'Fuel Cost', 'Start & Shutdown Cost', 'VO&M Cost', 'Installed Capacity'),
                                         columns = c('category', 'name')), property, name, category, value)
   return(yr.data.generator)
 }
@@ -327,7 +327,7 @@ capacity_factor = function(database) {
   cf = yr.data.generator
   
   mc = cf %>%
-    filter(property == 'Max Capacity') %>%
+    filter(property == 'Installed Capacity') %>%
     rename(MaxCap = value) %>%
     join(category2type, by = 'category')
   
