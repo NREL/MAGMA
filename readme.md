@@ -65,3 +65,43 @@ For "key-period-dispatch", to set cache=TRUE, change ```{r key-period-dispatch}`
 
 For "yearly-curtailment", you must open up the source_scripts/p_yearly_curtailment.Rmd file, and change 
 ```{r yearly_curtailment, include=TRUE}``` to ```{r yearly_curtailment, include=TRUE, cache=TRUE}```
+
+## Required PLEXOS outputs
+
+PLEXOS must report the following data in order for the scripts to work.
+
+### Annual
+##### Generator:
+ + Generation
+ + Available Energy
+ + Emission Cost
+ + Fuel Cost
+ + Start and Shutdown Cost
+ + VO&M Cost
+
+##### Region:
+ + Load
+ + Imports
+ + Exports
+ + Unserved Energy
+
+##### Zone:
+ + Load
+ + Imports
+ + Exports
+ + Unserved Energy
+
+##### Reserves:
+ + Provision
+ + Shortage
+
+### Interval
+##### Generator:
+ + Generation
+ + Available Capacity
+
+##### Region:
+ + Load
+ 
+##### Reserve:
+ + Provision
