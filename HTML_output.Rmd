@@ -17,12 +17,17 @@ yr.data.reserve        = tryCatch( yr_reserve_query(db), error = function(cond) 
 yr.data.interface.flow = tryCatch( yr_interface_query(db), error = function(cond) { return('ERROR') } )
 
 if ( 5 %in% run.sections | 6 %in% run.sections | 7 %in% run.sections ) {
-  int.data.generator     = tryCatch( int_gen_query(db), error = function(cond) { return('ERROR') } )
+  int.data.generator = tryCatch( int_gen_query(db), error = function(cond) { return('ERROR') } )
+  int.data.region    = tryCatch( int_region_query(db), error = function(cond) { return('ERROR') } )
 }
 
-int.data.region        = tryCatch( int_region_query(db), error = function(cond) { return('ERROR') } )
-int.data.interface     = tryCatch( int_interface_query(db), error = function(cond) { return('ERROR') } )
-int.data.reserve       = tryCatch( int_reserve_query(db), error = function(cond) { return('ERROR') } )
+if ( 11 %in% run.sections | 12 %in% run.sections | 13 %in% run.sections ) {
+  int.data.interface     = tryCatch( int_interface_query(db), error = function(cond) { return('ERROR') } )
+}
+
+if ( 15 %in% run.sections ) {
+  int.data.reserve       = tryCatch( int_reserve_query(db), error = function(cond) { return('ERROR') } )
+}
 
 r.z.load               = tryCatch( region_zone_load(db), error = function(cond) { return('ERROR') } )
 

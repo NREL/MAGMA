@@ -256,7 +256,7 @@ annual_reserves = function(database) {
 
 interval_reserves = function(database) {
   
-  provision = query_interval(database, 'Reserve', 'Provision')
+  provision = int.data.reserve
   provision = dcast(provision, time ~ name, value.var = 'value')
   return(provision)
 }
