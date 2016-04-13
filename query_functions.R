@@ -4,7 +4,27 @@
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Annual Generation by Type 
+# Query General Data
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# gen_query = function(database) {
+#   
+#   yr.data.generator = select(query_year(database, 'Generator', prop = c('Generation', 'Available Energy', 'Emissions Cost', 'Fuel Cost', 'Start & Shutdown Cost', 'VO&M Cost'), 
+#                       columns = c('category', 'name')), property, name, category, value)
+#   
+#   yr.gen           = filter(yr.data.generator, property == 'Generation')
+#   yr.avail.energy  = filter(yr.data.generator, property == 'Available Energy')
+#   yr.emission.cost = filter(yr.data.generator, property == 'Emissions Cost')
+#   yr.fuel.cost     = filter(yr.data.generator, property == 'Fuel Cost')
+#   yr.ss.cost       = filter(yr.data.generator, property == 'Start & Shutdown Cost')
+#   yr.vom.cost      = filter(yr.data.generator, property == 'VO&M Cost')
+#   
+#   yr.data.region = select(query_year
+#   
+# }
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Region Zone Load
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 gen_by_type = function(database) {
@@ -261,5 +281,36 @@ region_zone_load = function(database) {
   
 }
 
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Capacity Factor
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+capacity_factor = function(database) {
+  
+  cf = select(query_year(db, 'Generator', c('Max Capacity', 'Generation'), columns = c('name', 'category')), property, name, value, category)
+  
+  mc = cf %>%
+    filter(property == 'Max Capacity') %>%
+    rename(MaxCap = value) %>%
+    join(category2type, by = 'category')
+  
+  gen = cf %>%
+    filter(property == 'Generation') %>%
+    rename(Gen = value) %>%
+    join(category2type, by = 'category')
+    
+  mc$Type = factor(mc$Type, levels = rev(c(gen.order)))
+  
+  c.factor = mc %>%
+    select(name, MaxCap, Type) %>%
+    join(gen[,c('name', 'Gen')], by = 'name') %>%
+    select(Type, MaxCap, Gen) %>%
+    ddply('Type', summarise, MaxCap=sum(MaxCap), Gen=sum(Gen))
+  
+  c.factor$`Capacity Factor (%)` = c.factor$Gen/(c.factor$MaxCap/1000*8760)*100
+  
+  c.factor = select(c.factor, Type, `Capacity Factor (%)`)
+  
+  return(c.factor)
+  
+}

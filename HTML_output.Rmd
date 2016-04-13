@@ -264,7 +264,16 @@ if (16 %in% run.sections) {
 ```
 `r region.zone.gen.table`
 
-
+***
+### Capacity Factors
+```{r capacity-factor-table}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (17 %in% run.sections) {
+  capacity.factor.table = knit_child('source_scripts/t_capacity_factor.Rmd')
+} else { capacity.factor.table = 'Section not run according to input file.' }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+`r capacity.factor.table`
 
 
 
