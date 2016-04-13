@@ -1,42 +1,5 @@
 
-# Main setup file for general PLEXOS run analysis. You can change these settings to suit your needs.
-
-#########################
-# Must Report These items:
-#########################
-
-### Annual:
-
-## Generator:
-# Generation
-# Available Energy
-# Emission Cost
-# Fuel Cost
-# Start and Shutdown Cost
-# VOM Cost
-
-## Region:
-# Load
-# Imports
-# Exports
-# Unserved Energy
-
-## Reserves:
-# Provisions
-# Shortage
-
-### Interval:
-
-## Generator:
-# Generation
-# Available Capacity
-
-## Region:
-# Load  
-
-## Reserves:
-# Provisions
-
+# Main setup file for general PLEXOS run analysis.
 
 # -----------------------------------------------------------------------
 library(ggplot2, quietly=TRUE, warn.conflicts=FALSE)
