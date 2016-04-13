@@ -10,7 +10,21 @@ output:
 
 ```{r setOptions, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-r.z.load = region_zone_load(db)
+yr.data.generator      = tryCatch( yr_gen_query(db), error = function(cond) { return('ERROR') } )
+yr.data.region         = tryCatch( yr_region_query(db), error = function(cond) { return('ERROR') } )
+yr.data.zone           = tryCatch( yr_zone_query(db), error = function(cond) { return('ERROR') } )
+yr.data.reserve        = tryCatch( yr_reserve_query(db), error = function(cond) { return('ERROR') } )
+yr.data.interface.flow = tryCatch( yr_interface_query(db), error = function(cond) { return('ERROR') } )
+
+if ( 5 %in% run.sections | 6 %in% run.sections | 7 %in% run.sections ) {
+  int.data.generator     = tryCatch( int_gen_query(db), error = function(cond) { return('ERROR') } )
+}
+
+int.data.region        = tryCatch( int_region_query(db), error = function(cond) { return('ERROR') } )
+int.data.interface     = tryCatch( int_interface_query(db), error = function(cond) { return('ERROR') } )
+int.data.reserve       = tryCatch( int_reserve_query(db), error = function(cond) { return('ERROR') } )
+
+r.z.load               = tryCatch( region_zone_load(db), error = function(cond) { return('ERROR') } )
 
 # Set up default options for chunks, turn off error or warning messages.
 knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, include=FALSE,
@@ -88,7 +102,7 @@ if ( typeof(region.gen.plot)=='character' ) {
 
 ***
 ## Specified Period Dispatch Stacks
-``` {r key-period-dispatch, cache=TRUE}
+``` {r key-period-dispatch, cache=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (5 %in% run.sections){  
 

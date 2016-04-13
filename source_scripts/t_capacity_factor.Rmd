@@ -1,5 +1,5 @@
 
-```{r region_zone_flow_tables, include=TRUE}
+```{r capacity_factor_table, include=TRUE}
 
 cf = tryCatch( capacity_factor(db), error = function(cond) { return('ERROR: capacity_factor function not returning correct results.') })
 

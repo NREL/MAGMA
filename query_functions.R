@@ -7,21 +7,53 @@
 # Query General Data
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-# gen_query = function(database) {
-#   
-#   yr.data.generator = select(query_year(database, 'Generator', prop = c('Generation', 'Available Energy', 'Emissions Cost', 'Fuel Cost', 'Start & Shutdown Cost', 'VO&M Cost'), 
-#                       columns = c('category', 'name')), property, name, category, value)
-#   
-#   yr.gen           = filter(yr.data.generator, property == 'Generation')
-#   yr.avail.energy  = filter(yr.data.generator, property == 'Available Energy')
-#   yr.emission.cost = filter(yr.data.generator, property == 'Emissions Cost')
-#   yr.fuel.cost     = filter(yr.data.generator, property == 'Fuel Cost')
-#   yr.ss.cost       = filter(yr.data.generator, property == 'Start & Shutdown Cost')
-#   yr.vom.cost      = filter(yr.data.generator, property == 'VO&M Cost')
-#   
-#   yr.data.region = select(query_year
-#   
-# }
+yr_gen_query = function(database) {
+  yr.data.generator = select(query_year(database, 'Generator', 
+                                        prop = c('Generation', 'Available Energy', 'Emissions Cost', 'Fuel Cost', 'Start & Shutdown Cost', 'VO&M Cost', 'Max Capacity'),
+                                        columns = c('category', 'name')), property, name, category, value)
+  return(yr.data.generator)
+}
+
+yr_region_query = function(database) {
+  yr.data.region = select(query_year(database, 'Region', c('Load', 'Imports', 'Exports', 'Unserved Energy')), property, name, value)
+  return(yr.data.region)
+}
+  
+yr_zone_query = function(database) {
+  yr.data.zone = select(query_year(database, 'Zone', c('Load', 'Imports', 'Exports', 'Unserved Energy')), property, name, value)
+  return(yr.data.zone)
+}
+  
+yr_reserve_query = function(database) {
+  yr.data.reserve = select(query_year(database, 'Reserve', c('Provision', 'Shortage')), property, name, value)
+  return(yr.data.reserve)
+}
+
+yr_interface_query = function(database) {
+  yr.data.interface.flow = select(query_year(database, 'Interface', 'Flow'), property, name, value, time)
+  return(yr.data.interface.flow)
+}
+
+int_gen_query = function(database) {
+  int.data.generator = select(query_interval(database, 'Generator', c('Generation', 'Available Capacity'), columns = c('category', 'name')), 
+                              property, name, value, time, category)
+  return(int.data.generator)
+}
+
+int_region_query = function(database) {
+  int.data.region = select(query_interval(database, 'Region', 'Load'), property, name, time, value)
+  return(int.data.region)
+}
+
+int_interface_query = function(database) {
+  int.data.interface = select(query_interval(database, 'Interface', 'Flow'), property, name, time, value)
+  return(int.data.interface)
+}
+
+int_reserve_query = function(database) {
+  int.data.reserve = select(query_interval(database, 'Reserve', 'Provision'), property, name, time, value)
+  return(int.data.reserve)
+}
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Region Zone Load
@@ -29,7 +61,7 @@
 
 gen_by_type = function(database) {
   
-  yr.data = query_year(database, 'Generator', prop = c('Generation', 'Available Energy'), columns = c('category', 'name') )
+  yr.data = yr.data.generator
   
   yr.gen = yr.data %>%
     filter(property == 'Generation') %>%
@@ -70,9 +102,7 @@ gen_by_type = function(database) {
  
 region_zone_gen = function(database) {
   
-  yr.data = query_year(database, 'Generator', prop = c('Generation', 'Available Energy'), columns = c('category', 'name') )
-  
-  gen.data = yr.data %>%
+  gen.data = yr.data.generator %>%
     filter(property=='Generation') %>%
     select(name, category, value) %>%
     plyr::join(region.zone.mapping, by='name') %>%
@@ -87,8 +117,9 @@ region_zone_gen = function(database) {
 
 interval_gen = function(database) {
   
-  int.data = query_interval(database, 'Generator', prop = c('Generation', 'Available Capacity'), columns = c('category', 'name') )
-
+  int.data = int.data.generator
+  load.data = int.data.region
+  
   int.gen = int.data %>%
     filter(property == 'Generation') %>%
     select(name, time, value, category) %>%
@@ -108,8 +139,7 @@ interval_gen = function(database) {
   curtailed.total = data.frame(rowSums(curtailed))
   colnames(curtailed.total) = 'Curtailment'
 
-  load = query_interval(database, 'Region', 'Load', columns = c('category', 'name') )
-  load = dcast(load, time~property, value.var = 'value', fun.aggregate = sum)
+  load = dcast(load.data, time~property, value.var = 'value', fun.aggregate = sum)
 
   int.gen = int.gen %>%
     cbind(curtailed.total) %>%
@@ -125,8 +155,8 @@ interval_gen = function(database) {
 
 daily_curtailment = function(database) {
   
-  c.data = query_interval(database, 'Generator', prop = c('Generation', 'Available Capacity'), columns = c('category', 'name') )
-
+  c.data = int.data.generator
+  
   c.gen = c.data %>%
     filter(property == 'Generation') %>%
     join(category2type, by = 'category') %>%
@@ -157,7 +187,7 @@ daily_curtailment = function(database) {
 
 costs = function(database) {
 
-  cost = sum_year(database, col = 'Generator', prop = c('Emissions Cost', 'Fuel Cost', 'Start & Shutdown Cost', 'VO&M Cost') ) 
+  cost = yr.data.generator
   cost['value'] = cost['value'] / 1000000
   
   e.cost = filter(cost, property == 'Emissions Cost')
@@ -187,11 +217,11 @@ return(cost.table)
 
 region_zone_stats = function(database) {
   
-  r.stats = query_year(database, 'Region', c('Load', 'Imports', 'Exports', 'Unserved Energy')  )
-  z.stats = query_year(database, 'Zone', c('Load', 'Imports', 'Exports', 'Unserved Energy') )
+  r.data = yr.data.region
+  z.data = yr.data.zone
   
-  r.stats = dcast(r.stats, name~property, value.var = 'value', fun.aggregate = sum) 
-  z.stats = dcast(z.stats, name~property, value.var = 'value', fun.aggregate = sum)
+  r.stats = dcast(r.data, name~property, value.var = 'value', fun.aggregate = sum) 
+  z.stats = dcast(z.data, name~property, value.var = 'value', fun.aggregate = sum)
   
   r.stats$Type = 'Region'
   z.stats$Type = 'Zone'
@@ -207,7 +237,7 @@ region_zone_stats = function(database) {
 
 annual_reserves = function(database) {
   
-  r.data = query_year(database, col = 'Reserve', prop = c('Provision', 'Shortage') )
+  r.data = yr.data.reserve
   
   provision =  select( filter(r.data, property == 'Provision'), name, value)
   colnames(provision) = c('Type', 'Provisions (GWh)')  
@@ -238,7 +268,8 @@ interval_reserves = function(database) {
 zone_interface_flows = function(database) {
   
   zonal.interfaces = c('ER_NER_Interface', 'ER_SR_Interface', 'ER_W3_Interface', 'NR_ER_Interface', 'NR_WR_Interface', 'S1_S2_Interface', 'WR_SR_Interface')
-  int.flows = query_interval(db, 'Interface', 'Flow')
+  int.flows = int.data.interface
+  year.flows = yr.data.interface.flow
 
   zonal.flow = int.flows %>%
     filter(name %in% zonal.interfaces) %>%
@@ -253,8 +284,9 @@ zone_interface_flows = function(database) {
 
   int.flows = rbind(zonal.flow, region.flow)
 
-  year.flows = query_year(db, 'Interface', 'Flow', filter = list(name = zonal.interfaces))
-  year.flows = select(year.flows, name, time, value)
+  year.flows = year.flows %>%
+    filter(name %in% zonal.interfaces) %>%
+    select(name, time, value)
   year.flows$Type = 'Annual_Zone'
 
   flows = rbind(int.flows, year.flows)
@@ -269,8 +301,13 @@ zone_interface_flows = function(database) {
 
 region_zone_load = function(database) {
   
-  r.load = select(query_year(db, 'Region', 'Load'), name, value)
-  z.load = select(query_year(db, 'Zone', 'Load'), name, value)
+  r.load = yr.data.region %>%
+    filter(property == 'Load') %>%
+    select(name, value)
+  
+  z.load = yr.data.zone %>%
+    filter(property == 'Load') %>%
+    select(name, value)
   
   r.load$Type = 'Region'
   z.load$Type = 'Zone'
@@ -287,7 +324,7 @@ region_zone_load = function(database) {
 
 capacity_factor = function(database) {
   
-  cf = select(query_year(db, 'Generator', c('Max Capacity', 'Generation'), columns = c('name', 'category')), property, name, value, category)
+  cf = yr.data.generator
   
   mc = cf %>%
     filter(property == 'Max Capacity') %>%
