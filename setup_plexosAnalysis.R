@@ -93,6 +93,13 @@ fig.path.name = as.character(na.omit(inputs$Fig.Path))
 # Location for saved caches
 cache.path.name = as.character(na.omit(inputs$Cache.Path))
 
+if(length(list.files(pattern = "\\.db$",path=db.loc))==0) {
+  print(paste0('There is no .db file in ',db.loc))
+  if(readline('Do you want to run the rPLEXOS db creation tool now? (y/n):')=='y'){
+    message('Running process_folder')
+    process_folder(db.loc)
+  } else {print('You need to run rPLEXOS to process your solution or point to the correct solution folder.')}
+}
 # -----------------------------------------------------------------------
 # Open the database file ( must already have created this using rplexos ) 
 db = plexos_open(db.loc)
