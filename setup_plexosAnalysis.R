@@ -102,15 +102,21 @@ fig.path.name = paste0(as.character(na.omit(inputs$Fig.Path)),'\\')
 # Location for saved caches
 cache.path.name = paste0(as.character(na.omit(inputs$Cache.Path)),'\\')
 
-if(length(list.files(pattern = "\\.db$",path=db.loc))==0 |
-     file.info(file.path(db.loc,list.files(pattern = "\\.db$",path=db.loc)))$mtime <
-     file.info(file.path(db.loc,list.files(pattern = "\\.zip$",path=db.loc)))$mtime) {
-  print(paste0('The db is older than the zip or the .db file is absent from ',db.loc))
-  if(readline('Do you want to run the rPLEXOS db creation tool now? (y/n):')=='y'){
+run.rplx=F
+if(length(list.files(pattern = "\\.zip$",path=db.loc))!=0) {
+  if(length(list.files(pattern = "\\.db$",path=db.loc))==0) {
+    message(paste0('The .db file is absent from ',db.loc))
+    run.rplx=T
+  } else if(file.info(file.path(db.loc,list.files(pattern = "\\.db$",path=db.loc)))$mtime <
+             file.info(file.path(db.loc,list.files(pattern = "\\.zip$",path=db.loc)))$mtime) {
+    message(paste0('The db is older than the zip or the .db file in ',db.loc))
+    run.rplx=T
+  }
+  if(run.rplx & readline('Do you want to run the rPLEXOS db creation tool now? (y/n):')=='y'){
     message('Running process_folder')
     process_folder(db.loc)
-  } else {print('You need to run rPLEXOS to process your solution or point to the correct solution folder.')}
-}
+  } else {message('You need to run rPLEXOS to process your solution or point to the correct solution folder.')}
+} else {message('No zip file... are you in the right directory?')}
 # -----------------------------------------------------------------------
 # Open the database file ( must already have created this using rplexos ) 
 db = plexos_open(db.loc)
