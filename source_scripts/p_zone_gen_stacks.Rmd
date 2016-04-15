@@ -2,15 +2,13 @@
 ```{r zone_gen_stacks, include=TRUE}
 
 # Query region and zonal generation
-zone.gen = tryCatch( region_zone_gen(db), error = function(cond) { return('ERROR') } )
+zone.gen = tryCatch( select(region_zone_gen(db), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR') } )
 
 # If the query doesn't work, return an error. Else run code to create plot.
 if ( typeof(zone.gen)=='character' ) {
   print('ERROR: region_zone_gen function not returning correct results.')
 } else {
 
-  zone.gen = select(zone.gen, Region, Zone, Type, GWh=value)
-  
   # reorder the levels of Type to plot them in order
   zone.gen$Type = factor(zone.gen$Type, levels = gen.order)
     

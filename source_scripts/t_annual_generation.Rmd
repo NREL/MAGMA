@@ -1,12 +1,18 @@
 
 ```{r annual_generation_table, include=TRUE}
 
-if ( exists('yr.gen') ) {
-
+if ( !exists('yr.gen') ) {
+  # Query annual generation by type.
+  yr.gen = tryCatch( gen_by_type(db), error = function(cond) { return('ERROR') } ) 
+}
+  
 if ( typeof(yr.gen)=='character' ) { 
-print('ERROR: gen_by_type function in "total-gen-stack" chunk not returning correct results.')
+  print('ERROR: gen_by_type function not returning correct results.')
 } else {
-    
+   
+  # # reorder the levels of Type to plot them in order
+  # yr.gen$Type = factor(yr.gen$Type, levels = c(gen.order))
+   
   gen.tot = data.frame('Type'='Total', 'GWh'=sum(yr.gen$GWh) - yr.gen$GWh[yr.gen$Type=='Curtailment'])
   yr.gen = rbind(yr.gen, gen.tot)
   percent = data.frame('Percent'= yr.gen$GWh / yr.gen$GWh[yr.gen$Type=='Total'] * 100)
@@ -14,5 +20,4 @@ print('ERROR: gen_by_type function in "total-gen-stack" chunk not returning corr
   kable(yr.gen, format.args = list(big.mark = ','), digits=2)
 
 }
-} else { print('Yearly generation data not found. Make sure "total-gen-stack" chunk is running.')  }
 ```

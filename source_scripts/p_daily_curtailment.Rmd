@@ -1,10 +1,13 @@
 
 ```{r daily_curtailment, include=TRUE}
 
-if ( exists('dy.curt') ) {
+if ( !exists('daily.curt') ) {
+# Query curtailment data
+daily.curt = tryCatch( daily_curtailment(db), error = function(cond) { return('ERROR')})
+}
 
-if ( typeof(dy.curt)=='character' ) { 
-  print('ERROR: daily_curtailment function in "yearly-curtailment" chunk not returning correct results.')
+if ( typeof(daily.curt)=='character' ) { 
+  print('ERROR: daily_curtailment function not returning correct results.')
 } else {
 
   hr.curt = data.frame(rowMeans(daily.curt))

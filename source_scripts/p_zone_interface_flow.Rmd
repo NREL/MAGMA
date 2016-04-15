@@ -1,10 +1,12 @@
 
 ```{r zone-interface-flow-plots, fig.width=9, fig.height = 3, include=TRUE}
 
-if ( exists('interface.flows') ) {
+if ( !exists('interface.flows') ) {
+  interface.flows = tryCatch( zone_interface_flows(db), error=function(cond) {return('ERROR: zone_interface_flows query not returning correct results.')})
+}
   
 if ( typeof(interface.flows)=='character' ) { 
-print('ERROR: zone_interface_flows function in "zone-flow-table" chunk not returning correct results.')
+print('ERROR: zone_interface_flows function not returning correct results.')
 } else {
 
 # Define zone names, remove region flows, and order zone names for plotting.

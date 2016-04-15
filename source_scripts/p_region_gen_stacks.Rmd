@@ -1,15 +1,17 @@
 
 ```{r region_gen_stacks, include=TRUE, fig.width=8, fig.height=10}
 
-# Check if zonal gen exists. If not, return an error.
-if ( exists('zone.gen') ) {
+if( !exists('zone.gen') ) {
+  # Query region and zonal generation
+  region.gen = tryCatch( select(region_zone_gen(db), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR') } )
+} else {
+  region.gen = zone.gen
+}
 
 # Check if zonal.gen query worked and create plot of regional gen, else return an error.
-if ( typeof(zone.gen)=='character' ) {
-  print('ERROR: region_zone_gen function in "zone-gen-stacks" chunk did not return correct results.')
+if ( typeof(region.gen)=='character' ) {
+  print('ERROR: region_zone_gen function not returning correct results.')
 } else {
-  
-  region.gen = zone.gen
   
   # reorder the levels of Type to plot them in order
   region.gen$Type = factor(region.gen$Type, levels = gen.order)
@@ -60,5 +62,4 @@ if ( typeof(zone.gen)=='character' ) {
         facet_wrap(~Zone, scales = 'free', ncol=2)
                    # , nrow=length(unique(region.gen.plot$Zone)))
 }
-} else { print('Zonal generation not found. Make sure "zone-gen-stacks" chunk is running.') }
 ```
