@@ -88,10 +88,10 @@ intervals.per.day = as.numeric(na.omit(inputs$Intervals.Per.Day))
 run.sections = na.omit(inputs$Sections.to.Run)
 
 # Location for saved figures
-fig.path.name = as.character(na.omit(inputs$Fig.Path))
+fig.path.name = paste0(as.character(na.omit(inputs$Fig.Path)),'\\')
 
 # Location for saved caches
-cache.path.name = as.character(na.omit(inputs$Cache.Path))
+cache.path.name = paste0(as.character(na.omit(inputs$Cache.Path)),'\\')
 
 if(length(list.files(pattern = "\\.db$",path=db.loc))==0) {
   print(paste0('There is no .db file in ',db.loc))
