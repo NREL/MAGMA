@@ -31,6 +31,13 @@ library(rmarkdown)
 text.plot = 11
 
 # -----------------------------------------------------------------------
+# Set ggplot theme
+theme_set(theme_bw())
+
+# Color scheme for line plots
+scen.pal = c("goldenrod2", "blue", "darkblue", "firebrick3", "deeppink", "chartreuse2", "seagreen4")
+
+# -----------------------------------------------------------------------
 # Read CSV file with all inputs
 inputs = read.csv(file.path(input.csv))
 inputs[inputs==""]=NA
@@ -109,9 +116,3 @@ if(length(list.files(pattern = "\\.db$",path=db.loc))==0 |
 db = plexos_open(db.loc)
 db = db[1,]
 attributes(db)$class = c("rplexos","data.frame","tbl_df")
-
-# -----------------------------------------------------------------------
-# Set ggplot theme
-theme_set(theme_bw())
-
-scen.pal = c("goldenrod2", "blue", "darkblue", "firebrick3", "deeppink", "chartreuse2", "seagreen4")
