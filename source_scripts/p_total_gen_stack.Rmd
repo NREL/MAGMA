@@ -15,6 +15,7 @@ if ( typeof(yr.gen)=='character' ) {
 
   # reorder the levels of Type to plot them in order
   yr.gen$Type = factor(yr.gen$Type, levels = c(gen.order))
+  if(any(is.na(yr.gen$Type))) print("ERROR:gen.order doesn't contain all of the gen types: FIX YOUR INPUT DATA CSV")
 
   # Group by type and convert GWh to TWh
   gen.plot = yr.gen %>%
