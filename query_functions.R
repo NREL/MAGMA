@@ -63,10 +63,17 @@ gen_by_type = function(database) {
   
   yr.data = yr.data.generator
   
-  yr.gen = yr.data %>%
-    filter(property == 'Generation') %>%
-    join(category2type, by = 'category') %>%
-    select(Type, property, value)
+  if ( use.gen.type.mapping.csv ) {
+    yr.gen = yr.data %>%
+      filter(property == 'Generation') %>%
+      join(gen.type.mapping, by = 'name') %>%
+      select(Type, property, value)
+  } else {
+    yr.gen = yr.data %>%
+      filter(property == 'Generation') %>%
+      join(category2type, by = 'category') %>%
+      select(Type, property, value)
+  }
   
   gen = yr.gen
   
@@ -75,12 +82,21 @@ gen_by_type = function(database) {
     rename(GWh = Generation) %>%
     ddply('Type', numcolwise(sum)) 
   
-  avail = yr.data %>%
-    filter(property == 'Available Energy') %>%
-    join(category2type, by = 'category') %>%
-    select(Type, property, value) %>%
-    filter(Type %in% re.types ) %>%
-    dcast(property ~ Type, sum)
+  if ( use.gen.type.mapping.csv ) {
+    avail = yr.data %>%
+      filter(property == 'Available Energy') %>%
+      join(gen.type.mapping, by = 'name') %>%
+      select(Type, property, value) %>%
+      filter(Type %in% re.types ) %>%
+      dcast(property ~ Type, sum)
+  } else {
+    avail = yr.data %>%
+      filter(property == 'Available Energy') %>%
+      join(category2type, by = 'category') %>%
+      select(Type, property, value) %>%
+      filter(Type %in% re.types ) %>%
+      dcast(property ~ Type, sum)
+  }
   avail = avail[,2:ncol(avail)]
   
   gen = gen %>%
@@ -102,11 +118,20 @@ gen_by_type = function(database) {
  
 region_zone_gen = function(database) {
   
-  gen.data = yr.data.generator %>%
-    filter(property=='Generation') %>%
-    select(name, category, value) %>%
-    plyr::join(region.zone.mapping, by='name') %>%
-    plyr::join(category2type, by = 'category')
+  if ( use.gen.type.mapping.csv ) {
+    gen.data = yr.data.generator %>%
+      filter(property=='Generation') %>%
+      select(name, category, value) %>%
+      plyr::join(region.zone.mapping, by='name') %>%
+      plyr::join(gen.type.mapping, by = 'name')  
+    
+  } else {
+    gen.data = yr.data.generator %>%
+      filter(property=='Generation') %>%
+      select(name, category, value) %>%
+      plyr::join(region.zone.mapping, by='name') %>%
+      plyr::join(category2type, by = 'category')
+  }
 
   return(gen.data)
 }
@@ -120,20 +145,39 @@ interval_gen = function(database) {
   int.data = int.data.generator
   load.data = int.data.region
   
-  int.gen = int.data %>%
-    filter(property == 'Generation') %>%
-    select(name, time, value, category) %>%
-    join(category2type, by = 'category') %>%
-    dcast(time ~ Type, value.var = 'value', fun.aggregate = sum)
+  if ( use.gen.type.mapping.csv ) {
+    int.gen = int.data %>%
+      filter(property == 'Generation') %>%
+      select(name, time, value, category) %>%
+      join(gen.type.mapping, by = 'name') %>%
+      dcast(time ~ Type, value.var = 'value', fun.aggregate = sum)
+    
+  } else {
+    int.gen = int.data %>%
+      filter(property == 'Generation') %>%
+      select(name, time, value, category) %>%
+      join(category2type, by = 'category') %>%
+      dcast(time ~ Type, value.var = 'value', fun.aggregate = sum)
+  }
   
   re.gen = subset(int.gen, select = re.types)
 
-  int.avail = int.data %>%
-    filter(property == 'Available Capacity') %>%
-    select(name, time, value, category) %>%
-    join(category2type, by = 'category') %>%
-    dcast(time ~ Type, sum) %>%
-    subset(select = re.types)
+  if ( use.gen.type.mapping.csv ) {
+    int.avail = int.data %>%
+      filter(property == 'Available Capacity') %>%
+      select(name, time, value, category) %>%
+      join(gen.type.mapping, by = 'name') %>%
+      dcast(time ~ Type, sum) %>%
+      subset(select = re.types)
+    
+  } else {
+    int.avail = int.data %>%
+      filter(property == 'Available Capacity') %>%
+      select(name, time, value, category) %>%
+      join(category2type, by = 'category') %>%
+      dcast(time ~ Type, sum) %>%
+      subset(select = re.types)
+  }
 
   curtailed = int.avail - re.gen
   curtailed.total = data.frame(rowSums(curtailed))
@@ -157,19 +201,36 @@ daily_curtailment = function(database) {
   
   c.data = int.data.generator
   
-  c.gen = c.data %>%
-    filter(property == 'Generation') %>%
-    join(category2type, by = 'category') %>%
-    select(time, Type, value) %>%
-    dcast(time ~ Type, value.var = 'value', fun.aggregate = sum) %>%
-    subset(select = re.types)
-
-  c.avail = c.data %>%
-    filter(property == 'Available Capacity') %>%
-    join(category2type, by = 'category') %>%
-    select(time, Type, value) %>%
-    dcast(time ~ Type, sum) %>%
-    subset(select = re.types)
+  if ( use.gen.type.mapping.csv ) {
+    c.gen = c.data %>%
+      filter(property == 'Generation') %>%
+      join(gen.type.mapping, by = 'name') %>%
+      select(time, Type, value) %>%
+      dcast(time ~ Type, value.var = 'value', fun.aggregate = sum) %>%
+      subset(select = re.types)
+    
+    c.avail = c.data %>%
+      filter(property == 'Available Capacity') %>%
+      join(gen.type.mapping, by = 'name') %>%
+      select(time, Type, value) %>%
+      dcast(time ~ Type, sum) %>%
+      subset(select = re.types)
+    
+  } else {
+    c.gen = c.data %>%
+      filter(property == 'Generation') %>%
+      join(category2type, by = 'category') %>%
+      select(time, Type, value) %>%
+      dcast(time ~ Type, value.var = 'value', fun.aggregate = sum) %>%
+      subset(select = re.types)
+    
+    c.avail = c.data %>%
+      filter(property == 'Available Capacity') %>%
+      join(category2type, by = 'category') %>%
+      select(time, Type, value) %>%
+      dcast(time ~ Type, sum) %>%
+      subset(select = re.types)  
+  }
 
   curt = c.avail - c.gen
   curt.tot = data.frame(rowSums(curt))
@@ -326,15 +387,28 @@ capacity_factor = function(database) {
   
   cf = yr.data.generator
   
-  mc = cf %>%
-    filter(property == 'Installed Capacity') %>%
-    rename(MaxCap = value) %>%
-    join(category2type, by = 'category')
-  
-  gen = cf %>%
-    filter(property == 'Generation') %>%
-    rename(Gen = value) %>%
-    join(category2type, by = 'category')
+  if ( use.gen.type.mapping.csv ) {
+    mc = cf %>%
+      filter(property == 'Installed Capacity') %>%
+      rename(MaxCap = value) %>%
+      join(gen.type.mapping, by = 'name')
+    
+    gen = cf %>%
+      filter(property == 'Generation') %>%
+      rename(Gen = value) %>%
+      join(gen.type.mapping, by = 'name')
+    
+  } else {
+    mc = cf %>%
+      filter(property == 'Installed Capacity') %>%
+      rename(MaxCap = value) %>%
+      join(category2type, by = 'category')
+    
+    gen = cf %>%
+      filter(property == 'Generation') %>%
+      rename(Gen = value) %>%
+      join(category2type, by = 'category')
+  }
     
   mc$Type = factor(mc$Type, levels = rev(c(gen.order)))
   
@@ -342,8 +416,8 @@ capacity_factor = function(database) {
     select(name, MaxCap, Type) %>%
     join(gen[,c('name', 'Gen')], by = 'name') %>%
     select(Type, MaxCap, Gen) %>%
-    ddply('Type', summarise, MaxCap=sum(MaxCap), Gen=sum(Gen))
-  
+    ddply('Type', summarise, MaxCap=sum(MaxCap), Gen=sum(Gen))  
+
   n.int = length(seq(from = first.day, to = last.day, by = 'day'))*intervals.per.day
   c.factor$`Capacity Factor (%)` = c.factor$Gen/(c.factor$MaxCap/1000*n.int)*100
   
