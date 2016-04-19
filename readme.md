@@ -25,42 +25,40 @@ This package creates figures and an HTML file with all of those figures for plex
 	+ If usings a CSV file to assign generation type by generator name, this should be TRUE, else it should be FALSE. Column names should be "name" and "Type"
 	+ If you don't do it this way, it will assign generation type by PLEXOS category.
 3. Gen.Region.Zone.Mapping.Filename
-	+ CSV file which assigns a Region and Zone to each generator. Column names should be "name", "Region", "Zone". This can also be the same file you use to assign generation type.
+	+ CSV file which assigns a Region and Zone to each generator. 
+	+ Column names for generator name, region, and zone must be "name", "Region", "Zone". This can also be the same file you use to assign generation type.
 4. CSV.Gen.Type.File.Location
-	+ Location of CSV file to assign generation type by generator name, if using this (Using.Gen.Type.Mapping.CSV == TRUE)
-5. CSV.Gen.Type
-	+ List containing all generation types in the CSV which maps generator name to generation type.
-6. CSV.Desired.Type
-	+ If you want to rename the generation type for displaying results, you can change them here.
-7. PLEXOS.Gen.Category
+	+ Location of CSV file to assign generation type by generator name, if using this (Using.Gen.Type.Mapping.CSV == TRUE).
+	+ Column names for generator name and type must be "name", and "Type". This can also be the same file you use to assign region and zone.
+5. PLEXOS.Gen.Category
 	+ Categories in PLEXOS database. This must contain all the categories in your PLEXOS database.
-8. PLEXOS.Desired.Type	
+6. PLEXOS.Desired.Type	
 	+ Assigns a generation type to each of the PLEXOS categores
-9. Gen.Type
+7. Gen.Type
 	+ All types of generation that you either assign through the CSV or PLEXOS category. It can contain more types than you currently have, but it must have all of them otherwise they will be missing from the results.
-10. Plot.Color
+8. Plot.Color
 	+ Assigns a plot color to each generation type
-11. Gen.Order
+9. Gen.Order
 	+ Assigns an order from top to bottom of generation types for dispatch stacks. This list must also contain every generation type in that you assign either in 5-6 or 7-8.
-12. Renewable.Types.for.Curtailment
+10. Renewable.Types.for.Curtailment
 	+ Generation types to be considered in curtailment calculations.
-13. Key.Periods
+11. Key.Periods
 	+ You can choose individual time spans to plot results for. This column assigns names to those time periods.
-14. Start.Time
+12. Start.Time
 	+ Corresponding start time for each of the periods in 13.
-15. End.Time
+13. End.Time
 	+ Corresponding end time for each of the periods in 13. 
-16. Start.Day
+14. Start.Day
 	+ Starting day of the PLEXOS run. 
-17. End.Day
+15. End.Day
 	+ Ending day of the PLEXOS run.
-18. Intervals.Per.Day
+16. Intervals.Per.Day
 	+ Number of intervals per day.
-19. Sections.to.Run
+17. Sections.to.Run
 	+ Sections (chunks) of the HTML_output.Rmd file to run.
-20. Fig.Path
+18. Fig.Path
 	+ Location to save each figure.
-21. Cache.Path
+19. Cache.Path
 	+ Location to save caches if any chunks have cahce=TRUE. This is not required but if you are running the script several times for the same solution file, certain chunks take a long time to run and this can be beneficial. Described below.
 
 ##### About cache=TRUE
