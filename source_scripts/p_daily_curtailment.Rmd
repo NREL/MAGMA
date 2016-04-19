@@ -42,5 +42,4 @@ if ( typeof(daily.curt)=='character' ) {
 #             aspect.ratio =     0.5,
               panel.margin =     unit(1.0, "lines") )
 }
-} else { print('Curtailment data not found. Make sure "yearly-curtailment" chunk is running.') }
 ```

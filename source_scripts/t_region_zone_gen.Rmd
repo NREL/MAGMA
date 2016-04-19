@@ -1,8 +1,11 @@
 
 ```{r region_zone_gen_table, include=TRUE}
 
-if ( exists('zone.gen') ) {
-
+if ( !exists('zone.gen') ) {
+  # Query region and zonal generation
+  zone.gen = tryCatch( select(region_zone_gen(db), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR') } )
+}
+  
 if ( typeof(zone.gen)=='character' ) { 
 print('ERROR: region_zone_gen function in "zone-gen-stacks" chunk not returning correct results.')
 } else {
@@ -21,5 +24,4 @@ print('ERROR: region_zone_gen function in "zone-gen-stacks" chunk not returning 
   knitr::kable(zone.gen.table, digits=2, format.args = list(big.mark = ','))
 
 }
-} else { print('Region and Zone generation data not found. Make sure "zone-gen-stacks" chunk is running.')  }
 ```

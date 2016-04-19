@@ -43,7 +43,7 @@ daily.flows = daily.flows %>%
 # Create daily flow plot.
 p2 = ggplot()+
       geom_line(data=daily.flows, aes(x=day, y=value/1000, color=name, group=name), size=1.2)+
-      geom_hline(yintercept=0, , color="black", size=0.3)+
+      geom_hline(yintercept=0, color="black", size=0.3)+
       scale_color_manual("", values = scen.pal)+
       scale_x_continuous(breaks=seq(0, 360, by=30), limits=c(0,370), expand=c(0,0))+
       # scale_x_datetime(breaks = date_breaks(width = "1 month"), labels = date_format("%b %d\n%I %p"), expand = c(0, 0))+
@@ -59,5 +59,4 @@ p2 = ggplot()+
 print(p2)
 
 }
-} else { print('Zone interface flow data not found. Make sure "zone-flow-table" chunk is running.')  }
 ```
