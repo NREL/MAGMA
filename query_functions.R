@@ -344,7 +344,8 @@ capacity_factor = function(database) {
     select(Type, MaxCap, Gen) %>%
     ddply('Type', summarise, MaxCap=sum(MaxCap), Gen=sum(Gen))
   
-  c.factor$`Capacity Factor (%)` = c.factor$Gen/(c.factor$MaxCap/1000*8760)*100
+  n.int = length(seq(from = first.day, to = last.day, by = 'day'))*intervals.per.day
+  c.factor$`Capacity Factor (%)` = c.factor$Gen/(c.factor$MaxCap/1000*n.int)*100
   
   c.factor = select(c.factor, Type, `Capacity Factor (%)`)
   
