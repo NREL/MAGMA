@@ -1,7 +1,7 @@
 ---
-title: "PLEXOS Run General Analysis"
-author: 'MO'
-date: "April, 2016"
+title: "`r gsub('.*Model', 'Model', db$filename)`"
+author: "`r Sys.info()['user']`"
+date: "`r format(Sys.time(), '%d %B %Y')`"
 output: 
   html_document: 
     css: custom.css

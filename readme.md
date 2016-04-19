@@ -15,7 +15,8 @@ This package creates figures and an HTML file with all of those figures for plex
 1. If you have trouble with the render function, make sure the "rmarkdown" package is installed. If there are issues locating or sourcing files, make sure the appropriate working directories and paths are setup correctly.
 2. You can choose to run individual chunks or the entire script. This is setup in the input_data.csv file. There should no longer be inter-dependencies between chunks. In an earlier version certain chunks depended on others being run.
 3. Report any problems or issues to Matt O'Connell. 
-4. You can not currently map generation type to generator name with a CSV file. This functionality looks available but still needs to be built in. That feature will be coming soon. 
+4. The name of your database file must start with "Model".
+5. You can not currently map generation type to generator name with a CSV file. This functionality looks available but still needs to be built in. That feature will be coming soon. 
 
 ##### input_data.csv columns:
 1. Database.Location
