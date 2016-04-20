@@ -8,15 +8,16 @@ This package creates figures and an HTML file with all of those figures for plex
 ##To Run:
 1. Copy run_html_output.R and input_data.csv into another folder associated with your project specific repository.
 2. Edit input_data.csv to point to the required databases, input files, and generator categories for your project.
-3. Edit run_html_output.R to point to your input_data.csv
-4. Run: ```source('run_html_output.R')```
+3. If using a CSV to map generator name to type, create this.
+4. If creating individual region and zone dispatch stacks, create CSV to map generator name to region and zone. Without this file, individual region and zone dispatch stacks will not work.
+5. Edit run_html_output.R to point to your input_data.csv
+6. Run: ```source('run_html_output.R')```
 
 ### Notes:
 1. If you have trouble with the render function, make sure the "rmarkdown" package is installed. If there are issues locating or sourcing files, make sure the appropriate working directories and paths are setup correctly.
 2. You can choose to run individual chunks or the entire script. This is setup in the input_data.csv file. There should no longer be inter-dependencies between chunks. In an earlier version certain chunks depended on others being run.
-3. Report any problems or issues to Matt O'Connell. 
-4. The name of your database file must start with "Model".
-5. You can not currently map generation type to generator name with a CSV file. This functionality looks available but still needs to be built in. That feature will be coming soon. 
+3. The name of your database file must start with "Model".
+4. Report any problems or issues to Matt O'Connell. 
 
 ##### input_data.csv columns:
 1. Database.Location
@@ -27,13 +28,18 @@ This package creates figures and an HTML file with all of those figures for plex
 3. Gen.Region.Zone.Mapping.Filename
 	+ CSV file which assigns a Region and Zone to each generator. 
 	+ Column names for generator name, region, and zone must be "name", "Region", "Zone". This can also be the same file you use to assign generation type.
+	+ Only needed for region and zone dispatch stacks.
+	+ If this field is blank there will be an error, so it must read in any CSV file, even if not being used.
 4. CSV.Gen.Type.File.Location
 	+ Location of CSV file to assign generation type by generator name, if using this (Using.Gen.Type.Mapping.CSV == TRUE).
 	+ Column names for generator name and type must be "name", and "Type". This can also be the same file you use to assign region and zone.
+	+ If "Using.Gen.Type.Mapping.CSV" is FALSE, this field can be left blank.
 5. PLEXOS.Gen.Category
 	+ Categories in PLEXOS database. This must contain all the categories in your PLEXOS database.
+	+ Only required if "Using.Gen.Type.Mapping.CSV" is FALSE.
 6. PLEXOS.Desired.Type	
-	+ Assigns a generation type to each of the PLEXOS categores
+	+ Assigns a generation type to each of the PLEXOS categories.
+	+ Only requires if "Using.Gen.Type.Mapping.CSV" is FALSE.
 7. Gen.Type
 	+ All types of generation that you either assign through the CSV or PLEXOS category. It can contain more types than you currently have, but it must have all of them otherwise they will be missing from the results.
 8. Plot.Color
@@ -82,6 +88,7 @@ PLEXOS must report the following data in order for the scripts to work.
  + Fuel Cost
  + Start and Shutdown Cost
  + VO&M Cost
+ + Installed Capacity
 
 ##### Region:
  + Load
@@ -99,6 +106,9 @@ PLEXOS must report the following data in order for the scripts to work.
  + Provision
  + Shortage
 
+##### Interface
+ + Flow
+
 ### Interval
 ##### Generator:
  + Generation
@@ -109,3 +119,6 @@ PLEXOS must report the following data in order for the scripts to work.
  
 ##### Reserve:
  + Provision
+
+##### Interface
+ + Flow
