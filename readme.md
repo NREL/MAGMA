@@ -88,6 +88,7 @@ PLEXOS must report the following data in order for the scripts to work.
  + Fuel Cost
  + Start and Shutdown Cost
  + VO&M Cost
+ + Installed Capacity
 
 ##### Region:
  + Load
@@ -105,6 +106,9 @@ PLEXOS must report the following data in order for the scripts to work.
  + Provision
  + Shortage
 
+##### Interface
+ + Flow
+
 ### Interval
 ##### Generator:
  + Generation
@@ -115,3 +119,6 @@ PLEXOS must report the following data in order for the scripts to work.
  
 ##### Reserve:
  + Provision
+
+##### Interface
+ + Flow
