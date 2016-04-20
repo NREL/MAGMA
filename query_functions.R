@@ -35,9 +35,15 @@ yr_interface_query = function(database) {
 }
 
 int_gen_query = function(database) {
-  int.data.generator = select(query_interval(database, 'Generator', c('Generation', 'Available Capacity'), columns = c('category', 'name')), 
+  int.data.gen = select(query_interval(database, 'Generator', 'Generation', columns = c('category', 'name')), 
                               property, name, value, time, category)
-  return(int.data.generator)
+  return(int.data.gen)
+}
+
+int_avail_cap_query = function(database) {
+  int.data.avail.cap = select(query_interval(database, 'Generator', 'Available Capacity', columns = c('category', 'name')), 
+                              property, name, value, time, category)
+  return(int.data.avail.cap)
 }
 
 int_region_query = function(database) {
@@ -142,7 +148,7 @@ region_zone_gen = function(database) {
 
 interval_gen = function(database) {
   
-  int.data = int.data.generator
+  int.data = int.data.gen
   load.data = int.data.region
   
   if ( use.gen.type.mapping.csv ) {
@@ -199,17 +205,15 @@ interval_gen = function(database) {
 
 daily_curtailment = function(database) {
   
-  c.data = int.data.generator
-  
   if ( use.gen.type.mapping.csv ) {
-    c.gen = c.data %>%
+    c.gen = int.data.gen %>%
       filter(property == 'Generation') %>%
       join(gen.type.mapping, by = 'name') %>%
       select(time, Type, value) %>%
       dcast(time ~ Type, value.var = 'value', fun.aggregate = sum) %>%
       subset(select = re.types)
     
-    c.avail = c.data %>%
+    c.avail = int.data.avail.cap %>%
       filter(property == 'Available Capacity') %>%
       join(gen.type.mapping, by = 'name') %>%
       select(time, Type, value) %>%
@@ -217,14 +221,14 @@ daily_curtailment = function(database) {
       subset(select = re.types)
     
   } else {
-    c.gen = c.data %>%
+    c.gen = int.data.gen %>%
       filter(property == 'Generation') %>%
       join(category2type, by = 'category') %>%
       select(time, Type, value) %>%
       dcast(time ~ Type, value.var = 'value', fun.aggregate = sum) %>%
       subset(select = re.types)
     
-    c.avail = c.data %>%
+    c.avail = int.data.avail.cap %>%
       filter(property == 'Available Capacity') %>%
       join(category2type, by = 'category') %>%
       select(time, Type, value) %>%
