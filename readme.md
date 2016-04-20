@@ -8,8 +8,8 @@ This package creates figures and an HTML file with all of those figures for plex
 ##To Run:
 1. Copy run_html_output.R and input_data.csv into another folder associated with your project specific repository.
 2. Edit input_data.csv to point to the required databases, input files, and generator categories for your project.
-3. If using a CSV to map gnerator name to type, create this.
-4. If using a CSV to map generator name to region and zone, create this. Without this file, individual region and zone dispatch stacks will not work.
+3. If using a CSV to map generator name to type, create this.
+4. If creating individual region and zone dispatch stacks, create CSV to map generator name to region and zone. Without this file, individual region and zone dispatch stacks will not work.
 5. Edit run_html_output.R to point to your input_data.csv
 6. Run: ```source('run_html_output.R')```
 
@@ -28,13 +28,18 @@ This package creates figures and an HTML file with all of those figures for plex
 3. Gen.Region.Zone.Mapping.Filename
 	+ CSV file which assigns a Region and Zone to each generator. 
 	+ Column names for generator name, region, and zone must be "name", "Region", "Zone". This can also be the same file you use to assign generation type.
+	+ Only needed for region and zone dispatch stacks.
+	+ If this field is blank there will be an error, so it must read in any CSV file, even if not being used.
 4. CSV.Gen.Type.File.Location
 	+ Location of CSV file to assign generation type by generator name, if using this (Using.Gen.Type.Mapping.CSV == TRUE).
 	+ Column names for generator name and type must be "name", and "Type". This can also be the same file you use to assign region and zone.
+	+ If "Using.Gen.Type.Mapping.CSV" is FALSE, this field can be left blank.
 5. PLEXOS.Gen.Category
 	+ Categories in PLEXOS database. This must contain all the categories in your PLEXOS database.
+	+ Only required if "Using.Gen.Type.Mapping.CSV" is FALSE.
 6. PLEXOS.Desired.Type	
-	+ Assigns a generation type to each of the PLEXOS categores
+	+ Assigns a generation type to each of the PLEXOS categories.
+	+ Only requires if "Using.Gen.Type.Mapping.CSV" is FALSE.
 7. Gen.Type
 	+ All types of generation that you either assign through the CSV or PLEXOS category. It can contain more types than you currently have, but it must have all of them otherwise they will be missing from the results.
 8. Plot.Color
