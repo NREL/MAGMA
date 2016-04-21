@@ -2,7 +2,7 @@
 ```{r total_gen_stack, include=TRUE}
 
 # Query annual generation by type.
-yr.gen = tryCatch( gen_by_type(db), error = function(cond) { return('ERROR') } )
+yr.gen = tryCatch( gen_by_type(), error = function(cond) { return('ERROR') } )
 
 # If the query doesn't work, print an error. Else create the plot.
 if ( typeof(yr.gen)=='character' ) {

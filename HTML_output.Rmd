@@ -30,7 +30,7 @@ if ( 15 %in% run.sections ) {
   int.data.reserve       = tryCatch( int_reserve_query(db), error = function(cond) { return('ERROR') } )
 }
 
-r.z.load               = tryCatch( region_zone_load(db), error = function(cond) { return('ERROR') } )
+r.z.load               = tryCatch( region_zone_load(), error = function(cond) { return('ERROR') } )
 
 # Set up default options for chunks, turn off error or warning messages.
 knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, include=FALSE,

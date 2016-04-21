@@ -2,7 +2,7 @@
 ```{r yearly_curtailment, include=TRUE, cache=FALSE}
 
 # Query curtailment data
-daily.curt = tryCatch( daily_curtailment(db), error = function(cond) { return('ERROR')})
+daily.curt = tryCatch( daily_curtailment(), error = function(cond) { return('ERROR')})
 
 # If there is a problem with the query return an error, else create the plots.
 if ( typeof(daily.curt)=='character' ) { 

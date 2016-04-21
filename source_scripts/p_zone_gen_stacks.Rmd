@@ -2,7 +2,7 @@
 ```{r zone_gen_stacks, include=TRUE}
 
 # Query region and zonal generation
-zone.gen = tryCatch( select(region_zone_gen(db), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR') } )
+zone.gen = tryCatch( select(region_zone_gen(), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR') } )
 
 # If the query doesn't work, return an error. Else run code to create plot.
 if ( typeof(zone.gen)=='character' ) {

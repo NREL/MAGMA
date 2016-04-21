@@ -3,7 +3,7 @@
 
 if ( !exists('yr.gen') ) {
   # Query annual generation by type.
-  yr.gen = tryCatch( gen_by_type(db), error = function(cond) { return('ERROR') } ) 
+  yr.gen = tryCatch( gen_by_type(), error = function(cond) { return('ERROR') } ) 
 }
   
 if ( typeof(yr.gen)=='character' ) { 

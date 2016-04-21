@@ -1,7 +1,7 @@
 
 ```{r zone_flow_table, include=TRUE}
 
-interface.flows = tryCatch( zone_interface_flows(db), error=function(cond) {return('ERROR: zone_interface_flows query not returning correct results.')})
+interface.flows = tryCatch( zone_interface_flows(), error=function(cond) {return('ERROR: zone_interface_flows query not returning correct results.')})
 
 annual.flows = interface.flows %>% 
   filter(Type=='Annual_Zone') %>%

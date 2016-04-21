@@ -3,7 +3,7 @@
 
 if ( !exists('daily.curt') ) {
 # Query curtailment data
-daily.curt = tryCatch( daily_curtailment(db), error = function(cond) { return('ERROR')})
+daily.curt = tryCatch( daily_curtailment(), error = function(cond) { return('ERROR')})
 }
 
 if ( typeof(daily.curt)=='character' ) { 

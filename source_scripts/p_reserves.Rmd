@@ -2,7 +2,7 @@
 ```{r annual-reserves, include=TRUE}
 
 # Reserves interval data query
-r = tryCatch( interval_reserves(db), error = function(cond) { return('ERROR') })
+r = tryCatch( interval_reserves(), error = function(cond) { return('ERROR') })
 
 if ( typeof(r)=='character' ) { 
   print('ERROR: interval_reserves function not returning correct results.')

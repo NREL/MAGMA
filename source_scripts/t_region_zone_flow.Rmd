@@ -1,7 +1,7 @@
 
 ```{r region_zone_flow_tables, include=TRUE}
 
-r.z.stats = tryCatch( region_zone_stats(db), error = function(cond) { return('ERROR: region_zone_stats function not returning correct results.') })
+r.z.stats = tryCatch( region_zone_stats(), error = function(cond) { return('ERROR: region_zone_stats function not returning correct results.') })
 
 r.stats = filter(r.z.stats, Type == 'Region')
 z.stats = filter(r.z.stats, Type == 'Zone')

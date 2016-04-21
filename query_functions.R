@@ -65,7 +65,7 @@ int_reserve_query = function(database) {
 # Region Zone Load
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-gen_by_type = function(database) {
+gen_by_type = function() {
   
   yr.data = yr.data.generator
   
@@ -122,7 +122,7 @@ gen_by_type = function(database) {
 # Region and Zone name mapping
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
-region_zone_gen = function(database) {
+region_zone_gen = function() {
   
   if ( use.gen.type.mapping.csv ) {
     gen.data = yr.data.generator %>%
@@ -146,7 +146,7 @@ region_zone_gen = function(database) {
 # Key Period Generation by Type 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-interval_gen = function(database) {
+interval_gen = function() {
   
   int.data = int.data.gen
   load.data = int.data.region
@@ -203,7 +203,7 @@ interval_gen = function(database) {
 # Hourly Curtailment
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-daily_curtailment = function(database) {
+daily_curtailment = function() {
   
   if ( use.gen.type.mapping.csv ) {
     c.gen = int.data.gen %>%
@@ -250,7 +250,7 @@ daily_curtailment = function(database) {
 # Cost 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-costs = function(database) {
+costs = function() {
 
   cost = yr.data.generator
   cost['value'] = cost['value'] / 1000000
@@ -280,7 +280,7 @@ return(cost.table)
 # Regional and Zone Stats
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-region_zone_stats = function(database) {
+region_zone_stats = function() {
   
   r.data = yr.data.region
   z.data = yr.data.zone
@@ -300,7 +300,7 @@ region_zone_stats = function(database) {
 # Annual Reserve Provisions
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-annual_reserves = function(database) {
+annual_reserves = function() {
   
   r.data = yr.data.reserve
   
@@ -319,7 +319,7 @@ annual_reserves = function(database) {
 # Interval Reserve Provisions 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-interval_reserves = function(database) {
+interval_reserves = function() {
   
   provision = int.data.reserve
   provision = dcast(provision, time ~ name, value.var = 'value')
@@ -330,7 +330,7 @@ interval_reserves = function(database) {
 # Zone Interface Flows 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-zone_interface_flows = function(database) {
+zone_interface_flows = function() {
   
   zonal.interfaces = c('ER_NER_Interface', 'ER_SR_Interface', 'ER_W3_Interface', 'NR_ER_Interface', 'NR_WR_Interface', 'S1_S2_Interface', 'WR_SR_Interface')
   int.flows = int.data.interface
@@ -364,7 +364,7 @@ zone_interface_flows = function(database) {
 # Region Zone Load
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-region_zone_load = function(database) {
+region_zone_load = function() {
   
   r.load = yr.data.region %>%
     filter(property == 'Load') %>%
@@ -387,7 +387,7 @@ region_zone_load = function(database) {
 # Capacity Factor
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-capacity_factor = function(database) {
+capacity_factor = function() {
   
   cf = yr.data.generator
   

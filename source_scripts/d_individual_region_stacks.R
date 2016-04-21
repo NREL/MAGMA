@@ -1,7 +1,7 @@
 
 if ( !exists('zone.gen') & !exists('region.gen') ) {
   # Query region and zonal generation
-  region.gen = tryCatch( select(region_zone_gen(db), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR') } )
+  region.gen = tryCatch( select(region_zone_gen(), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR') } )
 } else if ( exists('zone.gen') ) {
   region.gen = zone.gen
 }
