@@ -124,15 +124,17 @@ gen_by_type = function() {
  
 region_zone_gen = function() {
   
+  r.z.gen = yr.data.generator
+  
   if ( use.gen.type.mapping.csv ) {
-    gen.data = yr.data.generator %>%
+    gen.data = r.z.gen %>%
       filter(property=='Generation') %>%
       select(name, category, value) %>%
       plyr::join(region.zone.mapping, by='name') %>%
       plyr::join(gen.type.mapping, by = 'name')  
     
   } else {
-    gen.data = yr.data.generator %>%
+    gen.data = r.z.gen %>%
       filter(property=='Generation') %>%
       select(name, category, value) %>%
       plyr::join(region.zone.mapping, by='name') %>%
@@ -148,18 +150,15 @@ region_zone_gen = function() {
 
 interval_gen = function() {
   
-  int.data = int.data.gen
-  load.data = int.data.region
-  
   if ( use.gen.type.mapping.csv ) {
-    int.gen = int.data %>%
+    int.gen = int.data.gen %>%
       filter(property == 'Generation') %>%
       select(name, time, value, category) %>%
       join(gen.type.mapping, by = 'name') %>%
       dcast(time ~ Type, value.var = 'value', fun.aggregate = sum)
     
   } else {
-    int.gen = int.data %>%
+    int.gen = int.data.gen %>%
       filter(property == 'Generation') %>%
       select(name, time, value, category) %>%
       join(category2type, by = 'category') %>%
@@ -169,7 +168,7 @@ interval_gen = function() {
   re.gen = subset(int.gen, select = re.types)
 
   if ( use.gen.type.mapping.csv ) {
-    int.avail = int.data %>%
+    int.avail = int.data.avail.cap %>%
       filter(property == 'Available Capacity') %>%
       select(name, time, value, category) %>%
       join(gen.type.mapping, by = 'name') %>%
@@ -177,7 +176,7 @@ interval_gen = function() {
       subset(select = re.types)
     
   } else {
-    int.avail = int.data %>%
+    int.avail = int.data.avail.cap %>%
       filter(property == 'Available Capacity') %>%
       select(name, time, value, category) %>%
       join(category2type, by = 'category') %>%
@@ -189,7 +188,7 @@ interval_gen = function() {
   curtailed.total = data.frame(rowSums(curtailed))
   colnames(curtailed.total) = 'Curtailment'
 
-  load = dcast(load.data, time~property, value.var = 'value', fun.aggregate = sum)
+  load = dcast(int.data.region, time~property, value.var = 'value', fun.aggregate = sum)
 
   int.gen = int.gen %>%
     cbind(curtailed.total) %>%
@@ -205,15 +204,18 @@ interval_gen = function() {
 
 daily_curtailment = function() {
   
+  gen.data = int.data.gen
+  avail.data = int.data.avail.cap
+  
   if ( use.gen.type.mapping.csv ) {
-    c.gen = int.data.gen %>%
+    c.gen = gen.data %>%
       filter(property == 'Generation') %>%
       join(gen.type.mapping, by = 'name') %>%
       select(time, Type, value) %>%
       dcast(time ~ Type, value.var = 'value', fun.aggregate = sum) %>%
       subset(select = re.types)
     
-    c.avail = int.data.avail.cap %>%
+    c.avail = avail.data %>%
       filter(property == 'Available Capacity') %>%
       join(gen.type.mapping, by = 'name') %>%
       select(time, Type, value) %>%
@@ -221,14 +223,14 @@ daily_curtailment = function() {
       subset(select = re.types)
     
   } else {
-    c.gen = int.data.gen %>%
+    c.gen = gen.data %>%
       filter(property == 'Generation') %>%
       join(category2type, by = 'category') %>%
       select(time, Type, value) %>%
       dcast(time ~ Type, value.var = 'value', fun.aggregate = sum) %>%
       subset(select = re.types)
     
-    c.avail = int.data.avail.cap %>%
+    c.avail = avail.data %>%
       filter(property == 'Available Capacity') %>%
       join(category2type, by = 'category') %>%
       select(time, Type, value) %>%
@@ -333,6 +335,7 @@ interval_reserves = function() {
 zone_interface_flows = function() {
   
   zonal.interfaces = c('ER_NER_Interface', 'ER_SR_Interface', 'ER_W3_Interface', 'NR_ER_Interface', 'NR_WR_Interface', 'S1_S2_Interface', 'WR_SR_Interface')
+  
   int.flows = int.data.interface
   year.flows = yr.data.interface.flow
 
@@ -366,11 +369,14 @@ zone_interface_flows = function() {
 
 region_zone_load = function() {
   
-  r.load = yr.data.region %>%
+  r.data = yr.data.region
+  z.data = yr.data.zone
+  
+  r.load = r.data %>%
     filter(property == 'Load') %>%
     select(name, value)
   
-  z.load = yr.data.zone %>%
+  z.load = z.data %>%
     filter(property == 'Load') %>%
     select(name, value)
   
