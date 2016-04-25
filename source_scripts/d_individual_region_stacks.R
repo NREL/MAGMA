@@ -1,21 +1,19 @@
 
-if ( !exists('zone.gen') & !exists('region.gen') ) {
+if ( !exists('r.z.gen') ) {
   # Query region and zonal generation
-  region.gen = tryCatch( select(region_zone_gen(), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR') } )
-} else if ( exists('zone.gen') ) {
-  region.gen = zone.gen
-}
+  r.z.gen = tryCatch( select(region_zone_gen(), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR') } )
+} 
 
 # Check if zonal.gen query worked and create plot of regional gen, else return an error.
-if ( typeof(region.gen)=='character' ) {
+if ( typeof(r.z.gen)=='character' ) {
   print('ERROR: region_zone_gen function not returning correct results.')
 } else {
   
   # reorder the levels of Type to plot them in order
-  region.gen$Type = factor(region.gen$Type, levels = gen.order)
+  r.z.gen$Type = factor(r.z.gen$Type, levels = gen.order)
     
   # Convert GWh to TWh
-  region.gen.plot = region.gen %>%
+  r.z.gen.plot = r.z.gen %>%
     group_by(Type, Region, Zone) %>%
     dplyr::summarise(TWh = sum(GWh)/1000) %>%
     filter(Zone != 'BHUTAN')

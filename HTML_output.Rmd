@@ -82,13 +82,13 @@ if (4 %in% run.sections) {
   # Call region_zone_gen function and create data for plots
   source('source_scripts/d_individual_region_stacks.R')
    
-if ( exists('region.gen.plot') ) {
+if ( exists('r.z.gen.plot') ) {
 # If the regional query didn't work, return an error. Else create plots.
-if ( typeof(region.gen.plot)=='character' ) {
+if ( typeof(r.z.gen.plot)=='character' ) {
   print('ERROR: region_zone_gen function not returning correct results.')
 } else {
 
-    region.names = unique(region.gen.plot$Region) # List of all regions to make plots for
+    region.names = unique(r.z.gen.plot$Region) # List of all regions to make plots for
     key.plots = list() # Creates empty list for plot data
 
     # Create plot for each region in region.names
@@ -217,10 +217,11 @@ if (12 %in% run.sections) {
 
 
 ***
-## 13.
+
 ```{r zonal-flow-plots}
 if (13 %in% run.sections) {
-# interchange.flows = tryCatch( interchange.flow(db), error=function(cond) {return('ERROR: Interface flows not found in query. Check initial setup file and PLEXOS outputs.')})
+## 13.
+  # interchange.flows = tryCatch( interchange.flow(db), error=function(cond) {return('ERROR: Interface flows not found in query. Check initial setup file and PLEXOS outputs.')})
 
 # for ( i in 1:n.periods) {
 #   if (i==1) {  

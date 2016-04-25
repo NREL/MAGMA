@@ -1,16 +1,16 @@
 
 ```{r region_zone_gen_table, include=TRUE}
 
-if ( !exists('zone.gen') ) {
+if ( !exists('r.z.gen') ) {
   # Query region and zonal generation
-  zone.gen = tryCatch( select(region_zone_gen(), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR') } )
+  r.z.gen = tryCatch( select(region_zone_gen(), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR') } )
 }
   
-if ( typeof(zone.gen)=='character' ) { 
+if ( typeof(r.z.gen)=='character' ) { 
 print('ERROR: region_zone_gen function in "zone-gen-stacks" chunk not returning correct results.')
 } else {
 
-  zone.gen.table = zone.gen %>%
+  r.z.gen.table = r.z.gen %>%
     dcast(Zone+Region~Type, value.var = 'GWh', fun.aggregate = sum) %>%
     filter(Zone != 'BHUTAN')
   
@@ -19,9 +19,9 @@ print('ERROR: region_zone_gen function in "zone-gen-stacks" chunk not returning 
     select(Region = name, Load = value)
   zone.load$Load = zone.load$Load
 
-  zone.gen.table = join(zone.gen.table, zone.load, by = 'Region')
+  r.z.gen.table = join(r.z.gen.table, zone.load, by = 'Region')
   
-  knitr::kable(zone.gen.table, digits=2, format.args = list(big.mark = ','))
+  knitr::kable(r.z.gen.table, digits=2, format.args = list(big.mark = ','))
 
 }
 ```

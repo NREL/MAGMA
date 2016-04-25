@@ -1,27 +1,25 @@
 
 ```{r region_gen_stacks, include=TRUE, fig.width=8, fig.height=10}
 
-if( !exists('zone.gen') ) {
+if( !exists('r.z.gen') ) {
   # Query region and zonal generation
-  region.gen = tryCatch( select(region_zone_gen(), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR') } )
-} else {
-  region.gen = zone.gen
+  r.z.gen = tryCatch( select(region_zone_gen(), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR') } )
 }
 
 # Check if zonal.gen query worked and create plot of regional gen, else return an error.
-if ( typeof(region.gen)=='character' ) {
+if ( typeof(r.z.gen)=='character' ) {
   print('ERROR: region_zone_gen function not returning correct results.')
 } else {
   
   # reorder the levels of Type to plot them in order
-  region.gen$Type = factor(region.gen$Type, levels = gen.order)
+  r.z.gen$Type = factor(r.z.gen$Type, levels = gen.order)
     
-  # zone.gen.sum is just used to set the maximum height on the plot, see pretty() fcn below
-  region.gen.sum = region.gen %>% 
+  # r.z.gen.sum is just used to set the maximum height on the plot, see pretty() fcn below
+  r.z.gen.sum = r.z.gen %>% 
     dplyr::summarise(TWh=sum(GWh)/1000) #change GWh generation to TWh
   
   # Convert GWh to TWh
-  region.gen.plot = region.gen %>%
+  r.z.gen.plot = r.z.gen %>%
     group_by(Type, Region, Zone) %>%
     dplyr::summarise(TWh = sum(GWh)/1000) %>%
     filter(Zone != 'BHUTAN')
@@ -37,12 +35,12 @@ if ( typeof(region.gen)=='character' ) {
   
   # *** Not needed for these plots as y-axis is varying. ***
   # # This automatically creates the y-axis scaling
-  # py=pretty(region.gen.sum$TWh, n=5, min.n = 5)
+  # py=pretty(r.z.gen.sum$TWh, n=5, min.n = 5)
   # seq.py=seq(0, py[length(py)], 10*(py[2]-py[1]))
   
   # Create plot
   ggplot() +
-    geom_bar(data = region.gen.plot, aes(x = Region, y = TWh, fill=Type, order=as.numeric(Type)), stat='identity', position="stack" ) +
+    geom_bar(data = r.z.gen.plot, aes(x = Region, y = TWh, fill=Type, order=as.numeric(Type)), stat='identity', position="stack" ) +
     geom_errorbar(aes(x=Region, y=value, ymin=value, ymax=value, color='load'), data=region.load, linetype='longdash', size=0.45)+
     scale_fill_manual(values = gen.color, guide = guide_legend(reverse = TRUE))+
     scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
@@ -60,6 +58,6 @@ if ( typeof(region.gen)=='character' ) {
                    axis.title.y =    element_text(vjust=1.2), 
                    panel.margin =    unit(1.5, "lines"))+
         facet_wrap(~Zone, scales = 'free', ncol=2)
-                   # , nrow=length(unique(region.gen.plot$Zone)))
+                   # , nrow=length(unique(r.z.gen.plot$Zone)))
 }
 ```

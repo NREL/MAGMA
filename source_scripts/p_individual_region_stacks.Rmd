@@ -8,7 +8,7 @@ figure.height = 3.5
 ```
 
 ```{r individual-region-stack-{{region.name}}, fig.height=figure.height, include=TRUE}
-plot.data = region.gen.plot %>%
+plot.data = r.z.gen.plot %>%
   filter(Region == r.name)
 
 region.load = filter(r.z.load, name == r.name)
