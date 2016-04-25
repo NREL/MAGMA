@@ -62,7 +62,7 @@ int_reserve_query = function(database) {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Region Zone Load
+# Generation by type
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 gen_by_type = function() {
@@ -74,28 +74,20 @@ gen_by_type = function() {
       filter(property == 'Generation') %>%
       join(gen.type.mapping, by = 'name') %>%
       select(Type, property, value)
-  } else {
-    yr.gen = yr.data %>%
-      filter(property == 'Generation') %>%
-      join(category2type, by = 'category') %>%
-      select(Type, property, value)
-  }
-  
-  gen = yr.gen
-  
-  yr.gen = yr.gen %>%
-    dcast(Type ~ property, sum) %>%
-    rename(GWh = Generation) %>%
-    ddply('Type', numcolwise(sum)) 
-  
-  if ( use.gen.type.mapping.csv ) {
+    
     avail = yr.data %>%
       filter(property == 'Available Energy') %>%
       join(gen.type.mapping, by = 'name') %>%
       select(Type, property, value) %>%
       filter(Type %in% re.types ) %>%
       dcast(property ~ Type, sum)
+    
   } else {
+    yr.gen = yr.data %>%
+      filter(property == 'Generation') %>%
+      join(category2type, by = 'category') %>%
+      select(Type, property, value)
+    
     avail = yr.data %>%
       filter(property == 'Available Energy') %>%
       join(category2type, by = 'category') %>%
@@ -105,12 +97,17 @@ gen_by_type = function() {
   }
   avail = avail[,2:ncol(avail)]
   
-  gen = gen %>%
+  re.gen = yr.gen %>%
     filter(Type %in% re.types ) %>%
     dcast(property ~ Type, sum)
-  gen = gen[,2:ncol(gen)]
-  
-  curt = avail - gen
+  re.gen = re.gen[,2:ncol(re.gen)]
+
+  yr.gen = yr.gen %>%
+    dcast(Type ~ property, sum) %>%
+    rename(GWh = Generation) %>%
+    ddply('Type', numcolwise(sum)) 
+    
+  curt = avail - re.gen
   curt.tot = sum(curt)
 
   yr.gen = rbind(yr.gen, data.frame(Type = 'Curtailment', GWh = curt.tot))
@@ -119,7 +116,7 @@ gen_by_type = function() {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Region and Zone name mapping
+# Region and Zone Generation by type according to generator name
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
 region_zone_gen = function() {
@@ -133,13 +130,39 @@ region_zone_gen = function() {
       plyr::join(region.zone.mapping, by='name') %>%
       plyr::join(gen.type.mapping, by = 'name')  
     
+    avail.data = r.z.gen %>%
+      filter(property == 'Available Energy') %>%
+      select(name, category, value) %>%
+      plyr::join(region.zone.mapping, by='name') %>%
+      plyr::join(gen.type.mapping, by = 'name')  %>%
+      filter(Type %in% re.types) %>%
+      select(name, Avail = value)
+    
   } else {
     gen.data = r.z.gen %>%
       filter(property=='Generation') %>%
       select(name, category, value) %>%
       plyr::join(region.zone.mapping, by='name') %>%
       plyr::join(category2type, by = 'category')
+    
+    avail.data = r.z.gen %>%
+      filter(property == 'Available Energy') %>%
+      select(name, category, value) %>%
+      plyr::join(region.zone.mapping, by='name') %>%
+      plyr::join(category2type, by = 'category') %>%
+      filter(Type %in% re.types) %>%
+      select(name, Avail = value)
   }
+
+  curt = gen.data %>%
+    filter(Type %in% re.types ) %>%
+    join(avail.data, by = 'name')
+  
+  curt$Type = 'Curtailment'
+  curt$value = curt$Avail - curt$value
+  curt$Avail = NULL
+  
+  gen.data = rbind(gen.data, curt)
 
   return(gen.data)
 }
@@ -199,7 +222,7 @@ interval_gen = function() {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Hourly Curtailment
+# Total Curtailment
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 daily_curtailment = function() {
@@ -247,6 +270,12 @@ daily_curtailment = function() {
 
   return(curt.tot)
 }
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Region and Zone Curtailment
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Cost 
