@@ -41,7 +41,7 @@ knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, incl
 ***
 ## Annual Dispatch Stacks 
 ***
-## Total Generation
+## 1. Total Generation
 ```{r total-gen-stack}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (1 %in% run.sections){
@@ -52,7 +52,7 @@ if (1 %in% run.sections){
 `r total.gen.stack`
 
 ***
-## Zonal Generation
+## 2. Zonal Generation
 ```{r zone-gen-stacks}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (2 %in% run.sections) {
@@ -63,7 +63,7 @@ if (2 %in% run.sections) {
 `r zone.gen.stacks`
 
 ***
-## Regional Generation
+## 3. Regional Generation
 ```{r region-gen-stacks}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (3 %in% run.sections) {
@@ -74,7 +74,7 @@ if (3 %in% run.sections) {
 `r region.gen.stacks`
 
 ***
-## Individual Regions
+## 4. Individual Regions
 ```{r individual-region-stacks}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (4 %in% run.sections) {
@@ -108,7 +108,7 @@ if ( typeof(region.gen.plot)=='character' ) {
 `r individual.region.stacks`
 
 ***
-## Specified Period Dispatch Stacks
+## 5. Specified Period Dispatch Stacks
 ``` {r key-period-dispatch, cache=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (5 %in% run.sections){  
@@ -139,7 +139,7 @@ if ( typeof(key.period.gen)=='character' ) {
 ***
 ## Curtailment
 ***
-### Average Daily Curtailment
+### 6. Average Daily Curtailment
 ```{r yearly-curtailment}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (6 %in% run.sections) {
@@ -150,7 +150,7 @@ if (6 %in% run.sections) {
 `r avg.year.curt`
 
 ***
-### Average Interval Curtailment
+### 7. Average Interval Curtailment
 ```{r daily-curtailment}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (7 %in% run.sections){
@@ -161,7 +161,7 @@ if (7 %in% run.sections){
 `r avg.day.curt`
 
 ***
-## Total Gen
+## 8. Total Gen
 ```{r annual-generation-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (8 %in% run.sections){
@@ -172,7 +172,7 @@ if (8 %in% run.sections){
 `r annual.gen.table`
 
 ***
-## Total Costs
+## 9. Total Costs
 ```{r annual-cost-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (9 %in% run.sections) {
@@ -183,7 +183,7 @@ if (9 %in% run.sections) {
 `r annual.cost.table`
 
 ***
-## Region and Zone Info (GWh)
+## 10. Region and Zone Info (GWh)
 ``` {r region-zone-flow-tables}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (10 %in% run.sections) {
@@ -194,7 +194,7 @@ if (10 %in% run.sections) {
 `r region.zone.flow.tables`
 
 ***
-## Zone Interface Flow
+## 11. Zone Interface Flow
 ```{r zone-flow-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (11 %in% run.sections) {
@@ -205,6 +205,7 @@ if (11 %in% run.sections) {
 `r zone.flow.table`
 
 ***
+## 12.
 ```{r zone-flow-plots}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (12 %in% run.sections) {
@@ -216,6 +217,7 @@ if (12 %in% run.sections) {
 
 
 ***
+## 13.
 ```{r zonal-flow-plots}
 if (13 %in% run.sections) {
 # interchange.flows = tryCatch( interchange.flow(db), error=function(cond) {return('ERROR: Interface flows not found in query. Check initial setup file and PLEXOS outputs.')})
@@ -250,7 +252,7 @@ if (13 %in% run.sections) {
 ***
 ## Reserves
 ***
-### Annual Reserve Provisions and Shortage
+### 14. Annual Reserve Provisions and Shortage
 ```{r annual-reserves-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (14 %in% run.sections) {
@@ -261,7 +263,7 @@ if (14 %in% run.sections) {
 `r annual.reserves.table`
 
 ***
-### Average Interval and Daily Reserve Provisions
+### 15. Average Interval and Daily Reserve Provisions
 ```{r reserves-plots}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (15 %in% run.sections) {
@@ -272,7 +274,7 @@ if (15 %in% run.sections) {
 `r reserves.plots`
 
 ***
-### Region and Zone Generation (GWh)
+### 16. Region and Zone Generation (GWh)
 ```{r region-zone-gen-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (16 %in% run.sections) {
@@ -283,7 +285,7 @@ if (16 %in% run.sections) {
 `r region.zone.gen.table`
 
 ***
-### Capacity Factors
+### 17. Capacity Factors
 ```{r capacity-factor-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (17 %in% run.sections) {
