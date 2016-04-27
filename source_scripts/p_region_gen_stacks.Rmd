@@ -22,15 +22,18 @@ if ( typeof(r.z.gen)=='character' ) {
   r.z.gen.plot = r.z.gen %>%
     group_by(Type, Region, Zone) %>%
     dplyr::summarise(TWh = sum(GWh)/1000) %>%
-    filter(Zone != 'BHUTAN')
+    filter(!Zone %in% ignore.zones) %>%
+    filter(!Region %in% ignore.regions)
     
-  region.load = filter(r.z.load, Type == 'Region')
+  region.load = filter(r.z.load, Type == 'Region', !name %in% ignore.regions)
   colnames(region.load)[which(colnames(region.load)=='name')]='Region'
   region.load$value = region.load$value/1000
   region.load$Type = NULL
+  
   region.load = region.load %>%
     join(region.zone.mapping[,c('Zone', 'Region')], by = 'Region', type='left', match='first') %>%
-    filter(Zone != 'BHUTAN')
+    filter(!Zone %in% ignore.zones) %>%
+    filter(!Region %in% ignore.regions)
   region.load = region.load[complete.cases(region.load),]
   
   # *** Not needed for these plots as y-axis is varying. ***

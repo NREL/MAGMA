@@ -7,12 +7,11 @@ if ( !exists('r.z.gen') ) {
 }
   
 if ( typeof(r.z.gen)=='character' ) { 
-print('ERROR: region_zone_gen function in "zone-gen-stacks" chunk not returning correct results.')
+print('ERROR: region_zone_gen function not returning correct results.')
 } else {
 
   r.z.gen.table = r.z.gen %>%
-    dcast(Zone+Region~Type, value.var = 'GWh', fun.aggregate = sum) %>%
-    filter(Zone != 'BHUTAN')
+    dcast(Zone+Region~Type, value.var = 'GWh', fun.aggregate = sum)
   
   zone.load = r.z.load %>%
     filter(Type == 'Region') %>%

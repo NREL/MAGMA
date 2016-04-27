@@ -16,13 +16,13 @@ if ( typeof(r.z.gen)=='character' ) {
   r.z.gen.sum = r.z.gen %>% 
     dplyr::summarise(TWh=sum(GWh)/1000) #change GWh generation to TWh
   
-  # Remove BHUTAN and convert GWh to TWh
+  # Remove regions or zones to ignore and convert GWh to TWh
   r.z.gen.plot = r.z.gen %>%
     group_by(Type, Zone) %>%
     dplyr::summarise(TWh = sum(GWh)/1000) %>%
-    filter(Zone != 'BHUTAN')
+    filter(!Zone %in% ignore.zones)
     
-  zone.load = filter(r.z.load, Type == 'Zone')
+  zone.load = filter(r.z.load, Type == 'Zone', !name %in% ignore.zones)
   zone.load$value = zone.load$value/1000
   
   # ***Not needed for these plots as the y axis scaling changes***

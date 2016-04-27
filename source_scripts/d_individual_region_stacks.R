@@ -16,5 +16,6 @@ if ( typeof(r.z.gen)=='character' ) {
   r.z.gen.plot = r.z.gen %>%
     group_by(Type, Region, Zone) %>%
     dplyr::summarise(TWh = sum(GWh)/1000) %>%
-    filter(Zone != 'BHUTAN')
+    filter(!Zone %in% ignore.zones) %>%
+    filter(!Region %in% ignore.regions)
 }

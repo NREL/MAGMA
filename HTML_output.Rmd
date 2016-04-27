@@ -35,6 +35,7 @@ r.z.load               = tryCatch( region_zone_load(), error = function(cond) { 
 # Set up default options for chunks, turn off error or warning messages.
 knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, include=FALSE,
                       fig.path=fig.path.name, cache.path=cache.path.name, dev='png')
+
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -275,7 +276,7 @@ if (15 %in% run.sections) {
 `r reserves.plots`
 
 ***
-### 16. Region and Zone Generation (GWh)
+## 16. Region and Zone Generation (GWh)
 ```{r region-zone-gen-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (16 %in% run.sections) {
@@ -286,7 +287,7 @@ if (16 %in% run.sections) {
 `r region.zone.gen.table`
 
 ***
-### 17. Capacity Factors
+## 17. Capacity Factors
 ```{r capacity-factor-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (17 %in% run.sections) {

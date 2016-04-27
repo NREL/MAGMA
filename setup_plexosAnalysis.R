@@ -99,6 +99,12 @@ fig.path.name = paste0(as.character(na.omit(inputs$Fig.Path)),'\\')
 # Location for saved caches
 cache.path.name = paste0(as.character(na.omit(inputs$Cache.Path)),'\\')
 
+# Zones to ignore for plotting
+ignore.zones = as.character(na.omit(inputs$Ignore.Zones))
+
+# Regions to ignore for plotting
+ignore.regions = as.character(na.omit(inputs$Ignore.Regions))
+
 run.rplx=F
 if(length(list.files(pattern = "\\.zip$",path=db.loc))!=0) {
   if(length(list.files(pattern = "\\.db$",path=db.loc))==0) {
