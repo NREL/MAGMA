@@ -122,6 +122,9 @@ PLEXOS must report the following data in order for the scripts to work.
 
 ##### Region:
  + Load
+
+##### Zone:
+ + Load
  
 ##### Reserve:
  + Provision
