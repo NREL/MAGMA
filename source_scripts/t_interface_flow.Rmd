@@ -1,0 +1,12 @@
+
+```{r interface_flow_table, include=TRUE}
+
+interface.flows = tryCatch( interface_flows(), error=function(cond) {return('ERROR: interface_flows query not returning correct results.')})
+
+annual.flows = interface.flows %>% 
+  filter(Type=='Annual_Flow') %>%
+  select(name, value)
+colnames(annual.flows)[2] = 'GWh'
+knitr::kable(annual.flows, digits=3)
+
+```
