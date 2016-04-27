@@ -105,6 +105,9 @@ ignore.zones = as.character(na.omit(inputs$Ignore.Zones))
 # Regions to ignore for plotting
 ignore.regions = as.character(na.omit(inputs$Ignore.Regions))
 
+# Interfaces to look at flows for
+interfaces = as.character(na.omit(inputs$Interfaces.for.Flows))
+
 run.rplx=F
 if(length(list.files(pattern = "\\.zip$",path=db.loc))!=0) {
   if(length(list.files(pattern = "\\.db$",path=db.loc))==0) {

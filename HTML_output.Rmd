@@ -195,30 +195,30 @@ if (10 %in% run.sections) {
 `r region.zone.flow.tables`
 
 ***
-## 11. Zone Interface Flow
-```{r zone-flow-table}
+## 11. Interface Flow Table
+```{r interface-flow-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (11 %in% run.sections) {
-  zone.flow.table = knit_child('source_scripts/t_zone_flow.Rmd')
-} else { zone.flow.table = 'Section not run according to input file.' }
+  interface.flow.table = knit_child('source_scripts/t_interface_flow.Rmd')
+} else { interface.flow.table = 'Section not run according to input file.' }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
-`r zone.flow.table`
+`r interface.flow.table`
 
 ***
-## 12.
-```{r zone-flow-plots}
+## 12. Interface Flow Plots
+```{r interface-flow-plots}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (12 %in% run.sections) {
-  zone.flow.plots = knit_child('source_scripts/p_zone_interface_flow.Rmd')
-} else { zone.flow.plots = 'Section not run according to input file.' }
+  interface.flow.plots = knit_child('source_scripts/p_interface_flow.Rmd')
+} else { interface.flow.plots = 'Section not run according to input file.' }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
-`r zone.flow.plots`
+`r interface.flow.plots`
 
 
 ***
-
+## 13. Specified Period Interface Flow Plot
 ```{r zonal-flow-plots}
 if (13 %in% run.sections) {
 ## 13.
@@ -249,7 +249,6 @@ if (13 %in% run.sections) {
 
 } else { key.period.flow = 'Section not run according to input file.' }
 ```
-
 
 ***
 ## Reserves

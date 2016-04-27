@@ -272,12 +272,6 @@ daily_curtailment = function() {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Region and Zone Curtailment
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Cost 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -358,36 +352,23 @@ interval_reserves = function() {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Zone Interface Flows 
+# Interface Flows 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-zone_interface_flows = function() {
+interface_flows = function() {
   
-  zonal.interfaces = c('ER_NER_Interface', 'ER_SR_Interface', 'ER_W3_Interface', 'NR_ER_Interface', 'NR_WR_Interface', 'S1_S2_Interface', 'WR_SR_Interface')
+  int.flows = int.data.interface %>%
+    select(name, time, value) %>%
+    filter(name %in% interfaces)
   
-  int.flows = int.data.interface
-  year.flows = yr.data.interface.flow
-
-  zonal.flow = int.flows %>%
-    filter(name %in% zonal.interfaces) %>%
-    select(name, time, value)
-
-  region.flow = int.flows %>%
-    filter(!name %in% zonal.interfaces) %>%
-    select(name, time, value)
-
-  zonal.flow$Type = 'Zone'
-  region.flow$Type = 'Region'
-
-  int.flows = rbind(zonal.flow, region.flow)
-
-  year.flows = year.flows %>%
-    filter(name %in% zonal.interfaces) %>%
-    select(name, time, value)
-  year.flows$Type = 'Annual_Zone'
-
+  year.flows = yr.data.interface.flow %>%
+    select(name, time, value) %>%
+    filter(name %in% interfaces)
+  
+  int.flows$Type = 'Interval_Flow'
+  year.flows$Type = 'Annual_Flow'
+    
   flows = rbind(int.flows, year.flows)
-  flows$name = gsub('_Interface', '', flows$name)
   
   return(flows)
 }
