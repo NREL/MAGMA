@@ -1,16 +1,16 @@
 
 ```{r region_zone_flow_tables, include=TRUE}
 
-r.z.stats = tryCatch( region_zone_stats(), error = function(cond) { return('ERROR: region_zone_stats function not returning correct results.') })
+r.stats = tryCatch( region_stats(), error = function(cond) { return('ERROR: region_stats function not returning correct results.') })
+z.stats = tryCatch( zone_stats(), error = function(cond) { return('ERROR: zone_stats function not returning correct results.') })
 
-r.stats = filter(r.z.stats, Type == 'Region')
-z.stats = filter(r.z.stats, Type == 'Zone')
+if ( !typeof(r.stats)=='character' ) { 
+  colnames(r.stats)[which(colnames(r.stats)=='name')] = 'Region Name'
+}
 
-r.stats$Type = NULL
-colnames(r.stats)[which(colnames(r.stats)=='name')] = 'Region Name'
-
-z.stats$Type = NULL
-colnames(z.stats)[which(colnames(z.stats)=='name')] = 'Zone Name'
+if ( !typeof(z.stats)=='character' ) { 
+  colnames(z.stats)[which(colnames(z.stats)=='name')] = 'Zone Name'
+}
 
 kable(r.stats, format.args = list(big.mark = ','), digits=2)
 kable(z.stats, format.args = list(big.mark = ','), digits=2)

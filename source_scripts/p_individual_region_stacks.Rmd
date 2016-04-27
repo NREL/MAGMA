@@ -11,7 +11,7 @@ figure.height = 3.5
 plot.data = r.z.gen.plot %>%
   filter(Region == r.name)
 
-region.load = filter(r.z.load, name == r.name)
+region.load = filter(r.load, name == r.name)
 region.load$value = region.load$value/1000
 
 # gen.sum is just used to set the maximum height on the plot, see pretty() fcn below

@@ -9,6 +9,8 @@ if( !exists('r.z.gen') ) {
 # Check if zonal.gen query worked and create plot of regional gen, else return an error.
 if ( typeof(r.z.gen)=='character' ) {
   print('ERROR: region_zone_gen function not returning correct results.')
+} else if ( typeof(r.load) == 'character' ) {
+  print('ERROR: region_load function not returning correct results.')
 } else {
   
   # reorder the levels of Type to plot them in order
@@ -25,10 +27,9 @@ if ( typeof(r.z.gen)=='character' ) {
     filter(!Zone %in% ignore.zones) %>%
     filter(!Region %in% ignore.regions)
     
-  region.load = filter(r.z.load, Type == 'Region', !name %in% ignore.regions)
+  region.load = filter(r.load, !name %in% ignore.regions)
   colnames(region.load)[which(colnames(region.load)=='name')]='Region'
   region.load$value = region.load$value/1000
-  region.load$Type = NULL
   
   region.load = region.load %>%
     join(region.zone.mapping[,c('Zone', 'Region')], by = 'Region', type='left', match='first') %>%

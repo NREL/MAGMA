@@ -51,6 +51,11 @@ int_region_query = function(database) {
   return(int.data.region)
 }
 
+int_zone_query = function(database) {
+  int.data.zone = select(query_interval(database, 'Zone', 'Load'), property, name, time, value)
+  return(int.data.zone)
+}
+
 int_interface_query = function(database) {
   int.data.interface = select(query_interval(database, 'Interface', 'Flow'), property, name, time, value)
   return(int.data.interface)
@@ -166,6 +171,8 @@ region_zone_gen = function() {
 
   return(gen.data)
 }
+
+
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Key Period Generation by Type 
@@ -302,23 +309,21 @@ return(cost.table)
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Regional and Zone Stats
+# Region and Zone Stats
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-region_zone_stats = function() {
-  
+region_stats = function() {
   r.data = yr.data.region
-  z.data = yr.data.zone
-  
-  r.stats = dcast(r.data, name~property, value.var = 'value', fun.aggregate = sum) 
-  z.stats = dcast(z.data, name~property, value.var = 'value', fun.aggregate = sum)
-  
+  r.stats = dcast(r.data, name~property, value.var = 'value', fun.aggregate = sum)
   r.stats$Type = 'Region'
+  return(r.stats)
+}
+
+zone_stats = function() {
+  z.data = yr.data.zone
+  z.stats = dcast(z.data, name~property, value.var = 'value', fun.aggregate = sum)
   z.stats$Type = 'Zone'
-  
-  stats = rbind(r.stats, z.stats)
-  
-  return(stats)
+  return(z.stats)
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -345,7 +350,6 @@ annual_reserves = function() {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 interval_reserves = function() {
-  
   provision = int.data.reserve
   provision = dcast(provision, time ~ name, value.var = 'value')
   return(provision)
@@ -374,29 +378,23 @@ interface_flows = function() {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Region Zone Load
+# Region and Zone Load
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-region_zone_load = function() {
-  
+region_load = function() {
   r.data = yr.data.region
-  z.data = yr.data.zone
-  
   r.load = r.data %>%
     filter(property == 'Load') %>%
     select(name, value)
-  
+  return(r.load)
+}
+
+zone_load = function() {
+  z.data = yr.data.zone
   z.load = z.data %>%
     filter(property == 'Load') %>%
     select(name, value)
-  
-  r.load$Type = 'Region'
-  z.load$Type = 'Zone'
-  
-  r.z.load = rbind(r.load, z.load)
-  
-  return(r.z.load)
-  
+  return(z.load)
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

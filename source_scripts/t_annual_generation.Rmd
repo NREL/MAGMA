@@ -3,11 +3,12 @@
 
 if ( !exists('yr.gen') ) {
   # Query annual generation by type.
-  yr.gen = tryCatch( gen_by_type(), error = function(cond) { return('ERROR') } ) 
+  yr.gen = tryCatch( gen_by_type(), error = function(cond) { return('ERROR: gen_by_type function not returning correct results') } ) 
 }
   
 if ( typeof(yr.gen)=='character' ) { 
-  print('ERROR: gen_by_type function not returning correct results.')
+  knitr::kable(yr.gen)
+  
 } else {
    
   # # reorder the levels of Type to plot them in order

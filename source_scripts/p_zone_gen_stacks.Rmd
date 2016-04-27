@@ -7,6 +7,8 @@ r.z.gen = tryCatch( select(region_zone_gen(), Region, Zone, Type, GWh = value), 
 # If the query doesn't work, return an error. Else run code to create plot.
 if ( typeof(r.z.gen)=='character' ) {
   print('ERROR: region_zone_gen function not returning correct results.')
+} else if ( typeof(z.load) == 'character' ) { 
+  print('ERROR: zone_load function not returning correct results.')
 } else {
 
   # reorder the levels of Type to plot them in order
@@ -22,7 +24,7 @@ if ( typeof(r.z.gen)=='character' ) {
     dplyr::summarise(TWh = sum(GWh)/1000) %>%
     filter(!Zone %in% ignore.zones)
     
-  zone.load = filter(r.z.load, Type == 'Zone', !name %in% ignore.zones)
+  zone.load = filter(z.load, !name %in% ignore.zones)
   zone.load$value = zone.load$value/1000
   
   # ***Not needed for these plots as the y axis scaling changes***

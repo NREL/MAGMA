@@ -22,7 +22,7 @@ if ( typeof(yr.gen)=='character' ) {
     group_by(Type) %>%
     dplyr::summarise(TWh=sum(GWh)/1000)
 
-  tot.load = sum(filter(r.z.load, Type=='Zone')$value)/1000
+  tot.load = sum(r.load$value)/1000
   
   # This automatically creates the y-axis scaling
   py=pretty(gen.sum$TWh, n=5, min.n = 5)

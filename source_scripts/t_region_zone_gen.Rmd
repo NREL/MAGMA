@@ -3,24 +3,35 @@
 
 if ( !exists('r.z.gen') ) {
   # Query region and zonal generation
-  r.z.gen = tryCatch( select(region_zone_gen(), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR') } )
+  r.z.gen = tryCatch( select(region_zone_gen(), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR: region_zone_gen function not returning correct results.') } )
 }
   
 if ( typeof(r.z.gen)=='character' ) { 
-print('ERROR: region_zone_gen function not returning correct results.')
+  knitr:kable(r.z.gen)
 } else {
 
-  r.z.gen.table = r.z.gen %>%
-    dcast(Zone+Region~Type, value.var = 'GWh', fun.aggregate = sum)
+  r.gen.table = r.z.gen %>%
+    dcast(Region~Type, value.var = 'GWh', fun.aggregate = sum)
   
-  zone.load = r.z.load %>%
-    filter(Type == 'Region') %>%
-    select(Region = name, Load = value)
-  zone.load$Load = zone.load$Load
-
-  r.z.gen.table = join(r.z.gen.table, zone.load, by = 'Region')
+  z.gen.table = r.z.gen %>%
+    dcast(Zone~Type, value.var = 'GWh', fun.aggregate = sum)
   
-  knitr::kable(r.z.gen.table, digits=2, format.args = list(big.mark = ','))
+  if (typeof(r.load)=='character' ) {
+    r.gen.table = 'ERROR: region_load function not returning correct results.'  
+  } else {
+    region.load = select(r.load, Region = name, Load = value)
+    r.gen.table = join(r.gen.table, region.load, by = 'Region')
+  }
+  
+  if (typeof(z.load)=='character' ) {
+    z.gen.table = 'ERROR: zone_load function not returning correct results.'
+  } else {
+    zone.load = select(z.load, Zone = name, Load = value)
+    z.gen.table = join(z.gen.table, zone.load, by = 'Zone')
+  }
 
+  knitr::kable(r.gen.table, digits=2, format.args = list(big.mark = ','))
+  knitr::kable(z.gen.table, digits=2, format.args = list(big.mark = ','))
+    
 }
 ```

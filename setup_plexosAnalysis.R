@@ -54,6 +54,7 @@ use.gen.type.mapping.csv = as.logical(na.exclude(inputs$Using.Gen.Type.Mapping.C
 if ( use.gen.type.mapping.csv ) {
   # Read mapping tile to map generator names to generation type
   gen.type.mapping = read.csv(as.character(na.exclude(inputs$CSV.Gen.Type.File.Location)), stringsAsFactors=FALSE)
+  gen.type.mapping = select(gen.type.mapping, name, Type)
 } else {
   # Assign generation type according to PLEXOS category
   category2type = data.frame(category = as.character(na.omit(inputs$PLEXOS.Gen.Category)), Type = as.character(na.omit(inputs$PLEXOS.Desired.Type)) )  
@@ -61,6 +62,7 @@ if ( use.gen.type.mapping.csv ) {
 
 # Read mapping file to map generator names to region and zone (can be same file as gen name to type).
 region.zone.mapping = read.csv(as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename)), stringsAsFactors=FALSE)
+region.zone.mapping = select(region.zone.mapping, name, Region, Zone)
 
 # Set plot color for each generation type
 Gen.col = data.frame(Type = na.omit(inputs$Gen.Type), Color = na.omit(inputs$Plot.Color) )

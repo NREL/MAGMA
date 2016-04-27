@@ -17,20 +17,21 @@ yr.data.reserve        = tryCatch( yr_reserve_query(db), error = function(cond) 
 yr.data.interface.flow = tryCatch( yr_interface_query(db), error = function(cond) { return('ERROR') } )
 
 if ( 5 %in% run.sections | 6 %in% run.sections | 7 %in% run.sections ) {
-  int.data.gen = tryCatch( int_gen_query(db), error = function(cond) { return('ERROR') } )
+  int.data.gen       = tryCatch( int_gen_query(db), error = function(cond) { return('ERROR') } )
   int.data.avail.cap = tryCatch( int_avail_cap_query(db), error = function(cond) { return('ERROR') } )
   int.data.region    = tryCatch( int_region_query(db), error = function(cond) { return('ERROR') } )
 }
 
 if ( 11 %in% run.sections | 12 %in% run.sections | 13 %in% run.sections ) {
-  int.data.interface     = tryCatch( int_interface_query(db), error = function(cond) { return('ERROR') } )
+  int.data.interface = tryCatch( int_interface_query(db), error = function(cond) { return('ERROR') } )
 }
 
 if ( 15 %in% run.sections ) {
-  int.data.reserve       = tryCatch( int_reserve_query(db), error = function(cond) { return('ERROR') } )
+  int.data.reserve = tryCatch( int_reserve_query(db), error = function(cond) { return('ERROR') } )
 }
 
-r.z.load               = tryCatch( region_zone_load(), error = function(cond) { return('ERROR') } )
+r.load = tryCatch( region_load(), error = function(cond) { return('ERROR') } )
+z.load = tryCatch( zone_load(), error = function(cond) { return('ERROR') } )
 
 # Set up default options for chunks, turn off error or warning messages.
 knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, include=FALSE,
@@ -87,6 +88,8 @@ if ( exists('r.z.gen.plot') ) {
 # If the regional query didn't work, return an error. Else create plots.
 if ( typeof(r.z.gen.plot)=='character' ) {
   print('ERROR: region_zone_gen function not returning correct results.')
+} else if ( typeof(r.load) == 'character' ) {
+  print('ERROR: region_load function not returning correct results.')
 } else {
 
     region.names = unique(r.z.gen.plot$Region) # List of all regions to make plots for
