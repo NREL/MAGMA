@@ -11,12 +11,14 @@ if ( typeof(yr.gen)=='character' ) {
   
 } else {
    
+  yr.gen$Type = factor(yr.gen$Type, levels = c(gen.order))
+  yr.gen = yr.gen[order(yr.gen$Type),]
+  row.names(yr.gen) = NULL
+  
   gen.tot = data.frame('Type'='Total', 'GWh'=sum(yr.gen$GWh) - yr.gen$GWh[yr.gen$Type=='Curtailment'])
   yr.gen = rbind(yr.gen, gen.tot)
   percent = data.frame('Percent'= yr.gen$GWh / yr.gen$GWh[yr.gen$Type=='Total'] * 100)
   yr.gen = cbind(yr.gen, percent)
-  
-  yr.gen = yr.gen[order(yr.gen$Type),]
   
   kable(yr.gen, format.args = list(big.mark = ','), digits=2)
 
