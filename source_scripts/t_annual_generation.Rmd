@@ -11,8 +11,8 @@ if ( typeof(yr.gen)=='character' ) {
   
 } else {
    
-  # # reorder the levels of Type to plot them in order
-  # yr.gen$Type = factor(yr.gen$Type, levels = c(gen.order))
+  # # reorder the levels of Type to list them in order
+  yr.gen$Type = factor(yr.gen$Type, levels = c(gen.order))
    
   gen.tot = data.frame('Type'='Total', 'GWh'=sum(yr.gen$GWh) - yr.gen$GWh[yr.gen$Type=='Curtailment'])
   yr.gen = rbind(yr.gen, gen.tot)
