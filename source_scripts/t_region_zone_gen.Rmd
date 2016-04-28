@@ -8,6 +8,8 @@ if ( !exists('r.z.gen') ) {
   
 if ( typeof(r.z.gen)=='character' ) { 
   knitr:kable(r.z.gen)
+  r.gen.table = ''
+  z.gen.table = ''
 } else {
 
   r.gen.table = r.z.gen %>%
@@ -29,9 +31,9 @@ if ( typeof(r.z.gen)=='character' ) {
     zone.load = select(z.load, Zone = name, Load = value)
     z.gen.table = join(z.gen.table, zone.load, by = 'Zone')
   }
-
-  knitr::kable(r.gen.table, digits=2, format.args = list(big.mark = ','))
-  knitr::kable(z.gen.table, digits=2, format.args = list(big.mark = ','))
-    
+  
 }
+
+kable(r.gen.table, digits=2, format.args = list(big.mark = ','))
+kable(z.gen.table, digits=2, format.args = list(big.mark = ','))
 ```

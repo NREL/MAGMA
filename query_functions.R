@@ -315,14 +315,12 @@ return(cost.table)
 region_stats = function() {
   r.data = yr.data.region
   r.stats = dcast(r.data, name~property, value.var = 'value', fun.aggregate = sum)
-  r.stats$Type = 'Region'
   return(r.stats)
 }
 
 zone_stats = function() {
   z.data = yr.data.zone
   z.stats = dcast(z.data, name~property, value.var = 'value', fun.aggregate = sum)
-  z.stats$Type = 'Zone'
   return(z.stats)
 }
 
