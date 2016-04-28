@@ -47,7 +47,7 @@ if ( typeof(r.z.gen)=='character' ) {
                    legend.title =    element_blank(),
            #                         text = element_text(family="Arial"),
                    axis.text =       element_text(size=text.plot/1.2), 
-                   # axis.text.x =   element_text(face=2), 
+                   axis.text.x =     element_text(angle=-45, hjust=0),
                    axis.title =      element_text(size=text.plot, face=2), 
                    axis.title.y =    element_text(vjust=1.2), 
                    panel.margin =    unit(1.5, "lines"))
