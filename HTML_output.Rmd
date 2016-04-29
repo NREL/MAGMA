@@ -128,8 +128,16 @@ if ( typeof(key.period.gen)=='character' ) {
 
   # Create data for each plot for the interesting periods
   for ( p in 1:n.periods ) {
-    period.name = period.names[p]
-    key.plots[[p]] = knit_expand(file = 'source_scripts/p_key_period_dispatch.Rmd', period.name = period.name)
+    for ( z in 1:length(zone.names)) ) {
+      for ( r in 1:length(region.names)) ) {
+        idx = 1
+        period.name = period.names[p]
+        region.name = region.names[r]
+        zone.name = zone.names[z]
+        key.plots[[idx]] = knit_expand(file = 'source_scripts/p_key_period_dispatch.Rmd', period.name = period.name, region.name = region.name, zone.name = zone.name)
+        idx = idx+1
+      }
+    }
   }
 
   # Reconstruct the plot data into a format that will be output into the HTML below

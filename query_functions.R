@@ -185,14 +185,16 @@ interval_gen = function() {
       filter(property == 'Generation') %>%
       select(name, time, value, category) %>%
       join(gen.type.mapping, by = 'name') %>%
-      dcast(time ~ Type, value.var = 'value', fun.aggregate = sum)
+      join(region.zone.mapping, by = 'name') %>%
+      dcast(time+Region+Zone ~ Type, value.var = 'value', fun.aggregate = sum)
     
   } else {
     int.gen = int.data.gen %>%
       filter(property == 'Generation') %>%
       select(name, time, value, category) %>%
       join(category2type, by = 'category') %>%
-      dcast(time ~ Type, value.var = 'value', fun.aggregate = sum)
+      join(region.zone.mapping, by = 'name') %>%
+      dcast(time+Region+Zone ~ Type, value.var = 'value', fun.aggregate = sum)
   }
   
   re.gen = subset(int.gen, select = re.types)
@@ -202,7 +204,8 @@ interval_gen = function() {
       filter(property == 'Available Capacity') %>%
       select(name, time, value, category) %>%
       join(gen.type.mapping, by = 'name') %>%
-      dcast(time ~ Type, sum) %>%
+      join(region.zone.mapping, by = 'name') %>%
+      dcast(time+Region+Zone ~ Type, sum) %>%
       subset(select = re.types)
     
   } else {
@@ -210,20 +213,22 @@ interval_gen = function() {
       filter(property == 'Available Capacity') %>%
       select(name, time, value, category) %>%
       join(category2type, by = 'category') %>%
-      dcast(time ~ Type, sum) %>%
+      join(region.zone.mapping, by = 'name') %>%
+      dcast(time+Region+Zone ~ Type, sum) %>%
       subset(select = re.types)
   }
 
   curtailed = int.avail - re.gen
-  curtailed.total = data.frame(rowSums(curtailed))
-  colnames(curtailed.total) = 'Curtailment'
-
-  load = dcast(int.data.region, time~property, value.var = 'value', fun.aggregate = sum)
-
+  curtailed = data.frame(rowSums(curtailed))
+  colnames(curtailed) = 'Curtailment'
+  
+  load = dcast(int.data.region, time+name~property, value.var = 'value', fun.aggregate = sum)
+  colnames(load)[colnames(load)=='name'] = 'Region'
+  
   int.gen = int.gen %>%
-    cbind(curtailed.total) %>%
-    join(load, by = 'time') %>%
-    melt(id.vars = 'time', variable.name = 'Type', value.name = 'value')
+    cbind(curtailed) %>%
+    join(load, by = c('time', 'Region')) 
+    # melt(id.vars = c('time', 'Region', 'Zone'), variable.name = 'Type', value.name = 'value') # Not necessary to melt here. 
 
   return(int.gen)
 }

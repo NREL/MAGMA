@@ -64,6 +64,9 @@ if ( use.gen.type.mapping.csv ) {
 region.zone.mapping = read.csv(as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename)), stringsAsFactors=FALSE)
 region.zone.mapping = select(region.zone.mapping, name, Region, Zone)
 
+region.names = unique(region.zone.mapping$Region)
+zone.names = unique(region.zone.mapping$Zone)
+
 # Set plot color for each generation type
 Gen.col = data.frame(Type = na.omit(inputs$Gen.Type), Color = na.omit(inputs$Plot.Color) )
 gen.color<-as.character(Gen.col$Color)

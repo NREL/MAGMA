@@ -6,11 +6,13 @@ if ( typeof(int.gen)=='character' ) {
   print('ERROR: interval_gen function not returning correct results.')
 } else {
   
-  # Rearrange factor levels for plotting.
-  int.gen$Type = factor(int.gen$Type, levels = c(gen.order, 'Load')) 
+  # Previous version of script used this up here. No longer needed.
+  # # Rearrange factor levels for plotting.
+  # int.gen$Type = factor(int.gen$Type, levels = c(gen.order, 'Load')) 
   
   for ( i in 1:n.periods ) {
-    key.period.time = seq(start.end.times[i,'start'], start.end.times[i,'end'], by = (int.gen[2,'time']-int.gen[1,'time']))
+    key.period.time = seq(start.end.times[i,'start'], start.end.times[i,'end'], 
+                          by = filter(int.gen, Region == int.gen$Region[1])[2,'time']-filter(int.gen, Region == int.gen$Region[1])[1,'time'])
     key.period.gen = filter(int.gen, time %in% key.period.time)
     key.period.gen$Period = period.names[i]
     
@@ -21,31 +23,55 @@ if ( typeof(int.gen)=='character' ) {
     }
   }
 
-  # Sum generation by type, and rearrange data for plotting. 
+  # Sum generation by type, and rearrange data for plotting.
   key.period.gen = int.gen.key.periods %>%
-    dcast(time+Period~Type, value.var = 'value', fun.aggregate = sum) %>%
-    melt(id.vars = c('time', 'Period'), variable.name = 'Type', value.name = 'value')
+    # Previous version had already melted data frame which had to be casted before melting. No longer needed.
+    # dcast(time+Period+Region+Zone~Type, value.var = 'value', fun.aggregate = sum) %>% 
+    melt(id.vars = c('time', 'Period', 'Region', 'Zone'), variable.name = 'Type', value.name = 'value')
+  
+  # Rearrange factor levels for plotting.
+  key.period.gen$Type = factor(key.period.gen$Type, levels = c(gen.order, 'Load')) 
   
   gen.type = subset(key.period.gen, Type != 'Load')
   gen.type$value[gen.type$value<0]=0
   gen.type$Period = ordered(gen.type$Period, levels = period.names)
   
   gen.load = subset(key.period.gen, Type %in% 'Load')
-  
-  # this is just for scaling the y-axis (either by load or generation, whichever is bigger)
-  stack = gen.type %>% 
-    group_by(time) %>%
+
+  # ###############################################################################
+  # Region Data
+  # ###############################################################################  
+    
+  gen.type.region = gen.type %>%
+    group_by(time, Region, Type, Period) %>%
     summarise(value = sum(value))
-  stack$Type = "ALL"
   
-  if (max(gen.load$value)>max(stack$value)){
-    stack = gen.load %>%
-      group_by(time) %>%
-      summarise(value=sum(value))
-  }
+  gen.load.region = gen.load %>%
+    group_by(time, Region, Type, Period) %>%
+    summarise(value = sum(value))    
   
-  # This automatically creates the y-axis scaling
-  py  =pretty(stack$value/1000, n = 4)
-  seq.py = seq(0, py[length(py)], 2*(py[2]-py[1])) # get whole breaks sequence
+  # ###############################################################################
+  # Zone Data
+  # ###############################################################################   
   
+  gen.type.zone = gen.type %>%
+    group_by(time, Zone, Type, Period) %>%
+    summarise(value = sum(value))
+  
+  gen.load.zone = gen.load %>%
+    group_by(time, Zone, Type, Period) %>%
+    summarise(value = sum(value))    
+  
+  # ###############################################################################
+  # Total database Data
+  # ###############################################################################   
+  
+  gen.type.total = gen.type %>%
+    group_by(time, Type, Period) %>%
+    summarise(value = sum(value))    
+  
+  gen.load.total = gen.load %>%
+    group_by(time, Type, Period) %>%
+    summarise(value = sum(value))    
+
 }
