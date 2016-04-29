@@ -128,8 +128,8 @@ if ( typeof(key.period.gen)=='character' ) {
 
   # Create data for each plot for the interesting periods
   for ( p in 1:n.periods ) {
-    for ( z in 1:length(zone.names)) ) {
-      for ( r in 1:length(region.names)) ) {
+    for ( z in 1:length(zone.names) ) {
+      for ( r in 1:length(region.names) ) {
         idx = 1
         period.name = period.names[p]
         region.name = region.names[r]
