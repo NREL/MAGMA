@@ -65,7 +65,7 @@ This package creates figures and an HTML file with all of those figures for plex
 18. Fig.Path
 	+ Location to save each figure.
 19. Cache.Path
-	+ Location to save caches if any chunks have cahce=TRUE. This is not required but if you are running the script several times for the same solution file, certain chunks take a long time to run and this can be beneficial. Described below.
+	+ Location to save caches if any chunks have cache=TRUE. This is not required but if you are running the script several times for the same solution file, certain chunks take a long time to run and this can be beneficial. Described below.
 20. Ignore.Zones
  	+ Zones to exclude from plots
 21. Ignore.Regions
