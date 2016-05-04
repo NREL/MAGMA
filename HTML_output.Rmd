@@ -112,10 +112,10 @@ if ( typeof(r.z.gen.plot)=='character' ) {
 `r individual.region.stacks`
 
 ***
-## 5. Specified Period Dispatch Stacks
+## 5-7. Specified Period Dispatch Stacks
 ``` {r key-period-dispatch, cache=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (5 %in% run.sections){  
+if (5 %in% run.sections | 6 %in% run.sections | 7 %in% run.sections){  
 
   # Call interval_gen function and proces data for plots
   source('source_scripts/d_key_period_dispatch.R')
@@ -133,19 +133,26 @@ if ( typeof(key.period.gen)=='character' ) {
   # Create data for each plot for the interesting periods
   for ( p in 1:n.periods ) {
     period.name = period.names[p]
-    key.plots.total[[p]] = knit_expand(file = 'source_scripts/p_key_period_dispatch_total.Rmd', period.name = period.name)
     
-    for ( z in 1:length(zone.names) ) {
-      zone.name = zone.names[z]
-      key.plots.zone[[z.idx]] = knit_expand(file = 'source_scripts/p_key_period_dispatch_zone.Rmd', period.name = period.name, zone.name = zone.name) 
-      z.idx = z.idx + 1
-    }
-  
-    for ( r in 1:length(region.names) ) {
-      region.name = region.names[r]
-      key.plots.region[[r.idx]] = knit_expand(file = 'source_scripts/p_key_period_dispatch_region.Rmd', period.name = period.name, region.name = region.name)
-      r.idx = r.idx + 1
-    }
+    if (5 %in% run.sections) {
+      key.plots.total[[p]] = knit_expand(file = 'source_scripts/p_key_period_dispatch_total.Rmd', period.name = period.name)
+    } else {key.period.dispatch.total  = 'Section not run according to input file.'}
+    
+    if (6 %in% run.sections) {
+      for ( z in 1:length(zone.names) ) {
+        zone.name = zone.names[z]
+        key.plots.zone[[z.idx]] = knit_expand(file = 'source_scripts/p_key_period_dispatch_zone.Rmd', period.name = period.name, zone.name = zone.name) 
+        z.idx = z.idx + 1
+      } 
+    } else {key.period.dispatch.zone   = 'Section not run according to input file.'}
+      
+    if (7 %in% run.sections) {
+      for ( r in 1:length(region.names) ) {
+        region.name = region.names[r]
+        key.plots.region[[r.idx]] = knit_expand(file = 'source_scripts/p_key_period_dispatch_region.Rmd', period.name = period.name, region.name = region.name)
+        r.idx = r.idx + 1
+      }
+    } else {key.period.dispatch.region = 'Section not run according to input file.'}
   }
 
   # Reconstruct the plot data into a format that will be output into the HTML below
@@ -168,12 +175,12 @@ if ( typeof(key.period.gen)=='character' ) {
 `r key.period.dispatch.region`
 
 ***
-## Curtailment
+## 8-9. Curtailment
 ***
-### 6. Average Daily Curtailment
+### 8. Average Daily Curtailment
 ```{r yearly-curtailment}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (6 %in% run.sections) {
+if (8 %in% run.sections) {
   avg.year.curt = knit_child('source_scripts/p_yearly_curtailment.Rmd')
 } else { avg.year.curt = 'Section not run according to input file.' }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -181,10 +188,10 @@ if (6 %in% run.sections) {
 `r avg.year.curt`
 
 ***
-### 7. Average Interval Curtailment
+### 9. Average Interval Curtailment
 ```{r daily-curtailment}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (7 %in% run.sections){
+if (9 %in% run.sections){
   avg.day.curt = knit_child('source_scripts/p_daily_curtailment.Rmd')
 } else { avg.day.curt = 'Section not run according to input file.' }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -192,10 +199,10 @@ if (7 %in% run.sections){
 `r avg.day.curt`
 
 ***
-## 8. Total Gen
+## 10. Total Gen
 ```{r annual-generation-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (8 %in% run.sections){
+if (10 %in% run.sections){
   annual.gen.table = knit_child('source_scripts/t_annual_generation.Rmd')
 } else { annual.gen.table = 'Section not run according to input file.' }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -203,10 +210,10 @@ if (8 %in% run.sections){
 `r annual.gen.table`
 
 ***
-## 9. Total Costs
+## 11. Total Costs
 ```{r annual-cost-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (9 %in% run.sections) {
+if (11 %in% run.sections) {
   annual.cost.table = knit_child('source_scripts/t_annual_cost.Rmd')
 } else { annual.cost.table = 'Section not run according to input file.' }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -214,10 +221,10 @@ if (9 %in% run.sections) {
 `r annual.cost.table`
 
 ***
-## 10. Region and Zone Info (GWh)
+## 12. Region and Zone Info (GWh)
 ``` {r region-zone-flow-tables}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (10 %in% run.sections) {
+if (12 %in% run.sections) {
   region.zone.flow.tables = knit_child('source_scripts/t_region_zone_flow.Rmd')
 } else { region.zone.flow.tables = 'Section not run according to input file.' }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -225,10 +232,10 @@ if (10 %in% run.sections) {
 `r region.zone.flow.tables`
 
 ***
-## 11. Interface Flow Table
+## 13. Interface Flow Table
 ```{r interface-flow-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (11 %in% run.sections) {
+if (13 %in% run.sections) {
   interface.flow.table = knit_child('source_scripts/t_interface_flow.Rmd')
 } else { interface.flow.table = 'Section not run according to input file.' }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -236,10 +243,10 @@ if (11 %in% run.sections) {
 `r interface.flow.table`
 
 ***
-## 12. Interface Flow Plots
+## 14. Interface Flow Plots
 ```{r interface-flow-plots}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (12 %in% run.sections) {
+if (14 %in% run.sections) {
   interface.flow.plots = knit_child('source_scripts/p_interface_flow.Rmd')
 } else { interface.flow.plots = 'Section not run according to input file.' }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -248,9 +255,9 @@ if (12 %in% run.sections) {
 
 
 ***
-## 13. Specified Period Interface Flow Plot
+## 15. Specified Period Interface Flow Plot
 ```{r zonal-flow-plots}
-if (13 %in% run.sections) {
+if (15 %in% run.sections) {
 ## 13.
   # interchange.flows = tryCatch( interchange.flow(db), error=function(cond) {return('ERROR: Interface flows not found in query. Check initial setup file and PLEXOS outputs.')})
 
@@ -281,12 +288,12 @@ if (13 %in% run.sections) {
 ```
 
 ***
-## Reserves
+## 16-17. Reserves
 ***
-### 14. Annual Reserve Provisions and Shortage
+### 16. Annual Reserve Provisions and Shortage
 ```{r annual-reserves-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (14 %in% run.sections) {
+if (16 %in% run.sections) {
   annual.reserves.table = knit_child('source_scripts/t_annual_reserves.Rmd')
 } else { annual.reserves.table = 'Section not run according to input file.' }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -294,10 +301,10 @@ if (14 %in% run.sections) {
 `r annual.reserves.table`
 
 ***
-### 15. Average Interval and Daily Reserve Provisions
+### 17. Average Interval and Daily Reserve Provisions
 ```{r reserves-plots}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (15 %in% run.sections) {
+if (17 %in% run.sections) {
   reserves.plots = knit_child('source_scripts/p_reserves.Rmd')
 } else { reserves.plots = 'Section not run according to input file.' }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -305,10 +312,10 @@ if (15 %in% run.sections) {
 `r reserves.plots`
 
 ***
-## 16. Region and Zone Generation (GWh)
+## 18. Region and Zone Generation (GWh)
 ```{r region-zone-gen-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (16 %in% run.sections) {
+if (18 %in% run.sections) {
   region.zone.gen.table = knit_child('source_scripts/t_region_zone_gen.Rmd')
 } else { region.zone.gen.table = 'Section not run according to input file.' }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -316,10 +323,10 @@ if (16 %in% run.sections) {
 `r region.zone.gen.table`
 
 ***
-## 17. Capacity Factors
+## 19. Capacity Factors
 ```{r capacity-factor-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (17 %in% run.sections) {
+if (19 %in% run.sections) {
   capacity.factor.table = knit_child('source_scripts/t_capacity_factor.Rmd')
 } else { capacity.factor.table = 'Section not run according to input file.' }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
