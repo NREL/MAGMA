@@ -114,7 +114,7 @@ ignore.regions = as.character(na.omit(inputs$Ignore.Regions))
 interfaces = as.character(na.omit(inputs$Interfaces.for.Flows))
 
 run.rplx=F
-if(length(list.files(pattern = "\\.zip$",path=db.loc))!=0) {
+if(length(list.files(pattern = "\\.zip$",path=db.loc))!=0 ) {
   if(length(list.files(pattern = "\\.db$",path=db.loc))==0) {
     message(paste0('The .db file is absent from ',db.loc))
     run.rplx=T
@@ -129,7 +129,9 @@ if(length(list.files(pattern = "\\.zip$",path=db.loc))!=0) {
       process_folder(db.loc)
     } else {message('You need to run rPLEXOS to process your solution or point to the correct solution folder.')}
   } 
-} else {message('No zip file... are you in the right directory?')}
+} else if (length(list.files(pattern = '\\.db$', path=db.loc))!=0 ) {
+  message(paste0('Found .db solution file: ', list.files(pattern='\\.db$',path=db.loc)))
+} else {message('No .zip or .db file... are you in the right directory?')}
 # -----------------------------------------------------------------------
 # Open the database file ( must already have created this using rplexos ) 
 db = plexos_open(db.loc)
