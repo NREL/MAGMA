@@ -156,9 +156,9 @@ if ( typeof(key.period.gen)=='character' ) {
   }
 
   # Reconstruct the plot data into a format that will be output into the HTML below
-  key.period.dispatch.total = knit_child(text = unlist(key.plots.total))
-  key.period.dispatch.zone = knit_child(text = unlist(key.plots.zone))
-  key.period.dispatch.region = knit_child(text = unlist(key.plots.region))
+  if (5 %in% run.sections) { key.period.dispatch.total = knit_child(text = unlist(key.plots.total)) }
+  if (6 %in% run.sections) { key.period.dispatch.zone = knit_child(text = unlist(key.plots.zone)) }
+  if (7 %in% run.sections) { key.period.dispatch.region = knit_child(text = unlist(key.plots.region)) }
 }
 } else { key.period.dispatch.total  = 'Section not run according to input file.'
          key.period.dispatch.zone   = 'Section not run according to input file.' 
