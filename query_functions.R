@@ -19,10 +19,10 @@ yr_region_query = function(database) {
   return(yr.data.region)
 }
   
-yr_zone_query = function(database) {
-  yr.data.zone = select(query_year(database, 'Zone', c('Load', 'Imports', 'Exports', 'Unserved Energy')), property, name, value)
-  return(yr.data.zone)
-}
+# yr_zone_query = function(database) {
+#   yr.data.zone = select(query_year(database, 'Zone', c('Load', 'Imports', 'Exports', 'Unserved Energy')), property, name, value)
+#   return(yr.data.zone)
+# }
   
 yr_reserve_query = function(database) {
   yr.data.reserve = select(query_year(database, 'Reserve', c('Provision', 'Shortage')), property, name, value)
@@ -51,10 +51,10 @@ int_region_query = function(database) {
   return(int.data.region)
 }
 
-int_zone_query = function(database) {
-  int.data.zone = select(query_interval(database, 'Zone', 'Load'), property, name, time, value)
-  return(int.data.zone)
-}
+# int_zone_query = function(database) {
+#   int.data.zone = select(query_interval(database, 'Zone', 'Load'), property, name, time, value)
+#   return(int.data.zone)
+# }
 
 int_interface_query = function(database) {
   int.data.interface = select(query_interval(database, 'Interface', 'Flow'), property, name, time, value)
@@ -314,22 +314,6 @@ return(cost.table)
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Region and Zone Stats
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-region_stats = function() {
-  r.data = yr.data.region
-  r.stats = dcast(r.data, name~property, value.var = 'value', fun.aggregate = sum)
-  return(r.stats)
-}
-
-zone_stats = function() {
-  z.data = yr.data.zone
-  z.stats = dcast(z.data, name~property, value.var = 'value', fun.aggregate = sum)
-  return(z.stats)
-}
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Annual Reserve Provisions
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -381,6 +365,25 @@ interface_flows = function() {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Region and Zone Stats
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+region_stats = function() {
+  r.data = yr.data.region
+  r.stats = dcast(r.data, name~property, value.var = 'value', fun.aggregate = sum)
+  return(r.stats)
+}
+
+zone_stats = function() {
+  z.data = yr.data.region
+  z.stats = z.data %>%
+    join(select(region.zone.mapping, name=Region, Zone), by='name', match='first') %>%
+    dcast(Zone~property, value.var = 'value', fun.aggregate = sum)
+  colnames(z.stats)[colnames(z.stats)=='Zone']='name'
+  return(z.stats)
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Region and Zone Load
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -393,10 +396,13 @@ region_load = function() {
 }
 
 zone_load = function() {
-  z.data = yr.data.zone
+  z.data = yr.data.region
   z.load = z.data %>%
     filter(property == 'Load') %>%
-    select(name, value)
+    join(select(region.zone.mapping, name=Region, Zone), by='name', match='first') %>%
+    select(name=Zone, value) %>%
+    group_by(name) %>%
+    summarise(value = sum(value))
   return(z.load)
 }
 

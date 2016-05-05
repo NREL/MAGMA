@@ -7,7 +7,7 @@ if ( !exists('r.z.gen') ) {
 }
   
 if ( typeof(r.z.gen)=='character' ) { 
-  knitr:kable(r.z.gen)
+  knitr::kable(r.z.gen)
   r.gen.table = ''
   z.gen.table = ''
 } else {
