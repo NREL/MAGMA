@@ -165,11 +165,14 @@ if ( typeof(key.period.gen)=='character' ) {
          key.period.dispatch.region = 'Section not run according to input file.' }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
+
 ### Total
 `r key.period.dispatch.total`
+
 ***
 ### Zones
 `r key.period.dispatch.zone`
+
 ***
 ### Regions
 `r key.period.dispatch.region`
