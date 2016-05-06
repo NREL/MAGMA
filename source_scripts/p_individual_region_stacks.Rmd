@@ -26,7 +26,9 @@ if (region.load$value>plot.data.sum) {
 py=pretty(plot.data.sum$TWh, n = 4)
 seq.py=seq(0, py[length(py)], (py[2]-py[1]))
 
-p = ggplot() +
+if ( sum(plot.data$TWh)>0 ) { 
+
+  p = ggplot() +
      geom_bar(data = plot.data, aes(x = r.name, y = TWh, fill=Type, order=as.numeric(Type)), stat="identity", position="stack" ) +
      geom_errorbar(aes(x=name, y=value, ymin=value, ymax=value, color='load'), data=region.load, linetype='longdash', size=0.45)+
      scale_fill_manual(values = gen.color, guide = guide_legend(reverse = TRUE))+
@@ -45,5 +47,30 @@ p = ggplot() +
                axis.title.y =    element_text(vjust=1.2), 
                panel.margin =    unit(1.5, "lines"),
                aspect.ratio =    2.5 )
-print(p)
+  print(p)
+    
+} else {
+  
+    p = ggplot() +
+     # geom_bar(data = plot.data, aes(x = r.name, y = TWh, fill=Type, order=as.numeric(Type)), stat="identity", position="stack" ) +
+     geom_errorbar(aes(x=name, y=value, ymin=value, ymax=value, color='load'), data=region.load, linetype='longdash', size=0.45)+
+     scale_fill_manual(values = gen.color, guide = guide_legend(reverse = TRUE))+
+     scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+   
+     labs(y="Generation (TWh)", x=NULL)+
+     scale_y_continuous(breaks=seq.py, limits=c(0, max(py)), expand=c(0,0), label=comma)+
+     guides(color = guide_legend(order=1), fill = guide_legend(order=2, reverse=TRUE))+
+     theme(    legend.key =      element_rect(color="grey80", size = 0.8), 
+               legend.key.size = grid::unit(1.0, "lines"),
+               legend.text =     element_text(size=text.plot), 
+               legend.title =    element_blank(),
+       #                         text = element_text(family="Arial"),
+               axis.text =       element_text(size=text.plot/1.2), 
+               # axis.text.x =   element_text(face=2), 
+               axis.title =      element_text(size=text.plot, face=2), 
+               axis.title.y =    element_text(vjust=1.2), 
+               panel.margin =    unit(1.5, "lines"),
+               aspect.ratio =    2.5 )
+  print(p)
+  
+}
 ```
