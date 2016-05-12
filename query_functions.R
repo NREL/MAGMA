@@ -19,10 +19,10 @@ yr_region_query = function(database) {
   return(yr.data.region)
 }
   
-# yr_zone_query = function(database) {
-#   yr.data.zone = select(query_year(database, 'Zone', c('Load', 'Imports', 'Exports', 'Unserved Energy')), property, name, value)
-#   return(yr.data.zone)
-# }
+yr_zone_query = function(database) {
+  yr.data.zone = select(query_year(database, 'Zone', c('Load', 'Imports', 'Exports', 'Unserved Energy')), property, name, value)
+  return(yr.data.zone)
+}
   
 yr_reserve_query = function(database) {
   yr.data.reserve = select(query_year(database, 'Reserve', c('Provision', 'Shortage')), property, name, value)
@@ -51,10 +51,10 @@ int_region_query = function(database) {
   return(int.data.region)
 }
 
-# int_zone_query = function(database) {
-#   int.data.zone = select(query_interval(database, 'Zone', 'Load'), property, name, time, value)
-#   return(int.data.zone)
-# }
+int_zone_query = function(database) {
+  int.data.zone = select(query_interval(database, 'Zone', 'Load'), property, name, time, value)
+  return(int.data.zone)
+}
 
 int_interface_query = function(database) {
   int.data.interface = select(query_interval(database, 'Interface', 'Flow'), property, name, time, value)
@@ -222,14 +222,22 @@ interval_gen = function() {
   curtailed = data.frame(rowSums(curtailed))
   colnames(curtailed) = 'Curtailment'
   
-  load = dcast(int.data.region, time+name~property, value.var = 'value', fun.aggregate = sum)
-  colnames(load)[colnames(load)=='name'] = 'Region'
-  
-  int.gen = int.gen %>%
-    cbind(curtailed) %>%
-    join(load, by = c('time', 'Region')) 
+  if (length(region.names)>=length(zone.names)){
+    load = dcast(int.data.region, time+name~property, value.var = 'value', fun.aggregate = sum)
+    colnames(load)[colnames(load)=='name'] = 'Region'
+    
+    int.gen = int.gen %>%
+      cbind(curtailed) %>%
+      join(load, by = c('time', 'Region')) 
     # melt(id.vars = c('time', 'Region', 'Zone'), variable.name = 'Type', value.name = 'value') # Not necessary to melt here. 
-
+  } else {
+    load = dcast(int.data.zone, time+name~property, value.var = 'value', fun.aggregate = sum)
+    colnames(load)[colnames(load)=='name'] = 'Zone'
+    
+    int.gen = int.gen %>%
+      cbind(curtailed) %>%
+      join(load, by = c('time', 'Zone')) 
+  }
   return(int.gen)
 }
 
@@ -375,10 +383,10 @@ region_stats = function() {
 }
 
 zone_stats = function() {
-  z.data = yr.data.region
+  z.data = yr.data.zone
   z.stats = z.data %>%
-    join(select(region.zone.mapping, name=Region, Zone), by='name', match='first') %>%
-    dcast(Zone~property, value.var = 'value', fun.aggregate = sum)
+    join(select(region.zone.mapping, name=Zone, Region), by='name', match='first') %>%
+    dcast(name~property, value.var = 'value', fun.aggregate = sum)
   colnames(z.stats)[colnames(z.stats)=='Zone']='name'
   return(z.stats)
 }

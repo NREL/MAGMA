@@ -12,7 +12,7 @@ if ( typeof(int.gen)=='character' ) {
   
   for ( i in 1:n.periods ) {
     key.period.time = seq(start.end.times[i,'start'], start.end.times[i,'end'], 
-                          by = filter(int.gen, Region == int.gen$Region[1])[2,'time']-filter(int.gen, Region == int.gen$Region[1])[1,'time'])
+                          by = unique(filter(int.gen, Region == int.gen$Region[1])$time)[2]-unique(filter(int.gen, Region == int.gen$Region[1])$time)[1])
     key.period.gen = filter(int.gen, time %in% key.period.time)
     key.period.gen$Period = period.names[i]
     

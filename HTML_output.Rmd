@@ -12,7 +12,7 @@ output:
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 yr.data.generator      = tryCatch( yr_gen_query(db), error = function(cond) { return('ERROR') } )
 yr.data.region         = tryCatch( yr_region_query(db), error = function(cond) { return('ERROR') } )
-# yr.data.zone           = tryCatch( yr_zone_query(db), error = function(cond) { return('ERROR') } )
+yr.data.zone           = tryCatch( yr_zone_query(db), error = function(cond) { return('ERROR') } )
 yr.data.reserve        = tryCatch( yr_reserve_query(db), error = function(cond) { return('ERROR') } )
 yr.data.interface.flow = tryCatch( yr_interface_query(db), error = function(cond) { return('ERROR') } )
 
@@ -20,6 +20,7 @@ if ( sum(c(5,6,7,8,9) %in% run.sections)>0 ) {
   int.data.gen       = tryCatch( int_gen_query(db), error = function(cond) { return('ERROR') } )
   int.data.avail.cap = tryCatch( int_avail_cap_query(db), error = function(cond) { return('ERROR') } )
   int.data.region    = tryCatch( int_region_query(db), error = function(cond) { return('ERROR') } )
+  int.data.zone    = tryCatch( int_zone_query(db), error = function(cond) { return('ERROR') } )
 }
 
 if ( sum(c(13,14,15) %in% run.sections)>0 ) {
