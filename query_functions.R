@@ -180,12 +180,26 @@ region_zone_gen = function() {
 
 interval_gen = function() {
   
+  if (length(region.names)>=length(zone.names)){
+    load = dcast(int.data.region, time+name~property, value.var = 'value', fun.aggregate = sum)
+    colnames(load)[colnames(load)=='name'] = 'Region'
+    spatialcol="Region"
+    
+  } else {
+    load = dcast(int.data.zone, time+name~property, value.var = 'value', fun.aggregate = sum)
+    colnames(load)[colnames(load)=='name'] = "Zone"
+    spatialcol="Zone"
+    
+  }
+  
+  colnames(load)[colnames(load)=='property'] = 'Type'
+  
   if ( use.gen.type.mapping.csv ) {
     int.gen = int.data.gen %>%
       filter(property == 'Generation') %>%
       select(name, time, value, category) %>%
       join(gen.type.mapping, by = 'name') %>%
-      join(region.zone.mapping, by = 'name') %>%
+      join(region.zone.mapping, by = 'name',type='right') %>%
       dcast(time+Region+Zone ~ Type, value.var = 'value', fun.aggregate = sum)
     
   } else {
@@ -193,8 +207,12 @@ interval_gen = function() {
       filter(property == 'Generation') %>%
       select(name, time, value, category) %>%
       join(category2type, by = 'category') %>%
+      select(name, time, value, Type) %>%
       join(region.zone.mapping, by = 'name') %>%
-      dcast(time+Region+Zone ~ Type, value.var = 'value', fun.aggregate = sum)
+      dcast(time+Region+Zone ~ Type, value.var = 'value', fun.aggregate = sum) %>%
+      subset(select=c("time", spatialcol, unique(category2type$Type))) %>%  
+      rbind(load) %>% 
+      join(unique(region.zone.mapping[,c("Zone","Region")]),by=spatialcol)
   }
   
   re.gen = subset(int.gen, select = re.types)
@@ -231,12 +249,13 @@ interval_gen = function() {
       join(load, by = c('time', 'Region')) 
     # melt(id.vars = c('time', 'Region', 'Zone'), variable.name = 'Type', value.name = 'value') # Not necessary to melt here. 
   } else {
-    load = dcast(int.data.zone, time+name~property, value.var = 'value', fun.aggregate = sum)
-    colnames(load)[colnames(load)=='name'] = 'Zone'
+    load = int.data.zone
+    colnames(load)[colnames(load)=='property'] = 'Type'
+    colnames(load)[colnames(load)=='name'] = "Zone"
     
     int.gen = int.gen %>%
       cbind(curtailed) %>%
-      join(load, by = c('time', 'Zone')) 
+      join(load, by = c('time', 'Zone'),type="right") 
   }
   return(int.gen)
 }
@@ -383,11 +402,20 @@ region_stats = function() {
 }
 
 zone_stats = function() {
-  z.data = yr.data.zone
-  z.stats = z.data %>%
-    join(select(region.zone.mapping, name=Zone, Region), by='name', match='first') %>%
-    dcast(name~property, value.var = 'value', fun.aggregate = sum)
-  colnames(z.stats)[colnames(z.stats)=='Zone']='name'
+  if (yr.data.zone=="ERROR"){
+    z.data = yr.data.region
+    z.stats = z.data %>%
+      join(select(region.zone.mapping, name=Region, Zone), by='name', match='first') %>%
+      dcast(name~property, value.var = 'value', fun.aggregate = sum)
+    colnames(z.stats)[colnames(z.stats)=='Region']='name'
+  } else {
+    z.data = yr.data.zone
+    z.stats = z.data %>%
+      join(select(region.zone.mapping, name=Zone, Region), by='name', match='first') %>%
+      dcast(name~property, value.var = 'value', fun.aggregate = sum)
+    colnames(z.stats)[colnames(z.stats)=='Zone']='name'
+  }
+  
   return(z.stats)
 }
 
