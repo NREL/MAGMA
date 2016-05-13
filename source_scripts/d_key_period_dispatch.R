@@ -44,11 +44,11 @@ if ( typeof(int.gen)=='character' ) {
     
   gen.type.region = gen.type %>%
     group_by(time, Region, Type, Period) %>%
-    summarise(value = sum(value))
+    summarise(value = sum(value,na.rm=t))
   
   gen.load.region = gen.load %>%
     group_by(time, Region, Type, Period) %>%
-    summarise(value = sum(value))    
+    summarise(value = sum(value,na.rm=T))    
   
   # ###############################################################################
   # Zone Data
@@ -56,11 +56,11 @@ if ( typeof(int.gen)=='character' ) {
   
   gen.type.zone = gen.type %>%
     group_by(time, Zone, Type, Period) %>%
-    summarise(value = sum(value))
+    summarise(value = sum(value,na.rm=T))
   
   gen.load.zone = gen.load %>%
     group_by(time, Zone, Type, Period) %>%
-    summarise(value = sum(value))    
+    summarise(value = sum(value,na.rm=T))    
   
   # ###############################################################################
   # Total database Data
@@ -68,10 +68,10 @@ if ( typeof(int.gen)=='character' ) {
   
   gen.type.total = gen.type %>%
     group_by(time, Type, Period) %>%
-    summarise(value = sum(value))    
+    summarise(value = sum(value,na.rm=T))    
   
   gen.load.total = gen.load %>%
     group_by(time, Type, Period) %>%
-    summarise(value = sum(value))    
+    summarise(value = sum(value,na.rm=T))    
 
 }

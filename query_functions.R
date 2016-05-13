@@ -183,12 +183,12 @@ interval_gen = function() {
   if (length(region.names)>=length(zone.names)){
     load = dcast(int.data.region, time+name~property, value.var = 'value', fun.aggregate = sum)
     colnames(load)[colnames(load)=='name'] = 'Region'
-    spatialcol="Region"
+    spatialcol = "Region"
     
   } else {
     load = dcast(int.data.zone, time+name~property, value.var = 'value', fun.aggregate = sum)
     colnames(load)[colnames(load)=='name'] = "Zone"
-    spatialcol="Zone"
+    spatialcol = "Zone"
     
   }
   
@@ -199,9 +199,9 @@ interval_gen = function() {
       filter(property == 'Generation') %>%
       select(name, time, value, category) %>%
       join(gen.type.mapping, by = 'name') %>%
-      join(region.zone.mapping, by = 'name',type='right') %>%
-      dcast(time+Region+Zone ~ Type, value.var = 'value', fun.aggregate = sum)
-    
+      join(region.zone.mapping, by = 'name') %>%
+      dcast(time+Region+Zone ~ Type, value.var = 'value', fun.aggregate = sum) %>%
+      join(load,by=c('time',spatialcol),type='full')
   } else {
     int.gen = int.data.gen %>%
       filter(property == 'Generation') %>%
@@ -210,12 +210,11 @@ interval_gen = function() {
       select(name, time, value, Type) %>%
       join(region.zone.mapping, by = 'name') %>%
       dcast(time+Region+Zone ~ Type, value.var = 'value', fun.aggregate = sum) %>%
-      subset(select=c("time", spatialcol, unique(category2type$Type))) %>%  
-      rbind(load) %>% 
-      join(unique(region.zone.mapping[,c("Zone","Region")]),by=spatialcol)
+      join(load,by=c('time',spatialcol),type='full')
   }
   
-  re.gen = subset(int.gen, select = re.types)
+  
+  re.gen = subset(int.gen, select = c('time',spatialcol,re.types))
 
   if ( use.gen.type.mapping.csv ) {
     int.avail = int.data.avail.cap %>%
@@ -224,7 +223,8 @@ interval_gen = function() {
       join(gen.type.mapping, by = 'name') %>%
       join(region.zone.mapping, by = 'name') %>%
       dcast(time+Region+Zone ~ Type, sum) %>%
-      subset(select = re.types)
+      subset(select = c('time',spatialcol,re.types)) %>%
+      join(re.gen[,c('time',spatialcol)],by=c('time',spatialcol),type='full')
     
   } else {
     int.avail = int.data.avail.cap %>%
@@ -233,30 +233,15 @@ interval_gen = function() {
       join(category2type, by = 'category') %>%
       join(region.zone.mapping, by = 'name') %>%
       dcast(time+Region+Zone ~ Type, sum) %>%
-      subset(select = re.types)
+      subset(select = c('time',spatialcol,re.types)) %>%
+      join(re.gen[,c('time',spatialcol)],by=c('time',spatialcol),type='full')
   }
 
-  curtailed = int.avail - re.gen
+  curtailed = int.avail[,re.types] - re.gen[,re.types]
   curtailed = data.frame(rowSums(curtailed))
   colnames(curtailed) = 'Curtailment'
-  
-  if (length(region.names)>=length(zone.names)){
-    load = dcast(int.data.region, time+name~property, value.var = 'value', fun.aggregate = sum)
-    colnames(load)[colnames(load)=='name'] = 'Region'
-    
-    int.gen = int.gen %>%
-      cbind(curtailed) %>%
-      join(load, by = c('time', 'Region')) 
-    # melt(id.vars = c('time', 'Region', 'Zone'), variable.name = 'Type', value.name = 'value') # Not necessary to melt here. 
-  } else {
-    load = int.data.zone
-    colnames(load)[colnames(load)=='property'] = 'Type'
-    colnames(load)[colnames(load)=='name'] = "Zone"
-    
-    int.gen = int.gen %>%
-      cbind(curtailed) %>%
-      join(load, by = c('time', 'Zone'),type="right") 
-  }
+  int.gen = cbind(int.gen,curtailed)
+
   return(int.gen)
 }
 
