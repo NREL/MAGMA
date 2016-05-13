@@ -12,7 +12,7 @@ if ( typeof(int.gen)=='character' ) {
   
   for ( i in 1:n.periods ) {
     key.period.time = seq(start.end.times[i,'start'], start.end.times[i,'end'], 
-                          by = unique(filter(int.gen, Region == int.gen$Region[1])$time)[2]-unique(filter(int.gen, Region == int.gen$Region[1])$time)[1])
+                          by = min(int.gen$time[int.gen$time>min(int.gen$time)]) - min(int.gen$time))
     key.period.gen = filter(int.gen, time %in% key.period.time)
     key.period.gen$Period = period.names[i]
     
@@ -44,7 +44,7 @@ if ( typeof(int.gen)=='character' ) {
     
   gen.type.region = gen.type %>%
     group_by(time, Region, Type, Period) %>%
-    summarise(value = sum(value,na.rm=t))
+    summarise(value = sum(value,na.rm=T))
   
   gen.load.region = gen.load %>%
     group_by(time, Region, Type, Period) %>%

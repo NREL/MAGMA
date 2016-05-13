@@ -59,7 +59,7 @@ if (1 %in% run.sections){
 
 ***
 ## 2. Zonal Generation
-```{r zone-gen-stacks}
+```{r zone-gen-stacks,resize.height = T}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (2 %in% run.sections) {
   zone.gen.stacks = knit_child('source_scripts/p_zone_gen_stacks.Rmd')
@@ -70,7 +70,7 @@ if (2 %in% run.sections) {
 
 ***
 ## 3. Regional Generation
-```{r region-gen-stacks}
+```{r region-gen-stacks,resize.height = T}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (3 %in% run.sections) {
   region.gen.stacks = knit_child('source_scripts/p_region_gen_stacks.Rmd')

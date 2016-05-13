@@ -213,6 +213,9 @@ interval_gen = function() {
       join(load,by=c('time',spatialcol),type='full')
   }
   
+  #make sure that the right zones and regions are there...
+  int.gen = merge(int.gen[,!names(int.gen) %in% names(rz.unique)[names(rz.unique) != spatialcol]],
+                  rz.unique,by=spatialcol,all.y=T)
   
   re.gen = subset(int.gen, select = c('time',spatialcol,re.types))
 
@@ -236,11 +239,14 @@ interval_gen = function() {
       subset(select = c('time',spatialcol,re.types)) %>%
       join(re.gen[,c('time',spatialcol)],by=c('time',spatialcol),type='full')
   }
+  
 
   curtailed = int.avail[,re.types] - re.gen[,re.types]
   curtailed = data.frame(rowSums(curtailed))
   colnames(curtailed) = 'Curtailment'
   int.gen = cbind(int.gen,curtailed)
+  int.gen[is.na(int.gen)] = 0
+  
 
   return(int.gen)
 }

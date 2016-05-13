@@ -63,6 +63,7 @@ if ( use.gen.type.mapping.csv ) {
 # Read mapping file to map generator names to region and zone (can be same file as gen name to type).
 region.zone.mapping = read.csv(as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename)), stringsAsFactors=FALSE)
 region.zone.mapping = select(region.zone.mapping, name, Region, Zone)
+rz.unique = unique(region.zone.mapping[,c('Region','Zone')])
 
 # Set plot color for each generation type
 Gen.col = data.frame(Type = na.omit(inputs$Gen.Type), Color = na.omit(inputs$Plot.Color) )
