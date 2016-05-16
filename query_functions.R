@@ -397,8 +397,8 @@ zone_stats = function() {
     z.data = yr.data.region
     z.stats = z.data %>%
       join(select(region.zone.mapping, name=Region, Zone), by='name', match='first') %>%
-      dcast(name~property, value.var = 'value', fun.aggregate = sum)
-    colnames(z.stats)[colnames(z.stats)=='Region']='name'
+      dcast(Zone~property, value.var = 'value', fun.aggregate = sum) 
+    colnames(z.stats)[colnames(z.stats)=='Zone']='name'
   } else {
     z.data = yr.data.zone
     z.stats = z.data %>%
