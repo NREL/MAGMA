@@ -70,9 +70,9 @@ int_reserve_query = function(database) {
 # Generation by type
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-gen_by_type = function() {
+gen_by_type = function(yr.data.gen) {
   
-  yr.data = yr.data.generator
+  yr.data = yr.data.gen
   
   if ( use.gen.type.mapping.csv ) {
     yr.gen = yr.data %>%
@@ -124,9 +124,9 @@ gen_by_type = function() {
 # Region and Zone Generation by type according to generator name
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
-region_zone_gen = function() {
+region_zone_gen = function(yr.data.gen) {
   
-  r.z.gen = yr.data.generator
+  r.z.gen = yr.data.gen
   
   if ( use.gen.type.mapping.csv ) {
     gen.data = r.z.gen %>%
