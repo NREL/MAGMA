@@ -12,7 +12,7 @@ output:
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 yr.data.generator      = tryCatch( yr_gen_query(db), error = function(cond) { return('ERROR') } )
 yr.data.region         = tryCatch( yr_region_query(db), error = function(cond) { return('ERROR') } )
-yr.data.zone           = tryCatch( yr_zone_query(db), error = function(cond) { return('ERROR') } )
+# yr.data.zone           = tryCatch( yr_zone_query(db), error = function(cond) { return('ERROR') } )
 yr.data.reserve        = tryCatch( yr_reserve_query(db), error = function(cond) { return('ERROR') } )
 yr.data.interface.flow = tryCatch( yr_interface_query(db), error = function(cond) { return('ERROR') } )
 

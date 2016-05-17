@@ -20,12 +20,12 @@ stack.r = filter(gen.type.region, Period==p.name, Region==r.name) %>%
   summarise(value = sum(value))
 # stack.r$Type = "ALL"
 
-if ( length(stack.r$value) > 0 ) {
+if ( length(stack.r$value)>0 & sum(stack.r$value)>0 ) {
   
   if (max(filter(gen.load, Period==p.name, Region==r.name)$value)>max(stack.r$value)){
     stack.r = filter(gen.load, Period==p.name, Region==r.name) %>%
-    group_by(time) %>%
-    summarise(value=sum(value))
+      group_by(time) %>%
+      summarise(value=sum(value))
   }
 
   # This automatically creates the y-axis scaling
