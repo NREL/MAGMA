@@ -240,11 +240,14 @@ interval_gen = function() {
       join(re.gen[,c('time',spatialcol)],by=c('time',spatialcol),type='full')
   }
   
-
-  curtailed = int.avail[,re.types] - re.gen[,re.types]
-  curtailed = data.frame(rowSums(curtailed))
-  colnames(curtailed) = 'Curtailment'
-  int.gen = cbind(int.gen,curtailed)
+  int.avail[is.na(int.avail)] = 0
+  re.gen[is.na(re.gen)] = 0
+  curtailed = merge(int.avail,re.gen,by=c('time',spatialcol))
+  for (i in re.types){
+    curtailed[,i] = curtailed[,paste(i,'x',sep='.')]-curtailed[,paste(i,'y',sep='.')]
+  }
+  curtailed$Curtailment = rowSums(curtailed[,re.types])
+  int.gen = merge(int.gen,curtailed[,c('time',spatialcol,'Curtailment')],by=c('time',spatialcol))
   int.gen[is.na(int.gen)] = 0
   
 
