@@ -70,9 +70,10 @@ if (2 %in% run.sections) {
 
 ***
 ## 3. Regional Generation
-```{r region-gen-stacks,resize.height = T}
+```{r region-gen-stacks}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (3 %in% run.sections) {
+  f.height = ( length(zone.names) %/% 2 + length(zone.names) %% 2 ) * 5
   region.gen.stacks = knit_child('source_scripts/p_region_gen_stacks.Rmd')
 } else { region.gen.stacks = 'Section not run according to input file.' }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

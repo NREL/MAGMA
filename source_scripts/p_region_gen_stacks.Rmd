@@ -1,5 +1,5 @@
 
-```{r region_gen_stacks, include=TRUE, fig.width=8, fig.height=10}
+```{r region_gen_stacks, include=TRUE, fig.width=10, fig.height=f.height}
 
 if( !exists('r.z.gen') ) {
   # Query region and zonal generation
