@@ -31,6 +31,10 @@ if ( sum(c(16,17) %in% run.sections)>0 ) {
   int.data.reserve = tryCatch( int_reserve_query(db), error = function(cond) { return('ERROR') } )
 }
 
+if ( 20 %in% run.sections & !exists('int.data.region') ) {
+  int.data.region = tryCatch( int_region_query(db), error = function(cond) { return('ERROR') } )
+}
+
 r.load = tryCatch( region_load(), error = function(cond) { return('ERROR') } )
 z.load = tryCatch( zone_load(), error = function(cond) { return('ERROR') } )
 
@@ -340,6 +344,15 @@ if (19 %in% run.sections) {
 ```
 `r capacity.factor.table`
 
-
+***
+## 20. Price Duration Curve
+```{r price-duration-curve}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (20 %in% run.sections) {
+  price.duration.curve = knit_child('source_scripts/p_price_duration_curve.Rmd')
+} else { price.duration.curve = 'Section not run according to input file.' }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+`r price.duration.curve`
 
 

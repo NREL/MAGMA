@@ -47,7 +47,7 @@ int_avail_cap_query = function(database) {
 }
 
 int_region_query = function(database) {
-  int.data.region = select(query_interval(database, 'Region', 'Load'), property, name, time, value)
+  int.data.region = select(query_interval(database, 'Region', c('Load', 'Price')), property, name, time, value)
   return(int.data.region)
 }
 

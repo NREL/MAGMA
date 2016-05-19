@@ -3,7 +3,7 @@
 
 if ( !exists('yr.gen') ) {
   # Query annual generation by type.
-  yr.gen = tryCatch( gen_by_type(), error = function(cond) { return('ERROR: gen_by_type function not returning correct results') } ) 
+  yr.gen = tryCatch( gen_by_type(yr.data.generator), error = function(cond) { return('ERROR: gen_by_type function not returning correct results') } ) 
 }
   
 if ( typeof(yr.gen)=='character' ) { 
@@ -15,10 +15,15 @@ if ( typeof(yr.gen)=='character' ) {
   yr.gen = yr.gen[order(yr.gen$Type),]
   row.names(yr.gen) = NULL
   
-  gen.tot = data.frame('Type'='Total', 'GWh'=sum(yr.gen$GWh) - yr.gen$GWh[yr.gen$Type=='Curtailment'])
+  curt = yr.gen[yr.gen$Type=='Curtailment',]
+  yr.gen = yr.gen[yr.gen$Type!='Curtailment',]
+  
+  gen.tot = data.frame('Type'='Total', 'GWh'=sum(yr.gen$GWh) )
   yr.gen = rbind(yr.gen, gen.tot)
   percent = data.frame('Percent'= yr.gen$GWh / yr.gen$GWh[yr.gen$Type=='Total'] * 100)
-  yr.gen = cbind(yr.gen, percent)
+  curt$Percent = curt$GWh / sum( yr.gen[yr.gen$Type %in% re.types,'GWh'] + curt$GWh ) * 100
+  
+  yr.gen = rbind( cbind(yr.gen, percent), curt)
   
   kable(yr.gen, format.args = list(big.mark = ','), digits=2)
 
