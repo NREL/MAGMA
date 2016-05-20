@@ -396,7 +396,7 @@ region_stats = function() {
 }
 
 zone_stats = function() {
-  if (yr.data.zone=="ERROR"){
+  if (reassign.zones==TRUE){
     z.data = yr.data.region
     z.stats = z.data %>%
       join(select(region.zone.mapping, name=Region, Zone), by='name', match='first') %>%
@@ -405,9 +405,7 @@ zone_stats = function() {
   } else {
     z.data = yr.data.zone
     z.stats = z.data %>%
-      join(select(region.zone.mapping, name=Zone, Region), by='name', match='first') %>%
       dcast(name~property, value.var = 'value', fun.aggregate = sum)
-    colnames(z.stats)[colnames(z.stats)=='Zone']='name'
   }
   
   return(z.stats)
@@ -426,13 +424,21 @@ region_load = function() {
 }
 
 zone_load = function() {
-  z.data = yr.data.region
-  z.load = z.data %>%
-    filter(property == 'Load') %>%
-    join(select(region.zone.mapping, name=Region, Zone), by='name', match='first') %>%
-    select(name=Zone, value) %>%
-    group_by(name) %>%
-    summarise(value = sum(value))
+  if (reassign.zones==TRUE){
+    z.data = yr.data.region
+    z.load = z.data %>%
+      filter(property == 'Load') %>%
+      join(select(region.zone.mapping, name=Region, Zone), by='name', match='first') %>%
+      select(name=Zone, value) %>%
+      group_by(name) %>%
+      summarise(value = sum(value))
+  } else {
+    z.data = yr.data.zone
+    z.load = z.data %>%
+      filter(property == 'Load') %>%
+      select(name, value)
+  }
+  
   return(z.load)
 }
 
