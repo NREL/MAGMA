@@ -396,7 +396,7 @@ region_stats = function() {
 }
 
 zone_stats = function() {
-  if (reassign.zones==TRUE){
+  if (reassign.zones==TRUE | yr.data.zone=='ERROR'){
     z.data = yr.data.region
     z.stats = z.data %>%
       join(select(region.zone.mapping, name=Region, Zone), by='name', match='first') %>%
@@ -424,7 +424,7 @@ region_load = function() {
 }
 
 zone_load = function() {
-  if (reassign.zones==TRUE){
+  if (reassign.zones==TRUE | yr.data.zone=='ERROR'){
     z.data = yr.data.region
     z.load = z.data %>%
       filter(property == 'Load') %>%
