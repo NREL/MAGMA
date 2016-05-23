@@ -51,6 +51,9 @@ db.loc = file.path(as.character(na.exclude(inputs$Database.Location)))
 # Using CSV file to map generator types to names?
 use.gen.type.mapping.csv = as.logical(na.exclude(inputs$Using.Gen.Type.Mapping.CSV))
 
+# Reassign zones based on region to zone mapping file?
+reassign.zones = as.logical(na.exclude(inputs$reassign.zones))
+
 if ( use.gen.type.mapping.csv ) {
   # Read mapping tile to map generator names to generation type
   gen.type.mapping = read.csv(as.character(na.exclude(inputs$CSV.Gen.Type.File.Location)), stringsAsFactors=FALSE)
