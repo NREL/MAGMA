@@ -345,7 +345,7 @@ if (19 %in% run.sections) {
 `r capacity.factor.table`
 
 ***
-## 20. Price Duration Curve
+## 20. Region Price Duration Curves
 ```{r price-duration-curve}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (20 %in% run.sections) {
