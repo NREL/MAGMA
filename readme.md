@@ -9,7 +9,7 @@ This package creates figures and an HTML file with all of those figures for plex
 1. Copy run_html_output.R and input_data.csv into another folder associated with your project specific repository.
 2. Edit input_data.csv to point to the required databases, input files, and generator categories for your project.
 3. If using a CSV to map generator name to type, create this.
-4. If creating individual region and zone dispatch stacks, create CSV to map generator name to region and zone. Without this file, individual region and zone dispatch stacks will not work.
+4. If generation type by region or zone is wanted, create CSV to map generator name to region and zone.
 5. Edit run_html_output.R to point to your input_data.csv
 6. Run: ```source('run_html_output.R')```
 
@@ -25,52 +25,54 @@ This package creates figures and an HTML file with all of those figures for plex
 2. Using.Gen.Type.Mapping.CSV
 	+ If usings a CSV file to assign generation type by generator name, this should be TRUE, else it should be FALSE. Column names should be "name" and "Type"
 	+ If you don't do it this way, it will assign generation type by PLEXOS category.
-3. Gen.Region.Zone.Mapping.Filename
+3. reassign.zones
+	+ If you want to recategorize zones (what regions make up what zones) this must be TRUE. Otherwise it can be FALSE.
+4. Gen.Region.Zone.Mapping.Filename
 	+ CSV file which assigns a Region and Zone to each generator. 
 	+ Column names for generator name, region, and zone must be "name", "Region", "Zone". This can also be the same file you use to assign generation type.
 	+ Only needed for region and zone dispatch stacks.
 	+ If this field is blank there will be an error, so it must read in any CSV file, even if not being used.
-4. CSV.Gen.Type.File.Location
+5. CSV.Gen.Type.File.Location
 	+ Location of CSV file to assign generation type by generator name, if using this (Using.Gen.Type.Mapping.CSV == TRUE).
 	+ Column names for generator name and type must be "name", and "Type". This can also be the same file you use to assign region and zone.
 	+ If "Using.Gen.Type.Mapping.CSV" is FALSE, this field can be left blank.
-5. PLEXOS.Gen.Category
+6. PLEXOS.Gen.Category
 	+ Categories in PLEXOS database. This must contain all the categories in your PLEXOS database.
 	+ Only required if "Using.Gen.Type.Mapping.CSV" is FALSE.
-6. PLEXOS.Desired.Type	
+7. PLEXOS.Desired.Type	
 	+ Assigns a generation type to each of the PLEXOS categories.
 	+ Only requires if "Using.Gen.Type.Mapping.CSV" is FALSE.
-7. Gen.Type
+8. Gen.Type
 	+ All types of generation that you either assign through the CSV or PLEXOS category. It can contain more types than you currently have, but it must have all of them otherwise they will be missing from the results.
-8. Plot.Color
+9. Plot.Color
 	+ Assigns a plot color to each generation type
-9. Gen.Order
+10. Gen.Order
 	+ Assigns an order from top to bottom of generation types for dispatch stacks. This list must also contain every generation type in that you assign either in 5-6 or 7-8.
-10. Renewable.Types.for.Curtailment
+11. Renewable.Types.for.Curtailment
 	+ Generation types to be considered in curtailment calculations.
-11. Key.Periods
+12. Key.Periods
 	+ You can choose individual time spans to plot results for. This column assigns names to those time periods.
-12. Start.Time
+13. Start.Time
 	+ Corresponding start time for each of the periods in 13.
-13. End.Time
+14. End.Time
 	+ Corresponding end time for each of the periods in 13. 
-14. Start.Day
+15. Start.Day
 	+ Starting day of the PLEXOS run. 
-15. End.Day
+16. End.Day
 	+ Ending day of the PLEXOS run.
-16. Intervals.Per.Day
+17. Intervals.Per.Day
 	+ Number of intervals per day.
-17. Sections.to.Run
+18. Sections.to.Run
 	+ Sections (chunks) of the HTML_output.Rmd file to run.
-18. Fig.Path
+19. Fig.Path
 	+ Location to save each figure.
-19. Cache.Path
+20. Cache.Path
 	+ Location to save caches if any chunks have cache=TRUE. This is not required but if you are running the script several times for the same solution file, certain chunks take a long time to run and this can be beneficial. Described below.
-20. Ignore.Zones
+21. Ignore.Zones
  	+ Zones to exclude from plots
-21. Ignore.Regions
+22. Ignore.Regions
 	+ Regions to exclude from plots
-22. Interfaces.for.Flows
+23. Interfaces.for.Flows
 	+ Specific interfaces to show flow data for
 
 ##### About cache=TRUE
