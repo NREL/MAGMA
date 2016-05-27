@@ -1,5 +1,5 @@
 
-if (zone.gen.stakcs) {
+if (zone.gen.stacks) {
 
 # Query region and zonal generation
 r.z.gen = tryCatch( select(region_zone_gen(yr.data.generator), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR') } )
