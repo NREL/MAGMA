@@ -51,30 +51,32 @@ source('source_scripts/p_region_gen_stacks.R')
 ## 4. Individual Regions
 ```{r individual-region-stacks}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-# Call region_zone_gen function and create data for plots
-source('source_scripts/d_individual_region_stacks.R')
-   
-if ( exists('r.z.gen.plot') ) {
-  # If the regional query didn't work, return an error. Else create plots.
-  if ( typeof(r.z.gen.plot)=='character' ) {
-    print('ERROR: region_zone_gen function not returning correct results.')
-  } else if ( typeof(r.load) == 'character' ) {
-    print('ERROR: region_load function not returning correct results.')
-  } else {
+if(individual.region.stacks) {
   
-      key.plots = list() # Creates empty list for plot data
-  
-      # Create plot for each region in region.names
-      for ( p in 1:length(region.names) )  {
-        region.name = region.names[p]
-        key.plots[p] = knit_expand(file = 'source_scripts/p_individual_region_stacks.Rmd', region.name=region.name)
-      }
-  
-      # Reconstruct the plot data into a format that will be output into the HTML below
-      individual.region.stacks = knit_child(text = unlist(key.plots))
+  # Call region_zone_gen function and create data for plots
+  source('source_scripts/d_individual_region_stacks.R')
+     
+  if ( exists('r.z.gen.plot') ) {
+    # If the regional query didn't work, return an error. Else create plots.
+    if ( typeof(r.z.gen.plot)=='character' ) {
+      print('ERROR: region_zone_gen function not returning correct results.')
+    } else if ( typeof(r.load) == 'character' ) {
+      print('ERROR: region_load function not returning correct results.')
+    } else {
+    
+        key.plots = list() # Creates empty list for plot data
+    
+        # Create plot for each region in region.names
+        for ( p in 1:length(region.names) )  {
+          region.name = region.names[p]
+          key.plots[p] = knit_expand(file = 'source_scripts/p_individual_region_stacks.Rmd', region.name=region.name)
+        }
+    
+        # Reconstruct the plot data into a format that will be output into the HTML below
+        individual.region.stacks = knit_child(text = unlist(key.plots))
+    }
   }
-}
+} else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 `r individual.region.stacks`
@@ -83,7 +85,7 @@ if ( exists('r.z.gen.plot') ) {
 ## 5-7. Specified Period Dispatch Stacks
 ``` {r key-period-dispatch, cache=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (5 %in% run.sections | 6 %in% run.sections | 7 %in% run.sections){  
+if (key.period.dispatch.total | key.period.dispatch.zone | key.period.dispatch.region){  
 
   # Call interval_gen function and proces data for plots
   source('source_scripts/d_key_period_dispatch.R')
