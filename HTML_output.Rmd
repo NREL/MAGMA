@@ -56,27 +56,25 @@ source('source_scripts/p_region_gen_stacks.R')
 source('source_scripts/d_individual_region_stacks.R')
    
 if ( exists('r.z.gen.plot') ) {
-# If the regional query didn't work, return an error. Else create plots.
-if ( typeof(r.z.gen.plot)=='character' ) {
-  print('ERROR: region_zone_gen function not returning correct results.')
-} else if ( typeof(r.load) == 'character' ) {
-  print('ERROR: region_load function not returning correct results.')
-} else {
-
-    key.plots = list() # Creates empty list for plot data
-
-    # Create plot for each region in region.names
-    for ( p in 1:length(region.names) )  {
-      region.name = region.names[p]
-      key.plots[p] = knit_expand(file = 'source_scripts/p_individual_region_stacks.Rmd', region.name=region.name)
-    }
-
-    # Reconstruct the plot data into a format that will be output into the HTML below
-    individual.region.stacks = knit_child(text = unlist(key.plots))
-
+  # If the regional query didn't work, return an error. Else create plots.
+  if ( typeof(r.z.gen.plot)=='character' ) {
+    print('ERROR: region_zone_gen function not returning correct results.')
+  } else if ( typeof(r.load) == 'character' ) {
+    print('ERROR: region_load function not returning correct results.')
+  } else {
+  
+      key.plots = list() # Creates empty list for plot data
+  
+      # Create plot for each region in region.names
+      for ( p in 1:length(region.names) )  {
+        region.name = region.names[p]
+        key.plots[p] = knit_expand(file = 'source_scripts/p_individual_region_stacks.Rmd', region.name=region.name)
+      }
+  
+      # Reconstruct the plot data into a format that will be output into the HTML below
+      individual.region.stacks = knit_child(text = unlist(key.plots))
   }
-} else { individual.region.stacks = 'Error in sourcing of "d_individual_region_stacks.R"' }
-} else { individual.region.stacks = 'Section not run according to input file.' }
+}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 `r individual.region.stacks`

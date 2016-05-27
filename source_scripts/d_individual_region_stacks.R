@@ -22,4 +22,4 @@ if(individual.region.stacks) {
       filter(!Region %in% ignore.regions)
   }
   
-}
+} else { print('Section not run according to input file.') }
