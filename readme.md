@@ -15,7 +15,7 @@ This package creates figures and an HTML file with all of those figures for plex
 
 ### Notes:
 1. If you have trouble with the render function, make sure the "rmarkdown" package is installed. If there are issues locating or sourcing files, make sure the appropriate working directories and paths are setup correctly.
-2. You can choose to run individual chunks or the entire script. This is setup in the input_data.csv file. There should no longer be inter-dependencies between chunks. In an earlier version certain chunks depended on others being run.
+2. You can choose to run individual chunks or the entire script. This is setup in the input_data.csv file.
 3. The name of your database file must start with "Model".
 4. Report any problems or issues to Matt O'Connell. 
 
@@ -77,12 +77,11 @@ This package creates figures and an HTML file with all of those figures for plex
 
 ##### About cache=TRUE
 
-Setting cache=TRUE makes the markdown script save the data before it outputs it into an HTML for an individual chunk. The "key-period-dispatch" and "yearly-curtailment" chunks take a long time to process due to the interval queries (instead of yearly queries) required. With cache=TRUE, the first time still takes the full length to run, but subsequent runs of the script just load the saved cache data. However, if anything in the file in which cache=TRUE changes (maybe just chunk, but not sure), it will overwrite the cache and take the full length of time to process. So beware of that as well.
+Setting cache=TRUE makes the markdown script save the data before it outputs it into an HTML for an individual chunk. The "key-period-dispatch", "yearly-curtailment", and "daily-curtailment" chunks take a long time to process due to the interval queries (instead of yearly queries) required. With cache=TRUE, the first time still takes the full length to run, but subsequent runs of the script just load the saved cache data. However, if anything in the file in which cache=TRUE changes (maybe just chunk, but not sure), it will overwrite the cache and take the full length of time to process. So beware of that as well.
 	
 For "key-period-dispatch", to set cache=TRUE, change ```{r key-period-dispatch}``` to ```{r key-period-dispatch, cache=TRUE}```
 
-For "yearly-curtailment", you must open up the source_scripts/p_yearly_curtailment.Rmd file, and change 
-```{r yearly_curtailment, include=TRUE}``` to ```{r yearly_curtailment, include=TRUE, cache=TRUE}```
+For "yearly-curtailment" and "daily-curtailment" it is the same process.
 
 ## Required PLEXOS outputs
 
