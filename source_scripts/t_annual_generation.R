@@ -13,7 +13,6 @@ if (annual.generation.table){
      
     yr.gen$Type = factor(yr.gen$Type, levels = c(gen.order))
     yr.gen = yr.gen[order(yr.gen$Type),]
-    row.names(yr.gen) = NULL
     
     curt = yr.gen[yr.gen$Type=='Curtailment',]
     yr.gen = yr.gen[yr.gen$Type!='Curtailment',]
@@ -24,6 +23,7 @@ if (annual.generation.table){
     curt$Percent = curt$GWh / sum( yr.gen[yr.gen$Type %in% re.types,'GWh'] + curt$GWh ) * 100
     
     yr.gen = rbind( cbind(yr.gen, percent), curt)
+    row.names(yr.gen) = NULL
   
   }
 
