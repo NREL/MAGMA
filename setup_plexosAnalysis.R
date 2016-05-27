@@ -138,3 +138,29 @@ if(length(list.files(pattern = "\\.zip$",path=db.loc))!=0 ) {
 db = plexos_open(db.loc)
 db = db[1,]
 attributes(db)$class = c("rplexos","data.frame","tbl_df")
+
+run.sections = na.omit(inputs$Sections.to.Run)
+if(1 %in% run.sections)  {total.gen.stack=TRUE}                 else {total.gen.stack=FALSE} 
+if(2 %in% run.sections)  {zone.gen.stacks=TRUE}                 else {zone.gen.stacks=FALSE}
+if(3 %in% run.sections)  {region.gen.stacks=TRUE}               else {region.gen.stacks=FALSE}
+if(4 %in% run.sections)  {individual.region.stacks=TRUE}        else {individual.region.stacks=FALSE}
+if(5 %in% run.sections)  {key.period.dispatch.total=TRUE}       else {key.period.dispatch.total=FALSE}
+if(6 %in% run.sections)  {key.period.dispatch.region=TRUE}      else {key.period.dispatch.region=FALSE}
+if(7 %in% run.sections)  {key.period.dispatch.zone=TRUE}        else {key.period.dispatch.zone=FALSE}
+if(8 %in% run.sections)  {yearly.curtailment=TRUE}              else {yearly.curtailment=FALSE}
+if(9 %in% run.sections)  {daily.curtailment=TRUE}               else {daily.curtailment=FALSE}
+if(10 %in% run.sections) {annual.generation.table=TRUE}         else {annual.generation.table=FALSE}
+if(11 %in% run.sections) {annual.cost.table=TRUE}               else {annual.cost.table=FALSE}
+if(12 %in% run.sections) {region.zone.flow.tables=TRUE}         else {region.zone.flow.tables=FALSE}
+if(13 %in% run.sections) {interface.flow.table=TRUE}            else {interface.flow.table=FALSE}
+if(14 %in% run.sections) {interface.flow.plots=TRUE}            else {interface.flow.plots=FALSE}
+if(15 %in% run.sections) {key.period.interface.flow.plots=TRUE} else {key.period.interface.flow.plots=FALSE}
+if(16 %in% run.sections) {annual.reserves.table=TRUE}           else {annual.reserves.table=FALSE}
+if(17 %in% run.sections) {reserves.plots=TRUE}                  else {reserves.plots=FALSE}
+if(18 %in% run.sections) {region.zone.gen.table=TRUE}           else {region.zone.gen.table=FALSE}
+if(19 %in% run.sections) {capacity.factor.table=TRUE}           else {capacity.factor.table=FALSE}
+if(20 %in% run.sections) {price.duration.curve=TRUE}            else {price.duration.curve=FALSE}
+
+
+
+

@@ -1,7 +1,0 @@
-
-```{r annual_cost_table, include=TRUE}
-
-cost.table = tryCatch( costs(), error = function(cond) { return('ERROR: costs function not returning correct results.') })
-kable(cost.table, format.args = list(big.mark = ','))
-
-```

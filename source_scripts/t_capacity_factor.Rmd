@@ -1,7 +1,0 @@
-
-```{r capacity_factor_table, include=TRUE}
-
-cf = tryCatch( capacity_factor(), error = function(cond) { return('ERROR: capacity_factor function not returning correct results.') })
-kable(cf, format.args = list(big.mark = ','), digits=2)
-
-```

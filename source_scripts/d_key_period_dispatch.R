@@ -1,5 +1,5 @@
 # Query interval generation by type data
-int.gen = tryCatch( interval_gen(), error = function(cond) { return('ERROR') } )
+int.gen = tryCatch( interval_gen(int.data.region, int.data.zone, int.data.gen, int.data.avail.cap), error = function(cond) { return('ERROR') } )
 
 # If the query doesn't work, return an error. Else create plot.
 if ( typeof(int.gen)=='character' ) { 

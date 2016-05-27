@@ -30,8 +30,8 @@ yr_reserve_query = function(database) {
 }
 
 yr_interface_query = function(database) {
-  yr.data.interface.flow = select(query_year(database, 'Interface', 'Flow'), property, name, value, time)
-  return(yr.data.interface.flow)
+  yr.data.interface = select(query_year(database, 'Interface', 'Flow'), property, name, value, time)
+  return(yr.data.interface)
 }
 
 int_gen_query = function(database) {
@@ -178,7 +178,7 @@ region_zone_gen = function(yr.data.gen) {
 # Key Period Generation by Type 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-interval_gen = function() {
+interval_gen = function(int.data.region, int.data.zone, int.data.gen, int.data.avail.cap) {
   
   if (length(region.names)>=length(zone.names)){
     load = dcast(int.data.region, time+name~property, value.var = 'value', fun.aggregate = sum)
@@ -258,7 +258,7 @@ interval_gen = function() {
 # Total Curtailment
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-daily_curtailment = function() {
+daily_curtailment = function(int.data.gen, int.data.avail.cap) {
   
   gen.data = int.data.gen
   avail.data = int.data.avail.cap
@@ -308,7 +308,7 @@ daily_curtailment = function() {
 # Cost 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-costs = function() {
+costs = function(yr.data.generator) {
 
   cost = yr.data.generator
   cost['value'] = cost['value'] / 1000000
@@ -338,7 +338,7 @@ return(cost.table)
 # Annual Reserve Provisions
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-annual_reserves = function() {
+annual_reserves = function(yr.data.reserve) {
   
   r.data = yr.data.reserve
   
@@ -357,7 +357,7 @@ annual_reserves = function() {
 # Interval Reserve Provisions 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-interval_reserves = function() {
+interval_reserves = function(int.data.reserve) {
   provision = int.data.reserve
   provision = dcast(provision, time ~ name, value.var = 'value')
   return(provision)
@@ -367,35 +367,40 @@ interval_reserves = function() {
 # Interface Flows 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-interface_flows = function() {
-  
-  int.flows = int.data.interface %>%
-    select(name, time, value) %>%
-    filter(name %in% interfaces)
+annual_interface_flows = function(yr.data.interface) {
   
   year.flows = yr.data.interface.flow %>%
     select(name, time, value) %>%
     filter(name %in% interfaces)
   
-  int.flows$Type = 'Interval_Flow'
   year.flows$Type = 'Annual_Flow'
-    
-  flows = rbind(int.flows, year.flows)
+
+  return(year.interface.flows)
+}
+
+interval_interface_flows = function(int.data.interface) {
   
-  return(flows)
+  int.flows = int.data.interface %>%
+    select(name, time, value) %>%
+    filter(name %in% interfaces)
+  
+  int.flows$Type = 'Interval_Flow'
+  
+  return(int.interface.flows)
+  
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Region and Zone Stats
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-region_stats = function() {
+region_stats = function(yr.data.region) {
   r.data = yr.data.region
   r.stats = dcast(r.data, name~property, value.var = 'value', fun.aggregate = sum)
   return(r.stats)
 }
 
-zone_stats = function() {
+zone_stats = function(yr.data.region, yr.data.zone) {
   if (reassign.zones==TRUE | yr.data.zone=='ERROR'){
     z.data = yr.data.region
     z.stats = z.data %>%
@@ -415,7 +420,7 @@ zone_stats = function() {
 # Region and Zone Load
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-region_load = function() {
+region_load = function(yr.data.region) {
   r.data = yr.data.region
   r.load = r.data %>%
     filter(property == 'Load') %>%
@@ -423,7 +428,7 @@ region_load = function() {
   return(r.load)
 }
 
-zone_load = function() {
+zone_load = function(yr.data.region, yr.data.zone) {
   if (reassign.zones==TRUE | yr.data.zone=='ERROR'){
     z.data = yr.data.region
     z.load = z.data %>%
@@ -446,7 +451,7 @@ zone_load = function() {
 # Capacity Factor
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-capacity_factor = function() {
+capacity_factor = function(yr.data.generator) {
   
   cf = yr.data.generator
   
