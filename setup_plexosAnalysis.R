@@ -139,6 +139,10 @@ db = plexos_open(db.loc)
 db = db[1,]
 attributes(db)$class = c("rplexos","data.frame","tbl_df")
 
+db.day.ahead = plexos_open(db.day.ahead.loc)
+db.day.ahead = db.day.ahead[1,]
+attributes(db.day.ahead)$class = c('rplexos', 'data.frame', 'tbl_df')
+
 run.sections = na.omit(inputs$Sections.to.Run)
 if(1 %in% run.sections)  {total.gen.stack=TRUE}                 else {total.gen.stack=FALSE} 
 if(2 %in% run.sections)  {zone.gen.stacks=TRUE}                 else {zone.gen.stacks=FALSE}
@@ -160,6 +164,7 @@ if(17 %in% run.sections) {reserves.plots=TRUE}                  else {reserves.p
 if(18 %in% run.sections) {region.zone.gen.table=TRUE}           else {region.zone.gen.table=FALSE}
 if(19 %in% run.sections) {capacity.factor.table=TRUE}           else {capacity.factor.table=FALSE}
 if(20 %in% run.sections) {price.duration.curve=TRUE}            else {price.duration.curve=FALSE}
+if(21 %in% run.secitons) {commit.dispatch=TRUE}                 else {commit.dispatch=FALSE}
 
 
 

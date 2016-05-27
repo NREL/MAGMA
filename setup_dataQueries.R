@@ -25,6 +25,10 @@ if ( price.duration.curve & !exists('int.data.region') ) {
   int.data.region = tryCatch( int_region_query(db), error = function(cond) { return('ERROR') } )
 }
 
+if ( commit.dispatch ) {
+  int.data.commit = tryCatch( int_commit_query(db.day.ahead), error = function(cond) { return('ERROR') } )
+}
+
 r.load = tryCatch( region_load(yr.data.region), error = function(cond) { return('ERROR') } )
 z.load = tryCatch( zone_load(yr.data.region, yr.data.zone), error = function(cond) { return('ERROR') } )
 

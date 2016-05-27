@@ -73,12 +73,9 @@ if (2 %in% run.sections) {
 ## 3. Regional Generation
 ```{r region-gen-stacks}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (3 %in% run.sections) {
-  region.gen.stacks = knit_child('source_scripts/p_region_gen_stacks.Rmd')
-} else { region.gen.stacks = 'Section not run according to input file.' }
+source('source_scripts/compare/c_p_region_gen_stacks.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
-`r region.gen.stacks`
 
 ***
 ## 4. Individual Regions

@@ -104,11 +104,11 @@ if ( typeof(key.period.gen)=='character' ) {
   for ( p in 1:n.periods ) {
     period.name = period.names[p]
     
-    if (5 %in% run.sections) {
+    if (key.period.dispatch.total) {
       key.plots.total[[p]] = knit_expand(file = 'source_scripts/p_key_period_dispatch_total.Rmd', period.name = period.name)
     } else {key.period.dispatch.total  = 'Section not run according to input file.'}
     
-    if (6 %in% run.sections) {
+    if (key.period.dispatch.zone) {
       for ( z in 1:length(zone.names) ) {
         zone.name = zone.names[z]
         key.plots.zone[[z.idx]] = knit_expand(file = 'source_scripts/p_key_period_dispatch_zone.Rmd', period.name = period.name, zone.name = zone.name) 
@@ -116,7 +116,7 @@ if ( typeof(key.period.gen)=='character' ) {
       } 
     } else {key.period.dispatch.zone   = 'Section not run according to input file.'}
       
-    if (7 %in% run.sections) {
+    if (key.period.dispatch.region) {
       for ( r in 1:length(region.names) ) {
         region.name = region.names[r]
         key.plots.region[[r.idx]] = knit_expand(file = 'source_scripts/p_key_period_dispatch_region.Rmd', period.name = period.name, region.name = region.name)
@@ -126,9 +126,9 @@ if ( typeof(key.period.gen)=='character' ) {
   }
 
   # Reconstruct the plot data into a format that will be output into the HTML below
-  if (5 %in% run.sections) { key.period.dispatch.total = knit_child(text = unlist(key.plots.total)) }
-  if (6 %in% run.sections) { key.period.dispatch.zone = knit_child(text = unlist(key.plots.zone)) }
-  if (7 %in% run.sections) { key.period.dispatch.region = knit_child(text = unlist(key.plots.region)) }
+  if (key.period.dispatch.total) { key.period.dispatch.total = knit_child(text = unlist(key.plots.total)) }
+  if (key.period.dispatch.zone) { key.period.dispatch.zone = knit_child(text = unlist(key.plots.zone)) }
+  if (key.period.dispatch.region) { key.period.dispatch.region = knit_child(text = unlist(key.plots.region)) }
 }
 } else { key.period.dispatch.total  = 'Section not run according to input file.'
          key.period.dispatch.zone   = 'Section not run according to input file.' 
@@ -288,3 +288,10 @@ source('source_scripts/p_price_duration_curve.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
+***
+## 21. DA-RT Committment and Dispatch Plots
+```{r committment-dispatch}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+source('source_scripts/p_DA_RT_commit_dispatch.R')
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
