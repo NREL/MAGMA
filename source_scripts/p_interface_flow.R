@@ -53,7 +53,8 @@ p2 = ggplot()+
                   axis.title=element_text(size=text.plot, face=2.3),
                   # legend.position=c(0.80, 0.12),
                   panel.margin = unit(0.35, "lines"))
-print(p1, p2)
+print(p1)
+print(p2)
 
 }
 

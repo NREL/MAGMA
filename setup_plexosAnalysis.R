@@ -151,7 +151,7 @@ if(8 %in% run.sections)  {yearly.curtailment=TRUE}              else {yearly.cur
 if(9 %in% run.sections)  {daily.curtailment=TRUE}               else {daily.curtailment=FALSE}
 if(10 %in% run.sections) {annual.generation.table=TRUE}         else {annual.generation.table=FALSE}
 if(11 %in% run.sections) {annual.cost.table=TRUE}               else {annual.cost.table=FALSE}
-if(12 %in% run.sections) {region.zone.flow.tables=TRUE}         else {region.zone.flow.tables=FALSE}
+if(12 %in% run.sections) {region.zone.flow.table=TRUE}          else {region.zone.flow.tables=FALSE}
 if(13 %in% run.sections) {interface.flow.table=TRUE}            else {interface.flow.table=FALSE}
 if(14 %in% run.sections) {interface.flow.plots=TRUE}            else {interface.flow.plots=FALSE}
 if(15 %in% run.sections) {key.period.interface.flow.plots=TRUE} else {key.period.interface.flow.plots=FALSE}

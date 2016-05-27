@@ -56,7 +56,8 @@ p.2 = ggplot(plot.data)+
                 panel.grid.minor = element_line(colour = "grey93"),
 #               aspect.ratio =     0.5,
                 panel.margin =     unit(1.0, "lines") )
-print(p.1, p.2)
+print(p.1)
+print(p.2)
 }
 
 } else { print('Section not run according to input file.') }
