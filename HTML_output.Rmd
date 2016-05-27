@@ -16,6 +16,8 @@ knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, incl
 
 # Query data from plexos solution file
 source('setup_dataQueries.R')
+# Set height for figure in regional generation chunk
+f.height = ( length(zone.names) %/% 2 + length(zone.names) %% 2 ) * 5
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -42,7 +44,6 @@ source('source_scripts/p_zone_gen_stacks.R')
 ```{r region-gen-stacks, resize.height=T, fig.height=f.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/p_region_gen_stacks.R')
-f.height = ( length(zone.names) %/% 2 + length(zone.names) %% 2 ) * 5
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -50,10 +51,9 @@ f.height = ( length(zone.names) %/% 2 + length(zone.names) %% 2 ) * 5
 ## 4. Individual Regions
 ```{r individual-region-stacks}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (4 %in% run.sections) {
- 
-  # Call region_zone_gen function and create data for plots
-  source('source_scripts/d_individual_region_stacks.R')
+
+# Call region_zone_gen function and create data for plots
+source('source_scripts/d_individual_region_stacks.R')
    
 if ( exists('r.z.gen.plot') ) {
 # If the regional query didn't work, return an error. Else create plots.
