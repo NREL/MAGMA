@@ -49,7 +49,7 @@ source('source_scripts/p_region_gen_stacks.R')
 
 ***
 ## 4. Individual Regions
-```{r individual-region-stacks}
+```{r individual-region-stacks, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if(individual.region.stacks) {
   
@@ -76,14 +76,14 @@ if(individual.region.stacks) {
         individual.region.stacks = knit_child(text = unlist(key.plots))
     }
   }
-} else { print('Section not run according to input file.') }
+} else { individual.region.stacks = 'Section not run according to input file.' }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 `r individual.region.stacks`
 
 ***
 ## 5-7. Specified Period Dispatch Stacks
-``` {r key-period-dispatch, cache=FALSE}
+``` {r key-period-dispatch, cache=FALSE, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (key.period.dispatch.total | key.period.dispatch.zone | key.period.dispatch.region){  
 
