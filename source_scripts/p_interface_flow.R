@@ -1,9 +1,7 @@
 
 if (interface.flow.plots) {
 
-if ( !exists('interface.flows') ) {
-  interface.flows = tryCatch( interval_interface_flows(int.data.interface), error=function(cond) {return('ERROR: interface_flows query not returning correct results.')})
-}
+interface.flows = tryCatch( interval_interface_flows(int.data.interface), error=function(cond) {return('ERROR: interface_flows query not returning correct results.')})
   
 if ( typeof(interface.flows)=='character' ) { 
 print('ERROR: interface_flows function not returning correct results.')

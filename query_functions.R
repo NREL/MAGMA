@@ -369,13 +369,13 @@ interval_reserves = function(int.data.reserve) {
 
 annual_interface_flows = function(yr.data.interface) {
   
-  year.flows = yr.data.interface.flow %>%
+  year.flows = yr.data.interface %>%
     select(name, time, value) %>%
     filter(name %in% interfaces)
   
   year.flows$Type = 'Annual_Flow'
 
-  return(year.interface.flows)
+  return(year.flows)
 }
 
 interval_interface_flows = function(int.data.interface) {
@@ -386,7 +386,7 @@ interval_interface_flows = function(int.data.interface) {
   
   int.flows$Type = 'Interval_Flow'
   
-  return(int.interface.flows)
+  return(int.flows)
   
 }
 
