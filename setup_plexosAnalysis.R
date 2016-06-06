@@ -47,6 +47,7 @@ inputs[inputs==""]=NA
 
 # location of database
 db.loc = file.path(as.character(na.exclude(inputs$Database.Location))) 
+db.day.ahead.loc = file.path(as.character(na.exclude(inputs$DayAhead.Database.Location)))
 
 # Using CSV file to map generator types to names?
 use.gen.type.mapping.csv = as.logical(na.exclude(inputs$Using.Gen.Type.Mapping.CSV))

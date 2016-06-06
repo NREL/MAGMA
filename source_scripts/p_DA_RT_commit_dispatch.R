@@ -20,7 +20,6 @@ if ( typeof(committed.cap)=='character' | typeof(int.gen)=='character' ) {
   
   
   
-  
   dy.curt = data.frame(colMeans(daily.curt) ) # Calculate mean of each hour of the year
   dy.curt['time'] = seq(first.day, last.day, by = 'day') # Add time column
   colnames(dy.curt) = c('Curtailment', 'time')
