@@ -66,11 +66,6 @@ int_reserve_query = function(database) {
   return(int.data.reserve)
 }
 
-int_commit_query = function(database) {
-  int.data.commit = select(query_interval(database, 'Generator', 'Committed Capacity'), property, name, time, value)
-  return(int.data.commit)
-}
-
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Generation by type
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -506,9 +501,31 @@ capacity_factor = function(yr.data.generator) {
 
 cap_committed = function(int.data.commit) {
   
+  if (length(region.names)>=length(zone.names)){
+    spatialcol = "Region"
+  } else {
+    spatialcol = "Zone"    
+  }
   
+  if ( use.gen.type.mapping.csv ) {
+    commit.data = int.data.commit %>%
+      select(time, name, category, value) %>%
+      plyr::join(region.zone.mapping, by='name') %>%
+      plyr::join(gen.type.mapping, by = 'name') %>%
+      dcast(time+Region+Zone ~ Type, value.var = 'value', fun.aggregate = sum)
+    
+  } else {
+    commit.data = int.data.commit %>%
+      select(time, name, category, value) %>%
+      plyr::join(region.zone.mapping, by='name') %>%
+      plyr::join(category2type, by = 'category') %>%
+      dcast(time+Region+Zone ~ Type, value.var = 'value', fun.aggregate = sum)
+  }
   
+#   #make sure that the right zones and regions are there...
+#   commit.data = merge(commit.data[,!names(commit.data) %in% names(rz.unique)[names(rz.unique) != spatialcol]],
+#                   rz.unique,by=spatialcol,all.y=T)
+  commit.data = melt(commit.data, id.vars = .(time, Region, Zone), variable.name = 'Type', value.name = 'committed.cap')
   
+  return(commit.data)
 } 
-
-

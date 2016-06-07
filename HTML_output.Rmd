@@ -1,6 +1,6 @@
 ---
-title: "`r gsub('.*Model', 'Model', db$filename)`"
-author: "`r Sys.info()['user']`"
+title: "Multi-area Grid Metrics Analyzer"
+author: "Created by: National Renewable Energy Laboratory (NREL)"
 date: "`r format(Sys.time(), '%d %B %Y')`"
 output: 
   html_document: 
@@ -12,14 +12,18 @@ output:
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Set up default options for chunks, turn off error or warning messages.
 knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, include=TRUE,
-                      fig.path=fig.path.name, cache.path=cache.path.name, dev='png')
+                      fig.path=fig.path.name, dev='png')
 
 # Query data from plexos solution file
 source('setup_dataQueries.R')
+
 # Set height for figure in regional generation chunk
 f.height = ( length(zone.names) %/% 2 + length(zone.names) %% 2 ) * 5
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
+
+### Data below generated for:
+"`r gsub('.*Model', 'Model', db$filename)`"
 
 ***
 ## Annual Dispatch Stacks 
@@ -290,8 +294,45 @@ source('source_scripts/p_price_duration_curve.R')
 
 ***
 ## 21. DA-RT Committment and Dispatch Plots
-```{r committment-dispatch}
+```{r committment-dispatch, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_DA_RT_commit_dispatch.R')
+if (commit.dispatch) {
+  
+  source('source_scripts/d_DA_RT_commit_dispatch.R')
+  
+  da.rt.zone = list() # Creates empty list for plot data
+  da.rt.region = list() # Creates empty list for plot data
+  r.idx = 1
+  z.idx = 1
+
+  for ( p in 1:n.periods ) {
+  period.name = period.names[p]
+  
+    for ( z in 1:length(zone.names) ) {
+        zone.name = zone.names[z]
+        da.rt.zone[[z.idx]] = knit_expand(file = 'source_scripts/p_DA_RT_commit_dispatch_zone.Rmd', period.name = period.name, zone.name = zone.name) 
+        z.idx = z.idx + 1
+    } 
+  
+    for ( r in 1:length(region.names) ) {
+        region.name = region.names[r]
+        da.rt.region[[r.idx]] = knit_expand(file = 'source_scripts/p_DA_RT_commit_dispatch_region.Rmd', period.name = period.name, region.name = region.name)
+        r.idx = r.idx + 1
+    }
+
+  }
+
+  # Reconstruct the plot data into a format that will be output into the HTML below
+  da.rt.zone = knit_child(text = unlist(da.rt.zone))
+  da.rt.region = knit_child(text = unlist(da.rt.region))
+
+} else { da.rt.zone = 'Section not run according to input file.'
+         da.rt.region = 'Section not run according to input file.' }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
+
+## Zones
+`r da.rt.zone`
+
+## Regions
+`r da.rt.region`

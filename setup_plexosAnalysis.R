@@ -80,6 +80,9 @@ gen.order = rev(as.character(na.omit(inputs$Gen.Order)))
 # Types of renewables to be considered for curtailment calculations
 re.types = as.character(na.omit(inputs$Renewable.Types.for.Curtailment)) 
 
+# Types of generation to be plotted in the DA-RT committmet dispatch plots
+da.rt.types = as.character(na.omit(inputs$DA.RT.Plot.Types))
+
 # Names of key periods
 period.names = as.character(na.omit(inputs$Key.Periods)) 
 
@@ -102,9 +105,6 @@ run.sections = na.omit(inputs$Sections.to.Run)
 
 # Location for saved figures
 fig.path.name = paste0(as.character(na.omit(inputs$Fig.Path)),'\\')
-
-# Location for saved caches
-cache.path.name = paste0(as.character(na.omit(inputs$Cache.Path)),'\\')
 
 # Zones to ignore for plotting
 ignore.zones = as.character(na.omit(inputs$Ignore.Zones))
@@ -156,7 +156,7 @@ if(8 %in% run.sections)  {yearly.curtailment=TRUE}              else {yearly.cur
 if(9 %in% run.sections)  {daily.curtailment=TRUE}               else {daily.curtailment=FALSE}
 if(10 %in% run.sections) {annual.generation.table=TRUE}         else {annual.generation.table=FALSE}
 if(11 %in% run.sections) {annual.cost.table=TRUE}               else {annual.cost.table=FALSE}
-if(12 %in% run.sections) {region.zone.flow.table=TRUE}          else {region.zone.flow.tables=FALSE}
+if(12 %in% run.sections) {region.zone.flow.table=TRUE}          else {region.zone.flow.table=FALSE}
 if(13 %in% run.sections) {interface.flow.table=TRUE}            else {interface.flow.table=FALSE}
 if(14 %in% run.sections) {interface.flow.plots=TRUE}            else {interface.flow.plots=FALSE}
 if(15 %in% run.sections) {key.period.interface.flow.plots=TRUE} else {key.period.interface.flow.plots=FALSE}
@@ -165,7 +165,7 @@ if(17 %in% run.sections) {reserves.plots=TRUE}                  else {reserves.p
 if(18 %in% run.sections) {region.zone.gen.table=TRUE}           else {region.zone.gen.table=FALSE}
 if(19 %in% run.sections) {capacity.factor.table=TRUE}           else {capacity.factor.table=FALSE}
 if(20 %in% run.sections) {price.duration.curve=TRUE}            else {price.duration.curve=FALSE}
-if(21 %in% run.secitons) {commit.dispatch=TRUE}                 else {commit.dispatch=FALSE}
+if(21 %in% run.sections) {commit.dispatch=TRUE}                 else {commit.dispatch=FALSE}
 
 
 

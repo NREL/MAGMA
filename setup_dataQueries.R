@@ -6,7 +6,7 @@ yr.data.reserve        = tryCatch( yr_reserve_query(db), error = function(cond) 
 yr.data.interface      = tryCatch( yr_interface_query(db), error = function(cond) { return('ERROR') } )
 
 if ( key.period.dispatch.total | key.period.dispatch.region | key.period.dispatch.zone |
-     yearly.curtailment | daily.curtailment ) {
+     yearly.curtailment | daily.curtailment | commit.dispatch ) {
   int.data.gen       = tryCatch( int_gen_query(db), error = function(cond) { return('ERROR') } )
   int.data.avail.cap = tryCatch( int_avail_cap_query(db), error = function(cond) { return('ERROR') } )
   int.data.region    = tryCatch( int_region_query(db), error = function(cond) { return('ERROR') } )
@@ -26,7 +26,7 @@ if ( price.duration.curve & !exists('int.data.region') ) {
 }
 
 if ( commit.dispatch ) {
-  int.data.commit = tryCatch( int_commit_query(db.day.ahead), error = function(cond) { return('ERROR') } )
+  int.data.commit = tryCatch( int_avail_cap_query(db.day.ahead), error = function(cond) { return('ERROR') } )
 }
 
 r.load = tryCatch( region_load(yr.data.region), error = function(cond) { return('ERROR') } )
