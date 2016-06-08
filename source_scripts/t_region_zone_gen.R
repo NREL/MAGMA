@@ -1,6 +1,7 @@
-
+# Check if this section was selected to run in the input file
 if(region.zone.gen.table) {
 
+# If it doesn't already exist then call the query function.
 if ( !exists('r.z.gen') ) {
   # Query region and zonal generation
   r.z.gen = tryCatch( select(region_zone_gen(yr.data.generator), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR: region_zone_gen function not returning correct results.') } )
@@ -11,14 +12,17 @@ if ( typeof(r.z.gen)=='character' ) {
   z.gen.table = 'ERROR: region_zone_gen function not returning correct results.'
 } else {
 
-  r.z.gen$Type = factor(r.z.gen$Type, levels = gen.order)
+  r.z.gen$Type = factor(r.z.gen$Type, levels = gen.order) # Reassign the order which the generation type will be displayed.
   
+  # Sum regional generation by type
   r.gen.table = r.z.gen %>%
     dcast(Region~Type, value.var = 'GWh', fun.aggregate = sum)
   
+  # Sum zonal generation by type
   z.gen.table = r.z.gen %>%
     dcast(Zone~Type, value.var = 'GWh', fun.aggregate = sum)
   
+  # If the data looks good, add load to the regional generation.
   if (typeof(r.load)=='character' ) {
     r.gen.table = 'ERROR: region_load function not returning correct results.'  
   } else {
@@ -26,6 +30,7 @@ if ( typeof(r.z.gen)=='character' ) {
     r.gen.table = join(r.gen.table, region.load, by = 'Region')
   }
   
+  # If the data looks good, add load to the zonal generation.
   if (typeof(z.load)=='character' ) {
     z.gen.table = 'ERROR: zone_load function not returning correct results.'
   } else {

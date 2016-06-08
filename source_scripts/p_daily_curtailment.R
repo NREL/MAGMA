@@ -1,15 +1,18 @@
-
+# Check if this section was selected to run in the input file
 if (daily.curtailment){
 
+# If the data doesn't exist, run the query function. 
 if ( !exists('daily.curt') ) {
 # Query curtailment data
 daily.curt = tryCatch( daily_curtailment(int.data.gen, int.data.avail.cap), error = function(cond) { return('ERROR')})
 }
 
+# Check for errors in the querying function.
 if ( typeof(daily.curt)=='character' ) { 
   print('ERROR: daily_curtailment function not returning correct results.')
 } else {
 
+  # Sum up the curtailment each interval to get hourly curtailment. Assign an hour of the day to each hour.
   hr.curt = data.frame(rowMeans(daily.curt))
   hr.curt['time'] = 1:intervals.per.day
   colnames(hr.curt) = c('Curtailment', 'time')

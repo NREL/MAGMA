@@ -1,18 +1,21 @@
 
 ```{r DA-RT-region-{{region.name}}-{{period.name}}, results='asis', include=TRUE}
-r.name = '{{region.name}}'
-p.name = '{{period.name}}'
-cat("### ", p.name, ': ', r.name)
-text.plot=11
+r.name = '{{region.name}}' # Assign region name
+p.name = '{{period.name}}' # Assign period name
+cat("### ", p.name, ': ', r.name) # Print period and region name above the plot
+text.plot=11 # Plot text size.
 figure.width = 9
 figure.height = 6
 ```
 
 ```{r DA-RT-plot-region-{{region.name}}-{{period.name}}, fig.width=figure.width, fig.height=figure.height, include=TRUE}
+# Check to make sure this region shouldn't be ignored.
 if ( !r.name %in% ignore.regions ) {
   
+  # Pull out only the data for the generation types specified in the input file and the current region and period.
   plot.data = filter(plot.data.all, Type %in% da.rt.types, Region==r.name, Period==p.name)
   
+  # Assign the order which the generation types will appear in the plot.
   plot.data$Type = factor(plot.data$Type, levels=rev(gen.order))
   
   # this is just for scaling the y-axis (either by load or generation, whichever is bigger)
@@ -20,6 +23,7 @@ if ( !r.name %in% ignore.regions ) {
     group_by(time) %>%
     summarise(value = sum(DA.cap))
 
+# Check that there is actually generation data to plot, otherwise don't make a plot.
 if ( length(stack.r$value)>0 & sum(stack.r$value)>0 ) {
 
   blank_data = plot.data %>%

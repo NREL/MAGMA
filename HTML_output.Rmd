@@ -55,6 +55,7 @@ source('source_scripts/p_region_gen_stacks.R')
 ## 4. Individual Regions
 ```{r individual-region-stacks, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Check if this section was selected to run in the input file
 if(individual.region.stacks.log) {
   
   # Source R script which calls region_zone_gen function and creates data for plots
@@ -91,37 +92,42 @@ if(individual.region.stacks.log) {
 ## 5-7. Specified Period Dispatch Stacks
 ``` {r key-period-dispatch, cache=FALSE, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Check if this section was selected to run in the input file
 if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.dispatch.region.log){  
 
   # Call interval_gen function and proces data for plots
   source('source_scripts/d_key_period_dispatch.R')
 
-if ( typeof(key.period.gen)=='character' ) {
-  print('ERROR: interval_gen function not returning correct results.')
-} else {
+  # Check to see if the right data is ready for plotting.
+  if ( typeof(key.period.gen)=='character' ) {
+    print('ERROR: interval_gen function not returning correct results.')
+  } else {
 
-  key.plots.total = list() # Creates empty list for plot data
-  key.plots.zone = list() # Creates empty list for plot data
-  key.plots.region = list() # Creates empty list for plot data
-  r.idx = 1
-  z.idx = 1
-  
-  # Create data for each plot for the interesting periods
-  for ( p in 1:n.periods ) {
-    period.name = period.names[p]
+    key.plots.total = list() # Creates empty list for plot data
+    key.plots.zone = list() # Creates empty list for plot data
+    key.plots.region = list() # Creates empty list for plot data
+    r.idx = 1
+    z.idx = 1
     
-    if (key.period.dispatch.total.log) {
-      key.plots.total[[p]] = knit_expand(file = 'source_scripts/p_key_period_dispatch_total.Rmd', period.name = period.name)
-    } else {key.period.dispatch.total  = 'Section not run according to input file.'}
-    
-    if (key.period.dispatch.zone.log) {
-      for ( z in 1:length(zone.names) ) {
-        zone.name = zone.names[z]
-        key.plots.zone[[z.idx]] = knit_expand(file = 'source_scripts/p_key_period_dispatch_zone.Rmd', period.name = period.name, zone.name = zone.name) 
-        z.idx = z.idx + 1
-      } 
+    # Create data for each plot for the interesting periods
+    for ( p in 1:n.periods ) {
+      period.name = period.names[p]
+      
+      # Check if total database info was selected in input file.
+      if (key.period.dispatch.total.log) {
+        key.plots.total[[p]] = knit_expand(file = 'source_scripts/p_key_period_dispatch_total.Rmd', period.name = period.name)
+      } else {key.period.dispatch.total  = 'Section not run according to input file.'}
+      
+      # Check if zonal dispatch stacks were selected in input file.
+      if (key.period.dispatch.zone.log) {
+        for ( z in 1:length(zone.names) ) {
+          zone.name = zone.names[z]
+          key.plots.zone[[z.idx]] = knit_expand(file = 'source_scripts/p_key_period_dispatch_zone.Rmd', period.name = period.name, zone.name = zone.name) 
+          z.idx = z.idx + 1
+        } 
     } else {key.period.dispatch.zone   = 'Section not run according to input file.'}
       
+    # Check if regional dispatch stacks were selected in input file.
     if (key.period.dispatch.region.log) {
       for ( r in 1:length(region.names) ) {
         region.name = region.names[r]
@@ -298,24 +304,28 @@ source('source_scripts/p_price_duration_curve.R')
 ## 21. DA-RT Committment and Dispatch Plots
 ```{r committment-dispatch, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Check if this section was selected to run in the input file
 if (commit.dispatch) {
   
-  source('source_scripts/d_DA_RT_commit_dispatch.R')
+  source('source_scripts/d_DA_RT_commit_dispatch.R') # Call this R script which created the data needed for plotting.
   
   da.rt.zone = list() # Creates empty list for plot data
   da.rt.region = list() # Creates empty list for plot data
-  r.idx = 1
-  z.idx = 1
+  r.idx = 1 # Start the region name index at 1
+  z.idx = 1 # Start the zone name index at 1
 
+  # Run the loop for each key period requested.
   for ( p in 1:n.periods ) {
-  period.name = period.names[p]
+    period.name = period.names[p]
   
+    # Create a plot for each zone
     for ( z in 1:length(zone.names) ) {
         zone.name = zone.names[z]
         da.rt.zone[[z.idx]] = knit_expand(file = 'source_scripts/p_DA_RT_commit_dispatch_zone.Rmd', period.name = period.name, zone.name = zone.name) 
         z.idx = z.idx + 1
     } 
   
+    # Create a plot for each region.
     for ( r in 1:length(region.names) ) {
         region.name = region.names[r]
         da.rt.region[[r.idx]] = knit_expand(file = 'source_scripts/p_DA_RT_commit_dispatch_region.Rmd', period.name = period.name, region.name = region.name)

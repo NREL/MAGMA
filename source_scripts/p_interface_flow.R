@@ -1,8 +1,10 @@
-
+# Check if this section was selected to run in the input file
 if (interface.flow.plots) {
 
+# Call the query function to get interface flows for the interfaces selected in the query function.
 interface.flows = tryCatch( interval_interface_flows(int.data.interface), error=function(cond) {return('ERROR: interface_flows query not returning correct results.')})
   
+# Check for errors in the query function. If theres an error don't continue.
 if ( typeof(interface.flows)=='character' ) { 
 print('ERROR: interface_flows function not returning correct results.')
 } else {

@@ -1,4 +1,4 @@
-
+# Check if this section was selected to run in the input file
 if(reserves.plots) {
 
 # Reserves interval data query

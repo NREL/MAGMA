@@ -1,8 +1,9 @@
 
-# Query curtailment data
+# Call query functions to get committed capacity (day ahead) and available capacity in the real time.
 committed.cap = tryCatch( cap_committed(int.data.commit), error = function(cond) { return('ERROR')})
 avail.cap.rt = tryCatch( cap_committed(int.data.avail.cap), error = function(cond) { return('ERROR')})
 
+# Check to see if interval generation data already exists. If it doesn't call that query function.
 if( !exists('int.gen') ) {
   int.gen = tryCatch( interval_gen(int.data.region, int.data.zone, int.data.gen, int.data.avail.cap), error = function(cond) { return('ERROR') } )
 }
@@ -12,6 +13,7 @@ if ( typeof(committed.cap)=='character' | typeof(int.gen)=='character' | typeof(
   print('ERROR: daily_curtailment or cap_committed function not returning correct results.')
 } else {
   
+  # Remove unneccessary data columns and rearrange the data for plotting. This is interval generation data in the real time.
   da.rt.data = int.gen %>%
     select(-Price, -Curtailment, -Load) %>%
     melt(id.vars = .(time, Region, Zone), variable.name = 'Type', value.name='RT.gen')
@@ -19,10 +21,12 @@ if ( typeof(committed.cap)=='character' | typeof(int.gen)=='character' | typeof(
   names(avail.cap.rt)[names(avail.cap.rt)=='committed.cap']='RT.cap'
   names(committed.cap)[names(committed.cap)=='committed.cap']='DA.cap'
   
+  # Add the day ahead capacity and real time capacity to the real time generation.
   da.rt.data = da.rt.data %>%
     merge(avail.cap.rt, by=c('time', 'Region', 'Zone', 'Type') ) %>%
     merge(committed.cap, by=c('time', 'Region', 'Zone', 'Type') ) 
   
+  # Only pull out data for the time spans that were requested in the input file. 
   for ( i in 1:n.periods ) {
     key.period.time = seq(start.end.times[i,'start'], start.end.times[i,'end'], 
                           by = min(da.rt.data$time[da.rt.data$time>min(da.rt.data$time)]) - min(da.rt.data$time))

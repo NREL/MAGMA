@@ -1,21 +1,24 @@
 
 ```{r DA-RT-zone-{{zone.name}}-{{period.name}}, results='asis', include=TRUE}
-z.name = '{{zone.name}}'
-p.name = '{{period.name}}'
-cat("### ", p.name, ': ', z.name)
-text.plot=11
+z.name = '{{zone.name}}' # Assign zone name
+p.name = '{{period.name}}' # Assign period name
+cat("### ", p.name, ': ', z.name) # Print period and zone name above the plot
+text.plot=11 # Plot text size.
 figure.width = 9
 figure.height = 6
 ```
 
 ```{r DA-RT-plot-zone-{{zone.name}}-{{period.name}}, fig.width=figure.width, fig.height=figure.height, include=TRUE}
+# Check to make sure this zone shouldn't be ignored
 if ( !z.name %in% ignore.zones ) {
-
+  
+  # Pull out only the data for the generation types specified in the input file and the current zone and period. Summarise by zone.
   plot.data = plot.data.all %>%
     filter(Type %in% da.rt.types, Zone==z.name, Period==p.name) %>%
     group_by(Zone, time, Type, Period) %>%
     summarise(RT.gen = sum(RT.gen), RT.cap = sum(RT.cap), DA.cap = sum(DA.cap))
   
+  # Assign the order which the generation types will appear in the plot.
   plot.data$Type = factor(plot.data$Type, levels=rev(gen.order))
   
   # this is just for scaling the y-axis (either by load or generation, whichever is bigger)
@@ -23,6 +26,7 @@ if ( !z.name %in% ignore.zones ) {
     group_by(time) %>%
     summarise(value = sum(DA.cap))
 
+# Check that there is actually generation data to plot, otherwise don't make a plot.
 if ( length(stack.r$value)>0 & sum(stack.r$value)>0 ) {
 
   blank_data = plot.data %>%

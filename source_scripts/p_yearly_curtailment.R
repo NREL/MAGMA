@@ -1,9 +1,10 @@
+# Check if this section was selected to run in the input file
 if (yearly.curtailment) {
 
 # Query curtailment data
 daily.curt = tryCatch( daily_curtailment(int.data.gen, int.data.avail.cap), error = function(cond) { return('ERROR')})
 
-# If there is a problem with the query return an error, else create the plots.
+# If there is a problem with the query return an error.
 if ( typeof(daily.curt)=='character' ) { 
   print('ERROR: daily_curtailment function not returning correct results.')
 } else {

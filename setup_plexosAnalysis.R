@@ -140,10 +140,12 @@ db = plexos_open(db.loc)
 db = db[1,]
 attributes(db)$class = c("rplexos","data.frame","tbl_df")
 
+# Open the day ahead database file
 db.day.ahead = tryCatch(plexos_open(db.day.ahead.loc), error = function(cond) { return(data.frame('ERROR'))})
 db.day.ahead = db.day.ahead[1,]
 attributes(db.day.ahead)$class = c('rplexos', 'data.frame', 'tbl_df')
 
+# Assign a logical to each chunk run selector. 
 run.sections = na.omit(inputs$Sections.to.Run)
 if(1 %in% run.sections)  {total.gen.stack=TRUE}                 else {total.gen.stack=FALSE} 
 if(2 %in% run.sections)  {zone.gen.stacks=TRUE}                 else {zone.gen.stacks=FALSE}

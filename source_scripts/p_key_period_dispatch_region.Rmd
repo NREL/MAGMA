@@ -1,8 +1,8 @@
 
 ```{r key-period-dispatch-region-{{period.name}}-{{region.name}}, results='asis', include=TRUE}
-p.name = '{{period.name}}'
-r.name = '{{region.name}}'
-cat("### ", p.name, ': ', r.name)
+p.name = '{{period.name}}' # Set key period name
+r.name = '{{region.name}}' # Set region name
+cat("### ", p.name, ': ', r.name) # Print out key period and region name above plot
 text.plot=11
 figure.width = 9
 figure.height = 6
@@ -20,8 +20,10 @@ stack.r = filter(gen.type.region, Period==p.name, Region==r.name) %>%
   summarise(value = sum(value))
 # stack.r$Type = "ALL"
 
+# Check to make sure there is actually generation data for this region. If not, no plot is crated.
 if ( length(stack.r$value)>0 & sum(stack.r$value)>0 ) {
   
+  # If load is larger than generation, reassign the y-axis height so load isn't cut off.
   if (max(filter(gen.load, Period==p.name, Region==r.name)$value)>max(stack.r$value)){
     stack.r = filter(gen.load, Period==p.name, Region==r.name) %>%
       group_by(time) %>%

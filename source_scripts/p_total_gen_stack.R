@@ -1,3 +1,4 @@
+# Check if this section was selected run in the input file
 if (total.gen.stack){
 
 # Query annual generation by type.

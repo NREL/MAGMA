@@ -1,4 +1,4 @@
-
+# Check if this section was selected run in the input file
 if (region.gen.stacks) {
 
 if( !exists('r.z.gen') ) {

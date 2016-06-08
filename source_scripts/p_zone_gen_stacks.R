@@ -1,4 +1,4 @@
-
+# Check if this section was selected run in the input file
 if (zone.gen.stacks) {
 
 # Query region and zonal generation

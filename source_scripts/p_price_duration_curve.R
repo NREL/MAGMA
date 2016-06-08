@@ -1,6 +1,7 @@
-
+# Check if this section was selected to run in the input file
 if(price.duration.curve) {
 
+# If price duration curve is selected in the input file, int.data.region should be created.
 region.data = int.data.region
 
 # If there is a problem with the query return an error, else create the plots.
@@ -8,8 +9,10 @@ if ( typeof(region.data)=='character' ) {
   print('ERROR: int_region_query function not returning correct results.')
 } else {
 
+  # Pull out price from the regional data query
   region.data = filter(region.data, property == 'Price')
   
+  # Separate price for each region and create a duration curve for each region. 
   for ( i in 1:length(unique(region.data$name)) ) {
     r.name = unique(region.data$name)[i]
     d.curve.data = filter(region.data, name==r.name)
@@ -17,6 +20,7 @@ if ( typeof(region.data)=='character' ) {
     d.curve.data$interval = ( seq(1:nrow(d.curve.data)) - nrow(d.curve.data) )*-1
     d.curve.data$area = r.name
 
+    # Combine the duration curves for each region as the loop runs.
     if ( i == 1 ) {
       plot.data = d.curve.data
     } else {
@@ -40,7 +44,7 @@ p.1 = ggplot(plot.data)+
 #               aspect.ratio =     0.5,
                 panel.margin =     unit(1.0, "lines") )
   
-  # Create plot
+  # Create plot with slightly different y-axis limit.
 p.2 = ggplot(plot.data)+
          geom_line(aes(x=interval, y=value, color=area), size=0.8)+  
          ylim(c(0,200))+

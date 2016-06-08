@@ -1,8 +1,8 @@
 
 ```{r key-period-dispatch-zone-{{period.name}}-{{zone.name}}, results='asis', include=TRUE}
-p.name = '{{period.name}}'
-z.name = '{{zone.name}}'
-cat("### ", p.name, ': ', z.name)
+p.name = '{{period.name}}' # Assign key period name
+z.name = '{{zone.name}}' # Assign zone name
+cat("### ", p.name, ': ', z.name) # Print key period and zone name above plot
 text.plot=11
 figure.width = 9
 figure.height = 6
@@ -18,12 +18,13 @@ figure.height = 6
 stack.z = filter(gen.type.zone, Period==p.name, Zone==z.name) %>% 
   group_by(time) %>%
   summarise(value = sum(value))
-# stack.z$Type = "ALL"
+
+# If load is larger than generation, reassign y-axis height so load isn't cut off 
 if (max(filter(gen.load.zone, Period==p.name, Zone==z.name)$value)>max(stack.z$value)){
   stack.z = filter(gen.load.zone, Period==p.name, Zone==z.name) %>%
     group_by(time) %>%
     summarise(value=sum(value))
-  }
+}
 
 # This automatically creates the y-axis scaling
 py.z  =pretty(stack.z$value/1000, n = 4)

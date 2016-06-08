@@ -1,15 +1,13 @@
-# Query interval generation by type data
+
+# Query interval generation by type from interval data
 int.gen = tryCatch( interval_gen(int.data.region, int.data.zone, int.data.gen, int.data.avail.cap), error = function(cond) { return('ERROR') } )
 
-# If the query doesn't work, return an error. Else create plot.
+# If the query doesn't work, return an error. 
 if ( typeof(int.gen)=='character' ) { 
   print('ERROR: interval_gen function not returning correct results.')
 } else {
   
-  # Previous version of script used this up here. No longer needed.
-  # # Rearrange factor levels for plotting.
-  # int.gen$Type = factor(int.gen$Type, levels = c(gen.order, 'Load')) 
-  
+  # From the full year of data, pull out only the data corresponding to the key periods specified in the input file. 
   for ( i in 1:n.periods ) {
     key.period.time = seq(start.end.times[i,'start'], start.end.times[i,'end'], 
                           by = min(int.gen$time[int.gen$time>min(int.gen$time)]) - min(int.gen$time))
@@ -23,19 +21,19 @@ if ( typeof(int.gen)=='character' ) {
     }
   }
 
-  # Sum generation by type, and rearrange data for plotting.
+  # Rearrange data for plotting
   key.period.gen = int.gen.key.periods %>%
-    # Previous version had already melted data frame which had to be casted before melting. No longer needed.
-    # dcast(time+Period+Region+Zone~Type, value.var = 'value', fun.aggregate = sum) %>% 
     melt(id.vars = c('time', 'Period', 'Region', 'Zone'), variable.name = 'Type', value.name = 'value')
   
   # Rearrange factor levels for plotting.
   key.period.gen$Type = factor(key.period.gen$Type, levels = c(gen.order, 'Load')) 
   
+  # Pull out just generation data
   gen.type = subset(key.period.gen, Type != 'Load')
   gen.type$value[gen.type$value<0]=0
   gen.type$Period = ordered(gen.type$Period, levels = period.names)
   
+  # Pull out just load data
   gen.load = subset(key.period.gen, Type %in% 'Load')
 
   # ###############################################################################
