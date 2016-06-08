@@ -5,7 +5,7 @@ yr.data.zone           = tryCatch( yr_zone_query(db), error = function(cond) { r
 yr.data.reserve        = tryCatch( yr_reserve_query(db), error = function(cond) { return('ERROR') } )
 yr.data.interface      = tryCatch( yr_interface_query(db), error = function(cond) { return('ERROR') } )
 
-if ( key.period.dispatch.total | key.period.dispatch.region | key.period.dispatch.zone |
+if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period.dispatch.zone.log |
      yearly.curtailment | daily.curtailment | commit.dispatch ) {
   int.data.gen       = tryCatch( int_gen_query(db), error = function(cond) { return('ERROR') } )
   int.data.avail.cap = tryCatch( int_avail_cap_query(db), error = function(cond) { return('ERROR') } )
