@@ -14,10 +14,10 @@ output:
 knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, include=TRUE,
                       fig.path=fig.path.name, dev='png')
 
-# Query data from plexos solution file
+# Query data from plexos solution file by sourcing data query R script.
 source('setup_dataQueries.R')
 
-# Set height for figure in regional generation chunk
+# Set dynamic height for figure in regional generation chunk
 f.height = ( length(zone.names) %/% 2 + length(zone.names) %% 2 ) * 5
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
@@ -55,15 +55,17 @@ source('source_scripts/p_region_gen_stacks.R')
 ## 4. Individual Regions
 ```{r individual-region-stacks, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if(individual.region.stacks) {
+if(individual.region.stacks.log) {
   
-  # Call region_zone_gen function and create data for plots
+  # Source R script which calls region_zone_gen function and creates data for plots
   source('source_scripts/d_individual_region_stacks.R')
-     
+  
+  # As long as the file exists (previous source found the R script) this loop runs
   if ( exists('r.z.gen.plot') ) {
-    # If the regional query didn't work, return an error. Else create plots.
+    # If the regional query didn't work, return an error. Else create the plots by calling the markdown file.
     if ( typeof(r.z.gen.plot)=='character' ) {
       print('ERROR: region_zone_gen function not returning correct results.')
+    # If regional load query from the setup_dataQueries file didn't work, the loop ends here.
     } else if ( typeof(r.load) == 'character' ) {
       print('ERROR: region_load function not returning correct results.')
     } else {
@@ -89,13 +91,13 @@ if(individual.region.stacks) {
 ## 5-7. Specified Period Dispatch Stacks
 ``` {r key-period-dispatch, cache=FALSE, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (key.period.dispatch.total | key.period.dispatch.zone | key.period.dispatch.region){  
+if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.dispatch.region.log){  
 
   # Call interval_gen function and proces data for plots
   source('source_scripts/d_key_period_dispatch.R')
 
 if ( typeof(key.period.gen)=='character' ) {
-  
+  print('ERROR: interval_gen function not returning correct results.')
 } else {
 
   key.plots.total = list() # Creates empty list for plot data
@@ -108,11 +110,11 @@ if ( typeof(key.period.gen)=='character' ) {
   for ( p in 1:n.periods ) {
     period.name = period.names[p]
     
-    if (key.period.dispatch.total) {
+    if (key.period.dispatch.total.log) {
       key.plots.total[[p]] = knit_expand(file = 'source_scripts/p_key_period_dispatch_total.Rmd', period.name = period.name)
     } else {key.period.dispatch.total  = 'Section not run according to input file.'}
     
-    if (key.period.dispatch.zone) {
+    if (key.period.dispatch.zone.log) {
       for ( z in 1:length(zone.names) ) {
         zone.name = zone.names[z]
         key.plots.zone[[z.idx]] = knit_expand(file = 'source_scripts/p_key_period_dispatch_zone.Rmd', period.name = period.name, zone.name = zone.name) 
@@ -120,7 +122,7 @@ if ( typeof(key.period.gen)=='character' ) {
       } 
     } else {key.period.dispatch.zone   = 'Section not run according to input file.'}
       
-    if (key.period.dispatch.region) {
+    if (key.period.dispatch.region.log) {
       for ( r in 1:length(region.names) ) {
         region.name = region.names[r]
         key.plots.region[[r.idx]] = knit_expand(file = 'source_scripts/p_key_period_dispatch_region.Rmd', period.name = period.name, region.name = region.name)
@@ -130,9 +132,9 @@ if ( typeof(key.period.gen)=='character' ) {
   }
 
   # Reconstruct the plot data into a format that will be output into the HTML below
-  if (key.period.dispatch.total) { key.period.dispatch.total = knit_child(text = unlist(key.plots.total)) }
-  if (key.period.dispatch.zone) { key.period.dispatch.zone = knit_child(text = unlist(key.plots.zone)) }
-  if (key.period.dispatch.region) { key.period.dispatch.region = knit_child(text = unlist(key.plots.region)) }
+  if (key.period.dispatch.total.log) { key.period.dispatch.total = knit_child(text = unlist(key.plots.total)) }
+  if (key.period.dispatch.zone.log) { key.period.dispatch.zone = knit_child(text = unlist(key.plots.zone)) }
+  if (key.period.dispatch.region.log) { key.period.dispatch.region = knit_child(text = unlist(key.plots.region)) }
 }
 } else { key.period.dispatch.total  = 'Section not run according to input file.'
          key.period.dispatch.zone   = 'Section not run according to input file.' 

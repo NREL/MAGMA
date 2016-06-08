@@ -20,21 +20,21 @@ if ( typeof(r.z.gen)=='character' ) {
   r.z.gen.sum = r.z.gen %>% 
     dplyr::summarise(TWh=sum(GWh)/1000) #change GWh generation to TWh
   
-  # Convert GWh to TWh
+  # Convert GWh to TWh and remove region and zone data that should be ignored
   r.z.gen.plot = r.z.gen %>%
     group_by(Type, Region, Zone) %>%
     dplyr::summarise(TWh = sum(GWh)/1000) %>%
     filter(!Zone %in% ignore.zones) %>%
     filter(!Region %in% ignore.regions)
     
-  region.load = filter(r.load, !name %in% ignore.regions)
+  region.load = filter(r.load, !name %in% ignore.regions) # Remove load data from regions being ignored
   colnames(region.load)[which(colnames(region.load)=='name')]='Region'
   region.load$value = region.load$value/1000
   
   region.load = region.load %>%
     join(region.zone.mapping[,c('Zone', 'Region')], by = 'Region', type='left', match='first') %>%
     filter(!Zone %in% ignore.zones) %>%
-    filter(!Region %in% ignore.regions)
+    filter(!Region %in% ignore.regions) # This line of code is mostly redundant since the ignored regions are removed a couple lines above. 
   region.load = region.load[complete.cases(region.load),]
   
   # *** Not needed for these plots as y-axis is varying. ***

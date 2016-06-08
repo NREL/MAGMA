@@ -3,7 +3,7 @@ if (total.gen.stack){
 # Query annual generation by type.
 yr.gen = tryCatch( gen_by_type(yr.data.generator), error = function(cond) { return('ERROR') } )
 
-# If the query doesn't work, print an error. Else create the plot.
+# If the query doesn't work, print an error. Else continue.
 if ( typeof(yr.gen)=='character' ) {
   print('ERROR: gen_by_type function not returning correct results.')
 } else {

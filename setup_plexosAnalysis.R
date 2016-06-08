@@ -148,10 +148,10 @@ run.sections = na.omit(inputs$Sections.to.Run)
 if(1 %in% run.sections)  {total.gen.stack=TRUE}                 else {total.gen.stack=FALSE} 
 if(2 %in% run.sections)  {zone.gen.stacks=TRUE}                 else {zone.gen.stacks=FALSE}
 if(3 %in% run.sections)  {region.gen.stacks=TRUE}               else {region.gen.stacks=FALSE}
-if(4 %in% run.sections)  {individual.region.stacks=TRUE}        else {individual.region.stacks=FALSE}
-if(5 %in% run.sections)  {key.period.dispatch.total=TRUE}       else {key.period.dispatch.total=FALSE}
-if(6 %in% run.sections)  {key.period.dispatch.region=TRUE}      else {key.period.dispatch.region=FALSE}
-if(7 %in% run.sections)  {key.period.dispatch.zone=TRUE}        else {key.period.dispatch.zone=FALSE}
+if(4 %in% run.sections)  {individual.region.stacks.log=TRUE}    else {individual.region.stacks.log=FALSE}
+if(5 %in% run.sections)  {key.period.dispatch.total.log=TRUE}   else {key.period.dispatch.total.log=FALSE}
+if(6 %in% run.sections)  {key.period.dispatch.region.log=TRUE}  else {key.period.dispatch.region.log=FALSE}
+if(7 %in% run.sections)  {key.period.dispatch.zone.log=TRUE}    else {key.period.dispatch.zone.log=FALSE}
 if(8 %in% run.sections)  {yearly.curtailment=TRUE}              else {yearly.curtailment=FALSE}
 if(9 %in% run.sections)  {daily.curtailment=TRUE}               else {daily.curtailment=FALSE}
 if(10 %in% run.sections) {annual.generation.table=TRUE}         else {annual.generation.table=FALSE}

@@ -1,16 +1,18 @@
 
 ```{r individual-region-stack-header-{{region.name}}, results='asis', include=TRUE}
-r.name = '{{region.name}}'
-cat("###  ", r.name)
-text.plot=11
+r.name = '{{region.name}}' # Set the current region name
+cat("###  ", r.name) # Print out the region name above the plot
+text.plot=11 # Set size of plot text
 # figure.width = 5
-figure.height = 3.5
+figure.height = 3.5 # Set figure height
 ```
 
 ```{r individual-region-stack-{{region.name}}, fig.height=figure.height, include=TRUE}
+# Using plot data generated in previously sourced file, filter out only the current region.
 plot.data = r.z.gen.plot %>%
   filter(Region == r.name)
 
+# Pull out load for the current region and convert to TWh
 region.load = filter(r.load, name == r.name)
 region.load$value = region.load$value/1000
 
@@ -18,6 +20,7 @@ region.load$value = region.load$value/1000
 plot.data.sum = ungroup(plot.data) %>% 
   dplyr::summarise(TWh = sum(TWh)) #change GWh generation to TWh
 
+# Check to see if the load is higher than the generation, and set plot height to that.
 if (region.load$value>plot.data.sum) {
   plot.data.sum$TWh = region.load$value
 }
@@ -26,8 +29,10 @@ if (region.load$value>plot.data.sum) {
 py=pretty(plot.data.sum$TWh, n = 4)
 seq.py=seq(0, py[length(py)], (py[2]-py[1]))
 
+# Check to see if there is any generation, otherwise generation is plotted.
 if ( sum(plot.data$TWh)>0 ) { 
 
+  # Create plot
   p = ggplot() +
      geom_bar(data = plot.data, aes(x = r.name, y = TWh, fill=Type, order=as.numeric(Type)), stat="identity", position="stack" ) +
      geom_errorbar(aes(x=name, y=value, ymin=value, ymax=value, color='load'), data=region.load, linetype='longdash', size=0.45)+
@@ -49,6 +54,7 @@ if ( sum(plot.data$TWh)>0 ) {
                aspect.ratio =    2.5 )
   print(p)
     
+  # If there is no generation just plot the region load.
 } else {
   
     p = ggplot() +

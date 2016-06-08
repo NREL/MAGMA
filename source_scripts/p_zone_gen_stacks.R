@@ -24,7 +24,7 @@ if ( typeof(r.z.gen)=='character' ) {
     dplyr::summarise(TWh = sum(GWh)/1000) %>%
     filter(!Zone %in% ignore.zones)
     
-  zone.load = filter(z.load, !name %in% ignore.zones)
+  zone.load = filter(z.load, !name %in% ignore.zones) # Remove load from zones that are being ignored
   zone.load$value = zone.load$value/1000
 
   # ***Not needed for these plots as the y axis scaling changes***
