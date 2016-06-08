@@ -140,7 +140,7 @@ db = plexos_open(db.loc)
 db = db[1,]
 attributes(db)$class = c("rplexos","data.frame","tbl_df")
 
-db.day.ahead = plexos_open(db.day.ahead.loc)
+db.day.ahead = tryCatch(plexos_open(db.day.ahead.loc), error = function(cond) { return(data.frame('ERROR'))})
 db.day.ahead = db.day.ahead[1,]
 attributes(db.day.ahead)$class = c('rplexos', 'data.frame', 'tbl_df')
 
