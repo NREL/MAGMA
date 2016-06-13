@@ -5,8 +5,8 @@
 3. Regional annual generation stacks
 4. Individual region, annual generation stacks
 5. Total database key period generation stacks
-6. Regional key period generation stacks
-7. Zonal key period generation stacks
+6. Zonal key period generation stacks
+7. Regional key period generation stacks
 8. Yearly curtailment
 9. Daily curtailment
 10. Annual generation table
