@@ -152,8 +152,8 @@ if(2 %in% run.sections)  {zone.gen.stacks=TRUE}                 else {zone.gen.s
 if(3 %in% run.sections)  {region.gen.stacks=TRUE}               else {region.gen.stacks=FALSE}
 if(4 %in% run.sections)  {individual.region.stacks.log=TRUE}    else {individual.region.stacks.log=FALSE}
 if(5 %in% run.sections)  {key.period.dispatch.total.log=TRUE}   else {key.period.dispatch.total.log=FALSE}
-if(6 %in% run.sections)  {key.period.dispatch.region.log=TRUE}  else {key.period.dispatch.region.log=FALSE}
-if(7 %in% run.sections)  {key.period.dispatch.zone.log=TRUE}    else {key.period.dispatch.zone.log=FALSE}
+if(6 %in% run.sections)  {key.period.dispatch.zone.log=TRUE}    else {key.period.dispatch.zone.log=FALSE}
+if(7 %in% run.sections)  {key.period.dispatch.region.log=TRUE}  else {key.period.dispatch.region.log=FALSE}
 if(8 %in% run.sections)  {yearly.curtailment=TRUE}              else {yearly.curtailment=FALSE}
 if(9 %in% run.sections)  {daily.curtailment=TRUE}               else {daily.curtailment=FALSE}
 if(10 %in% run.sections) {annual.generation.table=TRUE}         else {annual.generation.table=FALSE}
