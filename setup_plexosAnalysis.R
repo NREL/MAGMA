@@ -132,7 +132,7 @@ if(length(list.files(pattern = "\\.zip$",path=db.loc))!=0 ) {
     } else {message('You need to run rPLEXOS to process your solution or point to the correct solution folder.')}
   } 
 } else if (length(list.files(pattern = '\\.db$', path=db.loc))!=0 ) {
-  message(paste0('Found .db solution file: ', list.files(pattern='\\.db$',path=db.loc)))
+  message(paste0('\nFound .db solution file: ', list.files(pattern='\\.db$',path=db.loc), '\n'))
 } else {message('No .zip or .db file... are you in the right directory?')}
 # -----------------------------------------------------------------------
 # Open the database file ( must already have created this using rplexos ) 
