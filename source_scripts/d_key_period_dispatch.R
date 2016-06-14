@@ -4,6 +4,7 @@ int.gen = tryCatch( interval_gen(int.data.region, int.data.zone, int.data.gen, i
 
 # If the query doesn't work, return an error. 
 if ( typeof(int.gen)=='character' ) { 
+  key.period.gen = 'ERROR: interval_gen function not returning correct results.'
   print('ERROR: interval_gen function not returning correct results.')
 } else {
   
