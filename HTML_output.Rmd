@@ -215,7 +215,7 @@ if(exists('annual.flows')) { kable(annual.flows, digits=3) }
 
 ***
 ## 14. Interface Flow Plots
-```{r interface-flow-plots}
+```{r interface-flow-plots, fig.width=7}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/p_interface_flow.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
