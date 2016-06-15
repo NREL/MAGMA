@@ -5,7 +5,7 @@
 
 setwd('C:/Users/moconnel/documents/MAGMA')
 master.script.dir <- 'MAGMA'
-input.csv = 'C:/Users/moconnel/documents/MAGMA/Examples/input_data.csv'
+input.csv = 'C:/Users/moconnel/documents/MAGMA/Examples/input_data_example.csv'
 # Sourcing the setup file and required functions
 source(file.path('query_functions.R'))
 source(file.path('setup_plexosAnalysis.R'))
