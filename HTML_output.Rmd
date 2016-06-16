@@ -223,36 +223,26 @@ source('source_scripts/p_interface_flow.R')
 
 ***
 ## 15. Specified Period Interface Flow Plot
-```{r zonal-flow-plots}
-if (15 %in% run.sections) {
-## 13.
-  # interchange.flows = tryCatch( interchange.flow(db), error=function(cond) {return('ERROR: Interface flows not found in query. Check initial setup file and PLEXOS outputs.')})
+```{r key-period-interface-flow-plots, include=FALSE}
+if (key.period.interface.flow.plots) {
 
-# for ( i in 1:n.periods) {
-#   if (i==1) {  
-#     plot.time = data.frame(time = seq(start.end.times$start[i], start.end.times$end[i], by = "1 hour"), Period = period.names[i]) 
-#   } else {
-#     plot.time = rbind(plot.time, data.frame(time = seq(start.end.times$start[i], start.end.times$end[i], by = "1 hour"), Period = period.names[i]))
-#   }
-# }
-#     
-# zonal.flows = zonal.flows %>%
-#   join(plot.time, by = 'time') %>%
-#   filter(time %in% plot.time$time)
-# 
-# key.plots = list()
-# 
-#   for ( p in 1:n.periods ) {
-#     period.name = period.names[p]
-#     key.plots[[p]] = knit_expand(file = '//plexossql/Data/moconnel/gtg/flow_plots.Rmd', period.name = period.name)
-#   }
-# 
-#   # Reconstruct the plot data into a format that will be output into the HTML below
-#   key.period.flow = knit_child(text = unlist(key.plots))
+  # Pull out interface flow data for only specified periods in input file
+  source('source_scripts/d_key_period_interface_flow.R')
+  
+  key.plots = list() # Creates empty list for plot data
+  
+  # Create data for each plot for the interesting periods
+  for (p in 1:n.periods) {
+    period.name = period.names[p]
+    key.plots[[p]] = knit_expand(file = 'source_scripts/p_key_period_interface_flow.Rmd', period.name = period.name)
+  }
 
-
-} else { key.period.flow = 'Section not run according to input file.' }
+  # Reconstruct the plot data into a format that will be output into the HTML below
+  key.period.interface.flow = knit_child(text = unlist(key.plots))
+    
+} else { key.period.interface.flow = 'Section not run according to input file.' }
 ```
+`r key.period.interface.flow`
 
 ***
 ## 16-17. Reserves

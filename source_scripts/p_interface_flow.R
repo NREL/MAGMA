@@ -16,7 +16,7 @@ interface.flows$name = factor(interface.flows$name, levels = interfaces)
 p1 = ggplot(interface.flows, aes(x=time, y=value/1000, color=name, group=name))+
       geom_line(size=1.2)+
       geom_hline(yintercept=0, color="black", size=0.3)+
-        scale_x_datetime(breaks = date_breaks(width = "1 month"), labels = date_format("%b"), expand = c(0, 0))+
+        scale_x_datetime(breaks = date_breaks(width = "1 month"), limits=c(first.day, last(seq(first.day, by='month', length.out=12))), labels = date_format("%b"), expand = c(0, 0))+
         scale_color_manual("", values = scen.pal)+
             labs(y="Flow (GW)", x = '', title='Interval Flow')+
             theme(legend.key = element_rect(NULL),
