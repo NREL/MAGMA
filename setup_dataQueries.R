@@ -12,7 +12,7 @@ yr.data.interface      = tryCatch( yr_interface_query(db), error = function(cond
 # If certain logicals are true, then the below interval queries will be called.
 
 if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period.dispatch.zone.log |
-     yearly.curtailment | daily.curtailment | commit.dispatch ) {
+     yearly.curtailment | daily.curtailment | commit.dispatch.zone | commit.dispatch.region ) {
   int.data.gen       = tryCatch( int_gen_query(db), error = function(cond) { return('ERROR') } ) # Interval level generation for each generator.
   int.data.avail.cap = tryCatch( int_avail_cap_query(db), error = function(cond) { return('ERROR') } ) # Interval level available capacity for each generator.
   int.data.region    = tryCatch( int_region_query(db), error = function(cond) { return('ERROR') } ) # interval level region load and price.
@@ -31,7 +31,7 @@ if ( price.duration.curve & !exists('int.data.region') ) {
   int.data.region = tryCatch( int_region_query(db), error = function(cond) { return('ERROR') } ) # Interval level region load and price. This is only called if one logical is true and it doesn't already exist.
 }
 
-if ( commit.dispatch ) {
+if ( commit.dispatch.zone | commit.dispatch.region ) {
   int.data.commit = tryCatch( int_avail_cap_query(db.day.ahead), error = function(cond) { return('ERROR') } ) # Interval level day ahead generator available capacity.
 }
 
