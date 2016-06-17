@@ -125,16 +125,16 @@ if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.di
           key.plots.zone[[z.idx]] = knit_expand(file = 'source_scripts/p_key_period_dispatch_zone.Rmd', period.name = period.name, zone.name = zone.name) 
           z.idx = z.idx + 1
         } 
-    } else {key.period.dispatch.zone   = 'Section not run according to input file.'}
+      } else {key.period.dispatch.zone   = 'Section not run according to input file.'}
       
-    # Check if regional dispatch stacks were selected in input file.
-    if (key.period.dispatch.region.log) {
-      for ( r in 1:length(region.names) ) {
-        region.name = region.names[r]
-        key.plots.region[[r.idx]] = knit_expand(file = 'source_scripts/p_key_period_dispatch_region.Rmd', period.name = period.name, region.name = region.name)
-        r.idx = r.idx + 1
-      }
-    } else {key.period.dispatch.region = 'Section not run according to input file.'}
+      # Check if regional dispatch stacks were selected in input file.
+      if (key.period.dispatch.region.log) {
+        for ( r in 1:length(region.names) ) {
+          region.name = region.names[r]
+          key.plots.region[[r.idx]] = knit_expand(file = 'source_scripts/p_key_period_dispatch_region.Rmd', period.name = period.name, region.name = region.name)
+          r.idx = r.idx + 1
+        }
+      } else {key.period.dispatch.region = 'Section not run according to input file.'}
   }
 
   # Reconstruct the plot data into a format that will be output into the HTML below
@@ -295,7 +295,7 @@ source('source_scripts/p_price_duration_curve.R')
 ```{r committment-dispatch, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
-if (commit.dispatch) {
+if (commit.dispatch.region | commit.dispatch.zone) {
   
   source('source_scripts/d_DA_RT_commit_dispatch.R') # Call this R script which created the data needed for plotting.
   
@@ -308,25 +308,29 @@ if (commit.dispatch) {
   for ( p in 1:n.periods ) {
     period.name = period.names[p]
   
-    # Create a plot for each zone
-    for ( z in 1:length(zone.names) ) {
-        zone.name = zone.names[z]
-        da.rt.zone[[z.idx]] = knit_expand(file = 'source_scripts/p_DA_RT_commit_dispatch_zone.Rmd', period.name = period.name, zone.name = zone.name) 
-        z.idx = z.idx + 1
-    } 
-  
-    # Create a plot for each region.
-    for ( r in 1:length(region.names) ) {
-        region.name = region.names[r]
-        da.rt.region[[r.idx]] = knit_expand(file = 'source_scripts/p_DA_RT_commit_dispatch_region.Rmd', period.name = period.name, region.name = region.name)
-        r.idx = r.idx + 1
-    }
+    # Check if zonal DA-RT plots were selected in input file. If so create a plot for each zone
+    if (commit.dispatch.zone) {
+      for ( z in 1:length(zone.names) ) {
+          zone.name = zone.names[z]
+          da.rt.zone[[z.idx]] = knit_expand(file = 'source_scripts/p_DA_RT_commit_dispatch_zone.Rmd', period.name = period.name, zone.name = zone.name) 
+          z.idx = z.idx + 1
+      } 
+    } else {da.rt.zone = 'Section not run according to input file.'}
+    
+    if (commit.dispatch.region) {  
+      # Create a plot for each region.
+      for ( r in 1:length(region.names) ) {
+          region.name = region.names[r]
+          da.rt.region[[r.idx]] = knit_expand(file = 'source_scripts/p_DA_RT_commit_dispatch_region.Rmd', period.name = period.name, region.name = region.name)
+          r.idx = r.idx + 1
+      }
+    } else {da.rt.region = 'Section not run according to input file.'}
 
   }
 
   # Reconstruct the plot data into a format that will be output into the HTML below
-  da.rt.zone = knit_child(text = unlist(da.rt.zone))
-  da.rt.region = knit_child(text = unlist(da.rt.region))
+  if (commit.dispatch.zone)   { da.rt.zone = knit_child(text = unlist(da.rt.zone)) }
+  if (commit.dispatch.region) { da.rt.region = knit_child(text = unlist(da.rt.region)) }
 
 } else { da.rt.zone = 'Section not run according to input file.'
          da.rt.region = 'Section not run according to input file.' }
