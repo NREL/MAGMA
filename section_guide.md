@@ -20,4 +20,5 @@
 18. Region and zone generation table
 19. Capacity factor table
 20. Price duration curve
-21. Committment and dispatch plots
+21. Zonal committment and dispatch plots
+22. Regional committment and dispatch plots
