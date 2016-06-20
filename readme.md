@@ -1,4 +1,4 @@
-#PLEXOS-Vis Readme
+#MAGMA Readme
 
 This package creates figures and an HTML file with all of those figures for plexos solutions.
 * You must use process_folder() from the rplexos package to create a database file from the PLEXOS solution .zip, before running this code.
