@@ -4,8 +4,8 @@ This package creates figures and an HTML file with all of those figures for plex
 * You must use process_folder() from the rplexos package to create a database file from the PLEXOS solution .zip, before running this code.
 
 ##To Run:
-1. Copy run_html_output.R and input_data.csv into another folder associated with your project specific repository.
-2. Edit input_data.csv to point to the required databases, input files, and generator categories for your project.
+1. Copy run_html_output.R and input_data.csv from the Examples/ folder into another folder associated with your project specific repository.
+2. Edit input_data.csv to point to the required databases, input files, and generator categories for your project. Fill the rest of the columns out according to your model.
 3. If using a CSV to map generator name to type, create this.
 4. If generation type by region or zone is wanted, add region and zone columns to mapping CSV.
 5. Edit run_html_output.R to point to your input_data.csv. Set html output file name and directory and current working directory where files are located.
