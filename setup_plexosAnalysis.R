@@ -22,18 +22,53 @@ scen.pal = c("goldenrod2", "blue", "darkblue", "firebrick3", "deeppink", "chartr
 inputs = read.csv(file.path(input.csv))
 inputs[inputs==""]=NA
 
+# Assign a logical to each chunk run selector. 
+run.sections = na.omit(inputs$Sections.to.Run)
+if(1 %in% run.sections)  {total.gen.stack=TRUE}                 else {total.gen.stack=FALSE} 
+if(2 %in% run.sections)  {zone.gen.stacks=TRUE}                 else {zone.gen.stacks=FALSE}
+if(3 %in% run.sections)  {region.gen.stacks=TRUE}               else {region.gen.stacks=FALSE}
+if(4 %in% run.sections)  {individual.region.stacks.log=TRUE}    else {individual.region.stacks.log=FALSE}
+if(5 %in% run.sections)  {key.period.dispatch.total.log=TRUE}   else {key.period.dispatch.total.log=FALSE}
+if(6 %in% run.sections)  {key.period.dispatch.zone.log=TRUE}    else {key.period.dispatch.zone.log=FALSE}
+if(7 %in% run.sections)  {key.period.dispatch.region.log=TRUE}  else {key.period.dispatch.region.log=FALSE}
+if(8 %in% run.sections)  {yearly.curtailment=TRUE}              else {yearly.curtailment=FALSE}
+if(9 %in% run.sections)  {daily.curtailment=TRUE}               else {daily.curtailment=FALSE}
+if(10 %in% run.sections) {annual.generation.table=TRUE}         else {annual.generation.table=FALSE}
+if(11 %in% run.sections) {annual.cost.table=TRUE}               else {annual.cost.table=FALSE}
+if(12 %in% run.sections) {region.zone.flow.table=TRUE}          else {region.zone.flow.table=FALSE}
+if(13 %in% run.sections) {interface.flow.table=TRUE}            else {interface.flow.table=FALSE}
+if(14 %in% run.sections) {interface.flow.plots=TRUE}            else {interface.flow.plots=FALSE}
+if(15 %in% run.sections) {key.period.interface.flow.plots=TRUE} else {key.period.interface.flow.plots=FALSE}
+if(16 %in% run.sections) {annual.reserves.table=TRUE}           else {annual.reserves.table=FALSE}
+if(17 %in% run.sections) {reserves.plots=TRUE}                  else {reserves.plots=FALSE}
+if(18 %in% run.sections) {region.zone.gen.table=TRUE}           else {region.zone.gen.table=FALSE}
+if(19 %in% run.sections) {capacity.factor.table=TRUE}           else {capacity.factor.table=FALSE}
+if(20 %in% run.sections) {price.duration.curve=TRUE}            else {price.duration.curve=FALSE}
+if(21 %in% run.sections) {commit.dispatch.region=TRUE}          else {commit.dispatch.region=FALSE}
+if(22 %in% run.sections) {commit.dispatch.zone=TRUE}            else {commit.dispatch.zone=FALSE}
+
 # -----------------------------------------------------------------------
 # Read in the data from the input_data.csv file that was just loaded
+
 
 # location of database
 db.loc = file.path(as.character(na.exclude(inputs$Database.Location))) 
 db.day.ahead.loc = file.path(as.character(na.exclude(inputs$DayAhead.Database.Location)))
+if (length(db.day.ahead.loc)==0) { db.day.ahead.loc = db.loc }
 
 # Using CSV file to map generator types to names?
 use.gen.type.mapping.csv = as.logical(na.exclude(inputs$Using.Gen.Type.Mapping.CSV))
+if (length(use.gen.type.mapping.csv)==0) { 
+  use.gen.type.mapping.csv = FALSE
+  print('Must select TRUE or FALSE for if using generator generation type mapping file!') 
+}
 
 # Reassign zones based on region to zone mapping file?
 reassign.zones = as.logical(na.exclude(inputs$reassign.zones))
+if (length(reassign.zones)==0) { 
+  reassign.zones = FALSE
+  print('Must select TRUE or FALSE for if reassigning what regions are in what zones!')
+}
 
 if ( use.gen.type.mapping.csv ) {
   # Read mapping tile to map generator names to generation type
@@ -42,6 +77,7 @@ if ( use.gen.type.mapping.csv ) {
 } else {
   # Assign generation type according to PLEXOS category
   category2type = data.frame(category = as.character(na.omit(inputs$PLEXOS.Gen.Category)), Type = as.character(na.omit(inputs$PLEXOS.Desired.Type)) )  
+  if (length(category2type[,1])==0) { print('If not using generator name to type mapping CSV, you must specify PLEXOS categories and desired generation type.') }
 }
 
 # Read mapping file to map generator names to region and zone (can be same file as gen name to type).
@@ -54,17 +90,34 @@ Gen.col = data.frame(Type = na.omit(inputs$Gen.Type), Color = na.omit(inputs$Plo
 gen.color<-as.character(Gen.col$Color)
 names(gen.color)<-Gen.col$Type
 
-# Generat type order for plots
+# Generation type order for plots
 gen.order = rev(as.character(na.omit(inputs$Gen.Order))) 
 
 # Types of renewables to be considered for curtailment calculations
 re.types = as.character(na.omit(inputs$Renewable.Types.for.Curtailment)) 
+if (length(re.types)==0) { 
+  print('No variable generation types specified for curtailment.')
+  daily.curtailment = FALSE
+  yearly.curtailment = FALSE
+}
 
 # Types of generation to be plotted in the DA-RT committmet dispatch plots
 da.rt.types = as.character(na.omit(inputs$DA.RT.Plot.Types))
+if (length(da.rt.types)==0) {
+  print('No generation types specified for DA-RT plots. Plots will not be created.')
+  commit.dispatch.region=FALSE
+  commit.dispatch.zone=FALSE
+}
 
 # Names of key periods
 period.names = as.character(na.omit(inputs$Key.Periods)) 
+if (length(period.names)==0) {
+  print('No key periods specified. No plots will be created for these.')
+  key.period.dispatch.total.log = FALSE
+  key.period.dispatch.zone.log = FALSE
+  key.period.dispatch.region.log = FALSE
+  key.period.interface.flow.plots = FALSE
+}
 
 # Number of key periods
 n.periods = length(period.names) 
@@ -94,6 +147,12 @@ ignore.regions = as.character(na.omit(inputs$Ignore.Regions))
 
 # Interfaces to look at flows for
 interfaces = as.character(na.omit(inputs$Interfaces.for.Flows))
+if (length(interfaces)==0) {
+  print('No interfaces specified. No interface data will be shown.')
+  interface.flow.table = FALSE
+  interface.flow.plots = FALSE
+  key.period.interface.flow.plots = FALSE
+}
 
 run.rplx=F
 if(length(list.files(pattern = "\\.zip$",path=db.loc))!=0 ) {
@@ -125,30 +184,7 @@ db.day.ahead = tryCatch(plexos_open(db.day.ahead.loc), error = function(cond) { 
 # db.day.ahead = db.day.ahead[1,] # This line queries only the first solution .db file if there are multiple in one location. 
 attributes(db.day.ahead)$class = c('rplexos', 'data.frame', 'tbl_df')
 
-# Assign a logical to each chunk run selector. 
-run.sections = na.omit(inputs$Sections.to.Run)
-if(1 %in% run.sections)  {total.gen.stack=TRUE}                 else {total.gen.stack=FALSE} 
-if(2 %in% run.sections)  {zone.gen.stacks=TRUE}                 else {zone.gen.stacks=FALSE}
-if(3 %in% run.sections)  {region.gen.stacks=TRUE}               else {region.gen.stacks=FALSE}
-if(4 %in% run.sections)  {individual.region.stacks.log=TRUE}    else {individual.region.stacks.log=FALSE}
-if(5 %in% run.sections)  {key.period.dispatch.total.log=TRUE}   else {key.period.dispatch.total.log=FALSE}
-if(6 %in% run.sections)  {key.period.dispatch.zone.log=TRUE}    else {key.period.dispatch.zone.log=FALSE}
-if(7 %in% run.sections)  {key.period.dispatch.region.log=TRUE}  else {key.period.dispatch.region.log=FALSE}
-if(8 %in% run.sections)  {yearly.curtailment=TRUE}              else {yearly.curtailment=FALSE}
-if(9 %in% run.sections)  {daily.curtailment=TRUE}               else {daily.curtailment=FALSE}
-if(10 %in% run.sections) {annual.generation.table=TRUE}         else {annual.generation.table=FALSE}
-if(11 %in% run.sections) {annual.cost.table=TRUE}               else {annual.cost.table=FALSE}
-if(12 %in% run.sections) {region.zone.flow.table=TRUE}          else {region.zone.flow.table=FALSE}
-if(13 %in% run.sections) {interface.flow.table=TRUE}            else {interface.flow.table=FALSE}
-if(14 %in% run.sections) {interface.flow.plots=TRUE}            else {interface.flow.plots=FALSE}
-if(15 %in% run.sections) {key.period.interface.flow.plots=TRUE} else {key.period.interface.flow.plots=FALSE}
-if(16 %in% run.sections) {annual.reserves.table=TRUE}           else {annual.reserves.table=FALSE}
-if(17 %in% run.sections) {reserves.plots=TRUE}                  else {reserves.plots=FALSE}
-if(18 %in% run.sections) {region.zone.gen.table=TRUE}           else {region.zone.gen.table=FALSE}
-if(19 %in% run.sections) {capacity.factor.table=TRUE}           else {capacity.factor.table=FALSE}
-if(20 %in% run.sections) {price.duration.curve=TRUE}            else {price.duration.curve=FALSE}
-if(21 %in% run.sections) {commit.dispatch.region=TRUE}          else {commit.dispatch.region=FALSE}
-if(22 %in% run.sections) {commit.dispatch.zone=TRUE}            else {commit.dispatch.zone=FALSE}
+
 
 
 
