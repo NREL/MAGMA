@@ -117,12 +117,12 @@ if(length(list.files(pattern = "\\.zip$",path=db.loc))!=0 ) {
 # -----------------------------------------------------------------------
 # Open the database file ( must already have created this using rplexos ) 
 db = plexos_open(db.loc)
-db = db[1,]
+# db = db[1,] # This line queries only the first solution .db file if there are multiple in one location. 
 attributes(db)$class = c("rplexos","data.frame","tbl_df")
 
 # Open the day ahead database file
 db.day.ahead = tryCatch(plexos_open(db.day.ahead.loc), error = function(cond) { return(data.frame('ERROR'))})
-db.day.ahead = db.day.ahead[1,]
+# db.day.ahead = db.day.ahead[1,] # This line queries only the first solution .db file if there are multiple in one location. 
 attributes(db.day.ahead)$class = c('rplexos', 'data.frame', 'tbl_df')
 
 # Assign a logical to each chunk run selector. 

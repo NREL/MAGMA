@@ -229,17 +229,23 @@ if (key.period.interface.flow.plots) {
   # Pull out interface flow data for only specified periods in input file
   source('source_scripts/d_key_period_interface_flow.R')
   
-  key.plots = list() # Creates empty list for plot data
+    # Check to see if the right data is ready for plotting.
+  if ( typeof(plot.flows)=='character' ) {
+    print('ERROR: interval_interface_flows function not returning correct results.')
+  } else {
   
-  # Create data for each plot for the interesting periods
-  for (p in 1:n.periods) {
-    period.name = period.names[p]
-    key.plots[[p]] = knit_expand(file = 'source_scripts/p_key_period_interface_flow.Rmd', period.name = period.name)
-  }
-
-  # Reconstruct the plot data into a format that will be output into the HTML below
-  key.period.interface.flow = knit_child(text = unlist(key.plots))
+    key.plots = list() # Creates empty list for plot data
     
+    # Create data for each plot for the interesting periods
+    for (p in 1:n.periods) {
+      period.name = period.names[p]
+      key.plots[[p]] = knit_expand(file = 'source_scripts/p_key_period_interface_flow.Rmd', period.name = period.name)
+    }
+  
+    # Reconstruct the plot data into a format that will be output into the HTML below
+    key.period.interface.flow = knit_child(text = unlist(key.plots))
+ 
+  }   
 } else { key.period.interface.flow = 'Section not run according to input file.' }
 ```
 `r key.period.interface.flow`

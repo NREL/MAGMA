@@ -7,6 +7,7 @@ if (!exists('interface.flows')) {
 # Check for errors in the query function. If theres an error don't continue.
 if ( typeof(interface.flows)=='character' ) { 
   key.period.interface.flow = 'ERROR: interface_flows function not returning correct results.'
+  plot.flows = 'ERROR: interface_flows function not returning correct results.'
   print('ERROR: interface_flows function not returning correct results.')
 } else {
 
