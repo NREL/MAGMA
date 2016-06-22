@@ -2,29 +2,9 @@
 # Main setup file for general PLEXOS run analysis.
 
 # -----------------------------------------------------------------------
-library(ggplot2, quietly=TRUE, warn.conflicts=FALSE)
-library(reshape2, quietly=TRUE, warn.conflicts=FALSE)
-library(plyr, quietly=FALSE, warn.conflicts=FALSE)
-library(lubridate, quietly=TRUE, warn.conflicts=FALSE)
-library(scales, quietly=TRUE, warn.conflicts=FALSE)
-library(RSQLite, quietly=TRUE, warn.conflicts=FALSE)
-library(grid, quietly=TRUE, warn.conflicts=FALSE)
-library(knitr, quietly=TRUE, warn.conflicts=FALSE)
-library(markdown, quietly=TRUE, warn.conflicts=FALSE)
-library(grid, quietly=TRUE, warn.conflicts=FALSE)
-library(gridExtra, quietly=TRUE, warn.conflicts=FALSE)
-library(RColorBrewer, quietly=TRUE, warn.conflicts=FALSE)
-#library(RSQLite.extfuns, quietly=TRUE, warn.conflicts=FALSE)
-library(snow, quietly=TRUE, warn.conflicts=FALSE)
-library(doParallel, quietly=TRUE, warn.conflicts=FALSE)
-library(xtable, quietly=TRUE, warn.conflicts=FALSE)
-library(data.table, quietly=TRUE, warn.conflicts=FALSE)
-library(dplyr, quietly=FALSE, warn.conflicts=FALSE)
-library(extrafont, quietly = TRUE, warn.conflicts = FALSE)
-library(tidyr, quietly = T, warn.conflicts = T)
-library(stringr, quietly = T, warn.conflicts = T)
-library(rplexos, quietly = F, warn.conflicts = F)
-library(rmarkdown)
+library(pacman)
+p_load(ggplot2, reshape2, plyr, lubridate, scales, RSQLite, grid, knitr, markdown, grid, gridExtra, RColorBrewer, snow,
+       doParallel, xtable, data.table, dplyr, extrafont, tidyr, stringr, rplexos, rmarkdown)
 
 # -----------------------------------------------------------------------
 # Size for plot text
