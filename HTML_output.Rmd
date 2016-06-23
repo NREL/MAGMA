@@ -14,9 +14,6 @@ output:
 knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, include=TRUE,
                       fig.path=fig.path.name, dev='png')
 
-# Query data from plexos solution file by sourcing data query R script.
-source('setup_dataQueries.R')
-
 # Set dynamic height for figure in regional generation chunk
 f.height = ( length(zone.names) %/% 2 + length(zone.names) %% 2 ) * 5
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

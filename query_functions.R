@@ -69,9 +69,9 @@ gen_by_type = function(total.generation, total.avail.cap) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # This function returns total generation separated by type but also by region and zone.  
 
-region_zone_gen = function(yr.data.gen) {
+region_zone_gen = function(total.generation, total.avail.cap) {
   
-  r.z.gen = yr.data.gen
+  r.z.gen = rbind(total.generation, total.avail.cap)
   
   # Filter out generation and available capacity data and add generation type by matching generator name.
   # Also add region and zone by matching generator name in the region and zone mapping file. 
@@ -122,23 +122,21 @@ region_zone_gen = function(yr.data.gen) {
   return(gen.data)
 }
 
-
-
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Key Period Generation by Type 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # This function returns interval level generation and curtailment used for the key period time series dispatch stacks. 
 
-interval_gen = function(int.data.region, int.data.zone, int.data.gen, int.data.avail.cap) {
+interval_gen = function(interval.region.load, interval.zone.load, interval.generation, interval.avail.cap) {
   
   # Either sum up load for each region or each zone, depending on which there are more of. 
   if (length(region.names)>=length(zone.names)){
-    load = dcast(int.data.region, time+name~property, value.var = 'value', fun.aggregate = sum)
+    load = dcast(interval.region.load, time+name~property, value.var = 'value', fun.aggregate = sum)
     colnames(load)[colnames(load)=='name'] = 'Region'
     spatialcol = "Region"
     
   } else {
-    load = dcast(int.data.zone, time+name~property, value.var = 'value', fun.aggregate = sum)
+    load = dcast(interval.zone.load, time+name~property, value.var = 'value', fun.aggregate = sum)
     colnames(load)[colnames(load)=='name'] = "Zone"
     spatialcol = "Zone"
     
@@ -148,16 +146,14 @@ interval_gen = function(int.data.region, int.data.zone, int.data.gen, int.data.a
   
   # Pull out interval generation data, and add generation type and region and zone according to generator name. Then add load data.
   if ( use.gen.type.mapping.csv ) {
-    int.gen = int.data.gen %>%
-      filter(property == 'Generation') %>%
+    int.gen = interval.generation %>%
       select(name, time, value, category) %>%
       join(gen.type.mapping, by = 'name') %>%
       join(region.zone.mapping, by = 'name') %>%
       dcast(time+Region+Zone ~ Type, value.var = 'value', fun.aggregate = sum) %>%
       join(load,by=c('time',spatialcol),type='full')
   } else {
-    int.gen = int.data.gen %>%
-      filter(property == 'Generation') %>%
+    int.gen = interval.generation %>%
       select(name, time, value, category) %>%
       join(category2type, by = 'category') %>%
       select(name, time, value, Type) %>%
@@ -175,8 +171,7 @@ interval_gen = function(int.data.region, int.data.zone, int.data.gen, int.data.a
 
   # Pull out interval generation capacity and add generation type, region, and zone based on matching generator names.
   if ( use.gen.type.mapping.csv ) {
-    int.avail = int.data.avail.cap %>%
-      filter(property == 'Available Capacity') %>%
+    int.avail = interval.avail.cap %>%
       select(name, time, value, category) %>%
       join(gen.type.mapping, by = 'name') %>%
       join(region.zone.mapping, by = 'name') %>%
@@ -185,8 +180,7 @@ interval_gen = function(int.data.region, int.data.zone, int.data.gen, int.data.a
       join(re.gen[,c('time',spatialcol)],by=c('time',spatialcol),type='full')
     
   } else {
-    int.avail = int.data.avail.cap %>%
-      filter(property == 'Available Capacity') %>%
+    int.avail = interval.avail.cap %>%
       select(name, time, value, category) %>%
       join(category2type, by = 'category') %>%
       join(region.zone.mapping, by = 'name') %>%
@@ -215,22 +209,20 @@ interval_gen = function(int.data.region, int.data.zone, int.data.gen, int.data.a
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Calculates interval level total curtailment
 
-daily_curtailment = function(int.data.gen, int.data.avail.cap) {
+daily_curtailment = function(interval.generation, interval.avail.cap) {
   
-  gen.data = int.data.gen
-  avail.data = int.data.avail.cap
+  gen.data = interval.generation
+  avail.data = interval.avail.cap
   
   # Separate generation and available capacity data by type for each interval.
   if ( use.gen.type.mapping.csv ) {
     c.gen = gen.data %>%
-      filter(property == 'Generation') %>%
       join(gen.type.mapping, by = 'name') %>%
       select(time, Type, value) %>%
       dcast(time ~ Type, value.var = 'value', fun.aggregate = sum) %>%
       subset(select = re.types)
     
     c.avail = avail.data %>%
-      filter(property == 'Available Capacity') %>%
       join(gen.type.mapping, by = 'name') %>%
       select(time, Type, value) %>%
       dcast(time ~ Type, sum) %>%
@@ -239,14 +231,12 @@ daily_curtailment = function(int.data.gen, int.data.avail.cap) {
     # Below does the same thing as above except matches generation type using PLEXOS categories instead of a mapping file.
   } else {
     c.gen = gen.data %>%
-      filter(property == 'Generation') %>%
       join(category2type, by = 'category') %>%
       select(time, Type, value) %>%
       dcast(time ~ Type, value.var = 'value', fun.aggregate = sum) %>%
       subset(select = re.types)
     
     c.avail = avail.data %>%
-      filter(property == 'Available Capacity') %>%
       join(category2type, by = 'category') %>%
       select(time, Type, value) %>%
       dcast(time ~ Type, sum) %>%
@@ -269,9 +259,9 @@ daily_curtailment = function(int.data.gen, int.data.avail.cap) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Returns a table of total run costs
 
-costs = function(yr.data.generator) {
+costs = function(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom.cost) {
 
-  cost = yr.data.generator
+  cost = rbind(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom.cost)
   cost['value'] = cost['value'] / 1000000
   
   e.cost = filter(cost, property == 'Emissions Cost')
@@ -300,9 +290,9 @@ return(cost.table)
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Calculates total reserve provision and shortage for each reserve type. 
 
-annual_reserves = function(yr.data.reserve) {
+annual_reserves = function(total.reserve.provision, total.reserve.shortage) {
   
-  r.data = yr.data.reserve
+  r.data = rbind(total.reserve.provision, total.reserve.shortage)
   
   provision =  select( filter(r.data, property == 'Provision'), name, value)
   colnames(provision) = c('Type', 'Provisions (GWh)')  
@@ -320,8 +310,8 @@ annual_reserves = function(yr.data.reserve) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Calculates the interval level reserve provision
 
-interval_reserves = function(int.data.reserve) {
-  provision = int.data.reserve
+interval_reserves = function(interval.reserve.provision) {
+  provision = interval.reserve.provision
   provision = dcast(provision, time ~ name, value.var = 'value')
   return(provision)
 }
@@ -331,9 +321,9 @@ interval_reserves = function(int.data.reserve) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Total run and interval level interface flow data, for specific interfaces that are specified in the input file. 
 
-annual_interface_flows = function(yr.data.interface) {
+annual_interface_flows = function(total.interface.flow) {
   
-  year.flows = yr.data.interface %>%
+  year.flows = total.interface.flow %>%
     select(name, time, value) %>%
     filter(name %in% interfaces)
   
@@ -342,9 +332,9 @@ annual_interface_flows = function(yr.data.interface) {
   return(year.flows)
 }
 
-interval_interface_flows = function(int.data.interface) {
+interval_interface_flows = function(interval.interface.flow) {
   
-  int.flows = int.data.interface %>%
+  int.flows = interval.interface.flow %>%
     select(name, time, value) %>%
     filter(name %in% interfaces)
   
@@ -360,25 +350,24 @@ interval_interface_flows = function(int.data.interface) {
 # This function sums up region and zone stats for the entire run. 
 # zones are defined either in PLEXOS, or using the region and zone mapping file. 
 
-region_stats = function(yr.data.region) {
-  r.data = yr.data.region
+region_stats = function(total.region.load, total.region.imports, total.region.exports, total.region.ue) {
+  r.data = rbind(total.region.load, total.region.imports, total.region.exports, total.region.ue)
   r.stats = dcast(r.data, name~property, value.var = 'value', fun.aggregate = sum)
   return(r.stats)
 }
 
-zone_stats = function(yr.data.region, yr.data.zone) {
+zone_stats = function(total.region.load, total.region.imports, total.region.exports, total.region.ue, total.zone.load, total.zone.imports, total.zone.exports, total.zone.ue) {
   if (reassign.zones==TRUE | yr.data.zone=='ERROR'){
-    z.data = yr.data.region
+    z.data = rbind(total.region.load, total.region.imports, total.region.exports, total.region.ue)
     z.stats = z.data %>%
       join(select(region.zone.mapping, name=Region, Zone), by='name', match='first') %>%
       dcast(Zone~property, value.var = 'value', fun.aggregate = sum) 
     colnames(z.stats)[colnames(z.stats)=='Zone']='name'
   } else {
-    z.data = yr.data.zone
+    z.data = rbind(total.zone.load, total.zone.imports, total.zone.exports, total.zone.ue)
     z.stats = z.data %>%
       dcast(name~property, value.var = 'value', fun.aggregate = sum)
   }
-  
   return(z.stats)
 }
 
@@ -387,30 +376,21 @@ zone_stats = function(yr.data.region, yr.data.zone) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Returns region level and zone level load data for the entire run. 
 
-region_load = function(yr.data.region) {
-  r.data = yr.data.region
-  r.load = r.data %>%
-    filter(property == 'Load') %>%
-    select(name, value)
+region_load = function(total.region.load) {
+  r.load = select(total.region.load, name, value)
   return(r.load)
 }
 
-zone_load = function(yr.data.region, yr.data.zone) {
-  if (reassign.zones==TRUE | yr.data.zone=='ERROR'){
-    z.data = yr.data.region
-    z.load = z.data %>%
-      filter(property == 'Load') %>%
+zone_load = function(total.region.load, total.zone.load) {
+  if (reassign.zones==TRUE | total.zone.load=='ERROR'){
+    z.load = total.region.load %>%
       join(select(region.zone.mapping, name=Region, Zone), by='name', match='first') %>%
       select(name=Zone, value) %>%
       group_by(name) %>%
       summarise(value = sum(value))
   } else {
-    z.data = yr.data.zone
-    z.load = z.data %>%
-      filter(property == 'Load') %>%
-      select(name, value)
+    z.load = select(total.zone.load, name, value)
   }
-  
   return(z.load)
 }
 
@@ -419,9 +399,9 @@ zone_load = function(yr.data.region, yr.data.zone) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Calculates the capacity factor of all the generation types for the full run. 
 
-capacity_factor = function(yr.data.generator) {
+capacity_factor = function(total.generation, total.installed.cap) {
   
-  cf = yr.data.generator
+  cf = rbind(total.generation, total.installed.cap)
   
   # Pull out installed capacity and generation and match them to generation type by generator name. 
   if ( use.gen.type.mapping.csv ) {
@@ -472,7 +452,7 @@ capacity_factor = function(yr.data.generator) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # This function just pulls out available capacity at the interval level for use int he DA-RT committment and dispatch plots
 
-cap_committed = function(int.data.commit) {
+cap_committed = function(interval.da.committment) {
   
   if (length(region.names)>=length(zone.names)){
     spatialcol = "Region"
@@ -482,14 +462,14 @@ cap_committed = function(int.data.commit) {
   
   # Query available capacity at the interval level, add generation type and region and zone by matching mapping file with generator names.
   if ( use.gen.type.mapping.csv ) {
-    commit.data = int.data.commit %>%
+    commit.data = interval.da.committment %>%
       select(time, name, category, value) %>%
       plyr::join(region.zone.mapping, by='name') %>%
       plyr::join(gen.type.mapping, by = 'name') %>%
       dcast(time+Region+Zone ~ Type, value.var = 'value', fun.aggregate = sum)
     
   } else {
-    commit.data = int.data.commit %>%
+    commit.data = interval.da.committment %>%
       select(time, name, category, value) %>%
       plyr::join(region.zone.mapping, by='name') %>%
       plyr::join(category2type, by = 'category') %>%
@@ -555,7 +535,7 @@ total_vom = function(database) {
 
 # Full run installed capacity
 total_installed_cap = function(database) {
-  total.installed.cap = select(query_year(database, 'Generator', 'Installed Capacity' columns = c('category', 'name')), property, name, category, value)
+  total.installed.cap = select(query_year(database, 'Generator', 'Installed Capacity', columns = c('category', 'name')), property, name, category, value)
   return(total.installed.cap)
 }
 

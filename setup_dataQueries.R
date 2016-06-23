@@ -54,13 +54,11 @@ if ( commit.dispatch.zone | commit.dispatch.region ) {
   interval.da.committment = tryCatch( interval_avail_cap(db.day.ahead), error = function(cond) { return('ERROR') } ) # Interval level day ahead generator available capacity.
 }
 
-r.load = tryCatch( region_load(yr.data.region), error = function(cond) { return('ERROR') } ) # Total region load
-z.load = tryCatch( zone_load(yr.data.region, yr.data.zone), error = function(cond) { return('ERROR') } ) # Total zone load
+r.load = tryCatch( region_load(total.region.load), error = function(cond) { return('ERROR') } ) # Total region load
+z.load = tryCatch( zone_load(total.region.load, total.zone.load), error = function(cond) { return('ERROR') } ) # Total zone load
 
-region.names = region_stats(yr.data.region)$name # Assign region names based on PLEXOS regions.
-zone.names = zone_stats(yr.data.region, yr.data.zone)$name # Assign zone names based on PLEXOS regions or region to zone mapping file. 
-
-
+region.names = r.load$name # Assign region names based on PLEXOS regions.
+zone.names = z.load$name # Assign zone names based on PLEXOS regions or region to zone mapping file. 
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check that all queries necessary worked. If not, return an error stating what data is not being output by PLEXOS
@@ -85,12 +83,12 @@ if (typeof(total.reserve.provision)=='character') { print('Missing total reserve
 if (typeof(total.reserve.shortage)=='character') { print('Missing total reserve shortage data from solution .db file.')}
 if (typeof(total.interface.flow)=='character') { print('Missing total interface flow data from solution .db file.')}
 
-if (exists('interval.generation') & typeof(interval.generation)=='character') { print('Missing interval generator generation data from solution .db file.')}
-if (exists('interval.avail.cap') & typeof(interval.avail.cap)=='character') { print('Missing interval generator available capacity data from solution .db file.')}
-if (exists('interval.region.load') & typeof(interval.region.load)=='character') { print('Missing interval region load data from solution .db file.')}
-if (exists('interval.region.price') & typeof(interval.region.price)=='character') { print('Missing interval region price data from solution .db file.')}
-if (exists('interval.zone.load') & typeof(interval.zone.load)=='character') { print('Missing interval zone load data from solution .db file.')}
-if (exists('interval.interface.flow') & typeof(interval.interface.flow)=='character') { print('Missing interval interface flow data from solution .db file.')}
-if (exists('interval.reserve.provision') & typeof(interval.reserve.provision)=='character') { print('Missing interval reserve provision data from solution .db file.')}
-if (exists('interval.da.committment') & typeof(interval.da.committment)=='character') { print('Missing interval available capacity from day ahead solution .db file.')}
+if (exists('interval.generation')) { if (typeof(interval.generation)=='character') { print('Missing interval generator generation data from solution .db file.')}}
+if (exists('interval.avail.cap')) { if (typeof(interval.avail.cap)=='character') { print('Missing interval generator available capacity data from solution .db file.')}}
+if (exists('interval.region.load')) { if (typeof(interval.region.load)=='character') { print('Missing interval region load data from solution .db file.')}}
+if (exists('interval.region.price')) { if (typeof(interval.region.price)=='character') { print('Missing interval region price data from solution .db file.')}}
+if (exists('interval.zone.load')) { if (typeof(interval.zone.load)=='character') { print('Missing interval zone load data from solution .db file.')}}
+if (exists('interval.interface.flow')) { if (typeof(interval.interface.flow)=='character') { print('Missing interval interface flow data from solution .db file.')}}
+if (exists('interval.reserve.provision')) { if (typeof(interval.reserve.provision)=='character') { print('Missing interval reserve provision data from solution .db file.')}}
+if (exists('interval.da.committment')) { if (typeof(interval.da.committment)=='character') { print('Missing interval available capacity from day ahead solution .db file.')}}
 
