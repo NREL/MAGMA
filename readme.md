@@ -118,6 +118,7 @@ PLEXOS must report the following data in order for the scripts to work.
 
 ##### Region:
  + Load
+ + Price
 
 ##### Zone:
  + Load
