@@ -4,88 +4,13 @@
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Query General Data
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# These functions are called from the setup data queries file. They use the rplexos package to query the solution database.
-
-# Full run generator data.
-yr_gen_query = function(database) {
-  yr.data.generator = select(query_year(database, 'Generator', 
-                                        prop = c('Generation', 'Available Energy', 'Emissions Cost', 'Fuel Cost', 'Start & Shutdown Cost', 'VO&M Cost', 'Installed Capacity'),
-                                        columns = c('category', 'name')), property, name, category, value)
-  return(yr.data.generator)
-}
-
-# Full run region data
-yr_region_query = function(database) {
-  yr.data.region = select(query_year(database, 'Region', c('Load', 'Imports', 'Exports', 'Unserved Energy')), property, name, value)
-  return(yr.data.region)
-}
-  
-# Full run zone data
-yr_zone_query = function(database) {
-  yr.data.zone = select(query_year(database, 'Zone', c('Load', 'Imports', 'Exports', 'Unserved Energy')), property, name, value)
-  return(yr.data.zone)
-}
-  
-# Full run reserves provision and shortage
-yr_reserve_query = function(database) {
-  yr.data.reserve = select(query_year(database, 'Reserve', c('Provision', 'Shortage')), property, name, value)
-  return(yr.data.reserve)
-}
-
-# Full run interface flows
-yr_interface_query = function(database) {
-  yr.data.interface = select(query_year(database, 'Interface', 'Flow'), property, name, value, time)
-  return(yr.data.interface)
-}
-
-# Interval level generator generation
-int_gen_query = function(database) {
-  int.data.gen = select(query_interval(database, 'Generator', 'Generation', columns = c('category', 'name')), 
-                              property, name, value, time, category)
-  return(int.data.gen)
-}
-
-# Interval level generator capacity
-int_avail_cap_query = function(database) {
-  int.data.avail.cap = select(query_interval(database, 'Generator', 'Available Capacity', columns = c('category', 'name')), 
-                              property, name, value, time, category)
-  return(int.data.avail.cap)
-}
-
-# Interval level region load and price
-int_region_query = function(database) {
-  int.data.region = select(query_interval(database, 'Region', c('Load', 'Price')), property, name, time, value)
-  return(int.data.region)
-}
-
-# Interval level zone load
-int_zone_query = function(database) {
-  int.data.zone = select(query_interval(database, 'Zone', 'Load'), property, name, time, value)
-  return(int.data.zone)
-}
-
-# Interval level interface flows
-int_interface_query = function(database) {
-  int.data.interface = select(query_interval(database, 'Interface', 'Flow'), property, name, time, value)
-  return(int.data.interface)
-}
-
-# Interval level reserve provisions
-int_reserve_query = function(database) {
-  int.data.reserve = select(query_interval(database, 'Reserve', 'Provision'), property, name, time, value)
-  return(int.data.reserve)
-}
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Generation by type
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # This function returns total generation by type and curtailment. Curtailment is calculated according to the renewable types specified in the input file. 
 
-gen_by_type = function(yr.data.gen) {
+gen_by_type = function(total.generation, total.avail.cap) {
   
-  yr.data = yr.data.gen
+  yr.data = rbind(total.generation, total.avail.cap)
   
   # Filter out generation and available capacity data and add generation type by matching generator name. 
   if ( use.gen.type.mapping.csv ) {
@@ -578,3 +503,188 @@ cap_committed = function(int.data.commit) {
   
   return(commit.data)
 } 
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Query General Data
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# These functions are called from the setup data queries file. They use the rplexos package to query the solution database.
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Generator total run data
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# Full run generation data
+total_generation = function(database) {
+  total.gen = select(query_year(database, 'Generator', 'Generation', columns = c('category', 'name')), property, name, category, value)
+  return(total.gen)
+}
+
+# Full run available capacity
+total_avail_cap = function(database) {
+  total.avail.cap = select(query_year(database, 'Generator', 'Available Energy', columns = c('category', 'name')), property, name, category, value)
+  return(total.avail.cap)
+}
+
+# Full run emissions cost
+total_emissions = function(database) {
+  total.emissions.cost = select(query_year(database, 'Generator', 'Emissions Cost', columns = c('category', 'name')), property, name, category, value)
+  return(total.emissions.cost)
+}
+
+# Full run fuel cost
+total_fuel = function(database) {
+  total.fuel.cost = select(query_year(database, 'Generator', 'Fuel Cost', columns = c('category', 'name')), property, name, category, value)
+  return(total.fuel.cost)
+}
+
+# Full run S&S cost
+total_ss = function(database) {
+  total.ss.cost = select(query_year(database, 'Generator', 'Start & Shutdown Cost', columns = c('category', 'name')), property, name, category, value)
+  return(total.ss.cost)
+}
+
+# Full run VO&M cost
+total_vom = function(database) {
+  total.vom.cost = select(query_year(database, 'Generator', 'VO&M Cost', columns = c('category', 'name')), property, name, category, value)
+  return(total.vom.cost)
+}
+
+# Full run installed capacity
+total_installed_cap = function(database) {
+  total.installed.cap = select(query_year(database, 'Generator', 'Installed Capacity' columns = c('category', 'name')), property, name, category, value)
+  return(total.installed.cap)
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Region total run data
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# Full run region load
+total_region_load = function(database) {
+  total.region.load = select(query_year(database, 'Region', 'Load'), property, name, value)
+  return(total.region.load)
+}
+
+# Full run region imports
+total_region_imports = function(database) {
+  total.region.imports = select(query_year(database, 'Region', 'Imports'), property, name, value)
+  return(total.region.imports)
+}
+
+# Full run region exports
+total_region_exports = function(database) {
+  total.region.exports = select(query_year(database, 'Region', 'Exports'), property, name, value)
+  return(total.region.exports)
+}
+
+# Full run region unserved energy
+total_region_ue = function(database) {
+  total.region.ue = select(query_year(database, 'Region', 'Unserved Energy'), property, name, value)
+  return(total.region.ue)
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Zone total run data
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# Full run zone load
+total_zone_load = function(database) {
+  total.zone.load = select(query_year(database, 'Zone', 'Load'), property, name, value)
+  return(total.zone.load)
+}
+
+# Full run zone imports
+total_zone_imports = function(database) {
+  total.zone.imports = select(query_year(database, 'Zone', 'Imports'), property, name, value)
+  return(total.zone.imports)
+}
+
+# Full run zone exports
+total_zone_exports = function(database) {
+  total.zone.exports = select(query_year(database, 'Zone', 'Exports'), property, name, value)
+  return(total.zone.exports)
+}
+
+# Full run zone unserved energy
+total_zone_ue = function(database) {
+  total.zone.ue = select(query_year(database, 'Zone', 'Unserved Energy'), property, name, value)
+  return(total.zone.ue)
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Reserves total run data
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# Full run reserves provision
+total_reserve_provision = function(database) {
+  total.reserve.provision = select(query_year(database, 'Reserve', 'Provision'), property, name, value)
+  return(total.reserve.provision)
+}
+
+# Full run reserves shortage
+total_reserve_shortage = function(database) {
+  total.reserve.shortage = select(query_year(database, 'Reserve', 'Shortage'), property, name, value)
+  return(total.reserve.shortage)
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Selected interface total run data
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# Full run interface flows
+total_interface_flow = function(database) {
+  total.interface = select(query_year(database, 'Interface', 'Flow'), property, name, value, time)
+  return(total.interface)
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Interval queries
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# Interval level generator generation
+interval_gen = function(database) {
+  interval.gen = select(query_interval(database, 'Generator', 'Generation', columns = c('category', 'name')), 
+                        property, name, value, time, category)
+  return(interval.gen)
+}
+
+# Interval level generator capacity
+interval_avail_cap = function(database) {
+  interval.avail.cap = select(query_interval(database, 'Generator', 'Available Capacity', columns = c('category', 'name')), 
+                              property, name, value, time, category)
+  return(interval.avail.cap)
+}
+
+# Interval level region load 
+interval_region_load = function(database) {
+  interval.region.load = select(query_interval(database, 'Region', 'Load'), property, name, time, value)
+  return(interval.region.load)
+}
+
+# Interval level region load and price
+interval_region_price = function(database) {
+  interval.region.price = select(query_interval(database, 'Region', 'Price'), property, name, time, value)
+  return(interval.region.price)
+}
+
+# Interval level zone load
+interval_zone_load = function(database) {
+  interval.zone.load = select(query_interval(database, 'Zone', 'Load'), property, name, time, value)
+  return(interval.zone.load)
+}
+
+# Interval level interface flows
+interval_interface_flow = function(database) {
+  interval.interface.flow = select(query_interval(database, 'Interface', 'Flow'), property, name, time, value)
+  return(interval.interface.flow)
+}
+
+# Interval level reserve provisions
+interval_reserve_provision = function(database) {
+  interval.reserve.provision = select(query_interval(database, 'Reserve', 'Provision'), property, name, time, value)
+  return(interval.reserve.provision)
+}
