@@ -2,7 +2,7 @@
 if (total.gen.stack){
 
 # Query annual generation by type.
-yr.gen = tryCatch( gen_by_type(yr.data.generator), error = function(cond) { return('ERROR') } )
+yr.gen = tryCatch( gen_by_type(total.generation, total.avail.cap), error = function(cond) { return('ERROR') } )
 
 # If the query doesn't work, print an error. Else continue.
 if ( typeof(yr.gen)=='character' ) {
