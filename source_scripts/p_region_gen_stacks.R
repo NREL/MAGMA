@@ -3,7 +3,7 @@ if (region.gen.stacks) {
 
 if( !exists('r.z.gen') ) {
   # Query region and zonal generation
-  r.z.gen = tryCatch( select(region_zone_gen(yr.data.generator), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR') } )
+  r.z.gen = tryCatch( select(region_zone_gen(total.generation, total.avail.cap), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR') } )
 }
 
 # Check if zonal.gen query worked and create plot of regional gen, else return an error.

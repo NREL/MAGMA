@@ -4,7 +4,7 @@ if (daily.curtailment){
 # If the data doesn't exist, run the query function. 
 if ( !exists('daily.curt') ) {
 # Query curtailment data
-daily.curt = tryCatch( daily_curtailment(int.data.gen, int.data.avail.cap), error = function(cond) { return('ERROR')})
+daily.curt = tryCatch( daily_curtailment(interval.generation, interval.avail.cap), error = function(cond) { return('ERROR')})
 }
 
 # Check for errors in the querying function.

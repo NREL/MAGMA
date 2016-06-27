@@ -127,7 +127,7 @@ region_zone_gen = function(total.generation, total.avail.cap) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # This function returns interval level generation and curtailment used for the key period time series dispatch stacks. 
 
-interval_gen = function(interval.region.load, interval.zone.load, interval.generation, interval.avail.cap) {
+interval_generation = function(interval.region.load, interval.zone.load, interval.generation, interval.avail.cap) {
   
   # Either sum up load for each region or each zone, depending on which there are more of. 
   if (length(region.names)>=length(zone.names)){

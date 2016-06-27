@@ -2,7 +2,7 @@
 # Check to see if this file already exists, otherwise query the data.
 if ( !exists('r.z.gen') ) { 
   # Query region and zonal generation using the annual generation data.
-  r.z.gen = tryCatch( select(region_zone_gen(yr.data.generator), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR') } )
+  r.z.gen = tryCatch( select(region_zone_gen(total.generation, total.avail.cap), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR') } )
 } 
 
 # Check if zonal.gen query worked and create plot of regional generation, else return an error.

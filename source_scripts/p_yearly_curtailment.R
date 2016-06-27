@@ -2,7 +2,7 @@
 if (yearly.curtailment) {
 
 # Query curtailment data
-daily.curt = tryCatch( daily_curtailment(int.data.gen, int.data.avail.cap), error = function(cond) { return('ERROR')})
+daily.curt = tryCatch( daily_curtailment(interval.generation, interval.avail.cap), error = function(cond) { return('ERROR')})
 
 # If there is a problem with the query return an error.
 if ( typeof(daily.curt)=='character' ) { 

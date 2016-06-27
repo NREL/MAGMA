@@ -99,7 +99,9 @@ if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.di
   if ( exists('key.period.gen') ) {
   # Check to see if the right data is ready for plotting.
     if ( typeof(key.period.gen)=='character' ) {
-      print('ERROR: interval_gen function not returning correct results.')
+      key.period.dispatch.total  = 'ERROR: interval_gen function not returning correct results.'
+      key.period.dispatch.zone   = 'ERROR: interval_gen function not returning correct results.'
+      key.period.dispatch.region = 'ERROR: interval_gen function not returning correct results.'
     } else {
   
       key.plots.total = list() # Creates empty list for plot data

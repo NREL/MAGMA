@@ -2,7 +2,7 @@
 if (zone.gen.stacks) {
 
 # Query region and zonal generation
-r.z.gen = tryCatch( select(region_zone_gen(yr.data.generator), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR') } )
+r.z.gen = tryCatch( select(region_zone_gen(total.generation, total.avail.cap), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR') } )
 
 # If the query doesn't work, return an error. Else run code to create plot.
 if ( typeof(r.z.gen)=='character' ) {
