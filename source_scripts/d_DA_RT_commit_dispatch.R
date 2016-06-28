@@ -1,11 +1,11 @@
 
 # Call query functions to get committed capacity (day ahead) and available capacity in the real time.
-committed.cap = tryCatch( cap_committed(int.data.commit), error = function(cond) { return('ERROR')})
-avail.cap.rt = tryCatch( cap_committed(int.data.avail.cap), error = function(cond) { return('ERROR')})
+committed.cap = tryCatch( cap_committed(interval.da.committment), error = function(cond) { return('ERROR')})
+avail.cap.rt = tryCatch( cap_committed(interval.avail.cap), error = function(cond) { return('ERROR')})
 
 # Check to see if interval generation data already exists. If it doesn't call that query function.
 if( !exists('int.gen') ) {
-  int.gen = tryCatch( interval_gen(int.data.region, int.data.zone, int.data.gen, int.data.avail.cap), error = function(cond) { return('ERROR') } )
+  int.gen = tryCatch( interval_generation(interval.region.load, interval.zone.load, interval.generation, interval.avail.cap), error = function(cond) { return('ERROR') } )
 }
 
 # If there is a problem with the query return an error, else create the plots.

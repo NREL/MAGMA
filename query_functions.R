@@ -357,7 +357,7 @@ region_stats = function(total.region.load, total.region.imports, total.region.ex
 }
 
 zone_stats = function(total.region.load, total.region.imports, total.region.exports, total.region.ue, total.zone.load, total.zone.imports, total.zone.exports, total.zone.ue) {
-  if (reassign.zones==TRUE | yr.data.zone=='ERROR'){
+  if (reassign.zones==TRUE | total.zone.load=='ERROR'){
     z.data = rbind(total.region.load, total.region.imports, total.region.exports, total.region.ue)
     z.stats = z.data %>%
       join(select(region.zone.mapping, name=Region, Zone), by='name', match='first') %>%

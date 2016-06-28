@@ -2,7 +2,7 @@
 if(reserves.plots) {
 
 # Reserves interval data query
-r = tryCatch( interval_reserves(int.data.reserve), error = function(cond) { return('ERROR') })
+r = tryCatch( interval_reserves(interval.reserve.provision), error = function(cond) { return('ERROR') })
 
 if ( typeof(r)=='character' ) { 
   print('ERROR: interval_reserves function not returning correct results.')

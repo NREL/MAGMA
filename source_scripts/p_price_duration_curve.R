@@ -2,11 +2,11 @@
 if(price.duration.curve) {
 
 # If price duration curve is selected in the input file, int.data.region should be created.
-region.data = int.data.region
+region.data = interval.region.price
 
 # If there is a problem with the query return an error, else create the plots.
 if ( typeof(region.data)=='character' ) { 
-  print('ERROR: int_region_query function not returning correct results.')
+  print('ERROR: interval_region_price function not returning correct results.')
 } else {
 
   # Pull out price from the regional data query

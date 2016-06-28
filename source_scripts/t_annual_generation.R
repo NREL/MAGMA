@@ -4,7 +4,7 @@ if (annual.generation.table){
   # If the data doesn't already exist, run the query function.
   if ( !exists('yr.gen') ) {
     # Query annual generation by type.
-    yr.gen = tryCatch( gen_by_type(yr.data.generator), error = function(cond) { return('ERROR: gen_by_type function not returning correct results') } ) 
+    yr.gen = tryCatch( gen_by_type(total.generation, total.avail.cap), error = function(cond) { return('ERROR: gen_by_type function not returning correct results') } ) 
   }
     
   # Check to see the data query didn't have any errors.

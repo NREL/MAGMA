@@ -4,7 +4,7 @@ if(region.zone.gen.table) {
 # If it doesn't already exist then call the query function.
 if ( !exists('r.z.gen') ) {
   # Query region and zonal generation
-  r.z.gen = tryCatch( select(region_zone_gen(yr.data.generator), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR: region_zone_gen function not returning correct results.') } )
+  r.z.gen = tryCatch( select(region_zone_gen(total.generation, total.avail.cap), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR: region_zone_gen function not returning correct results.') } )
 }
   
 if ( typeof(r.z.gen)=='character' ) { 
