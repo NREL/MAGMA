@@ -64,31 +64,33 @@ zone.names = z.load$name # Assign zone names based on PLEXOS regions or region t
 # Check that all queries necessary worked. If not, return an error stating what data is not being output by PLEXOS
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if (typeof(total.generation)=='character') { print('Missing total generator generation data from solution .db file.')}
-if (typeof(total.avail.cap)=='character') { print('Missing total generator available capacity data from solution .db file.')}
-if (typeof(total.emissions.cost)=='character') { print('Missing total generator emissions cost data from solution .db file.')}
-if (typeof(total.fuel.cost)=='character') { print('Missing total generator fuel cost data from solution .db file.')}
-if (typeof(total.ss.cost)=='character') { print('Missing total generator start and shutdown cost data from solution .db file.')}
-if (typeof(total.vom.cost)=='character') { print('Missing total generator VO&M cost data from solution .db file.')}
-if (typeof(total.installed.cap)=='character') { print('Missing total generator installed capacity data from solution .db file.')}
-if (typeof(total.region.load)=='character') { print('Missing total region load data from solution .db file.')}
-if (typeof(total.region.imports)=='character') { print('Missing total region imports data from solution .db file.')}
-if (typeof(total.region.exports)=='character') { print('Missing total region exports data from solution .db file.')}
-if (typeof(total.region.ue)=='character') { print('Missing total region unserved energy data from solution .db file.')}
-if (typeof(total.zone.load)=='character') { print('Missing total zone load data from solution .db file. Ok if reassign zones is TRUE and region data is found.')}
-if (typeof(total.zone.imports)=='character') { print('Missing total zone imports data from solution .db file. Ok if reassign zones is TRUE and region data is found.')}
-if (typeof(total.zone.exports)=='character') { print('Missing total zone exports data from solution .db file. Ok if reassign zones is TRUE and region data is found.')}
-if (typeof(total.zone.ue)=='character') { print('Missing total zone unserved energy data from solution .db file. Ok if reassign zones is TRUE and region data is found.')}
-if (typeof(total.reserve.provision)=='character') { print('Missing total reserve provision data from solution .db file.')}
-if (typeof(total.reserve.shortage)=='character') { print('Missing total reserve shortage data from solution .db file.')}
-if (typeof(total.interface.flow)=='character') { print('Missing total interface flow data from solution .db file.')}
+if (typeof(total.generation)=='character') { message('\nMissing total generator generation data from solution .db file.')}
+if (typeof(total.avail.cap)=='character') { message('\nMissing total generator available capacity data from solution .db file.')}
+if (typeof(total.emissions.cost)=='character') { message('\nMissing total generator emissions cost data from solution .db file.')}
+if (typeof(total.fuel.cost)=='character') { message('\nMissing total generator fuel cost data from solution .db file.')}
+if (typeof(total.ss.cost)=='character') { message('\nMissing total generator start and shutdown cost data from solution .db file.')}
+if (typeof(total.vom.cost)=='character') { message('\nMissing total generator VO&M cost data from solution .db file.')}
+if (typeof(total.installed.cap)=='character') { message('\nMissing total generator installed capacity data from solution .db file.')}
+if (typeof(total.region.load)=='character') { message('\nMissing total region load data from solution .db file.')}
+if (typeof(total.region.imports)=='character') { message('\nMissing total region imports data from solution .db file.')}
+if (typeof(total.region.exports)=='character') { message('\nMissing total region exports data from solution .db file.')}
+if (typeof(total.region.ue)=='character') { message('\nMissing total region unserved energy data from solution .db file.')}
+if (typeof(total.zone.load)=='character') { message('\nMissing total zone load data from solution .db file. Ok if reassign zones is TRUE and region data is found.')}
+if (typeof(total.zone.imports)=='character') { message('\nMissing total zone imports data from solution .db file. Ok if reassign zones is TRUE and region data is found.')}
+if (typeof(total.zone.exports)=='character') { message('\nMissing total zone exports data from solution .db file. Ok if reassign zones is TRUE and region data is found.')}
+if (typeof(total.zone.ue)=='character') { message('\nMissing total zone unserved energy data from solution .db file. Ok if reassign zones is TRUE and region data is found.')}
+if (typeof(total.reserve.provision)=='character') { message('\nMissing total reserve provision data from solution .db file.')}
+if (typeof(total.reserve.shortage)=='character') { message('\nMissing total reserve shortage data from solution .db file.')}
+if (typeof(total.interface.flow)=='character') { message('\nMissing total interface flow data from solution .db file.')}
 
-if (exists('interval.generation')) { if (typeof(interval.generation)=='character') { print('Missing interval generator generation data from solution .db file.')}}
-if (exists('interval.avail.cap')) { if (typeof(interval.avail.cap)=='character') { print('Missing interval generator available capacity data from solution .db file.')}}
-if (exists('interval.region.load')) { if (typeof(interval.region.load)=='character') { print('Missing interval region load data from solution .db file.')}}
-if (exists('interval.region.price')) { if (typeof(interval.region.price)=='character') { print('Missing interval region price data from solution .db file.')}}
-if (exists('interval.zone.load')) { if (typeof(interval.zone.load)=='character') { print('Missing interval zone load data from solution .db file.')}}
-if (exists('interval.interface.flow')) { if (typeof(interval.interface.flow)=='character') { print('Missing interval interface flow data from solution .db file.')}}
-if (exists('interval.reserve.provision')) { if (typeof(interval.reserve.provision)=='character') { print('Missing interval reserve provision data from solution .db file.')}}
-if (exists('interval.da.committment')) { if (typeof(interval.da.committment)=='character') { print('Missing interval available capacity from day ahead solution .db file.')}}
+if (exists('interval.generation')) { if (typeof(interval.generation)=='character') { message('\nMissing interval generator generation data from solution .db file.')}}
+if (exists('interval.avail.cap')) { if (typeof(interval.avail.cap)=='character') { message('\nMissing interval generator available capacity data from solution .db file.')}}
+if (exists('interval.region.load')) { if (typeof(interval.region.load)=='character') { message('\nMissing interval region load data from solution .db file.')}}
+if (exists('interval.region.price')) { if (typeof(interval.region.price)=='character') { message('\nMissing interval region price data from solution .db file.')}}
+if (exists('interval.zone.load')) { if (typeof(interval.zone.load)=='character') { message('\nMissing interval zone load data from solution .db file.')}}
+if (exists('interval.interface.flow')) { if (typeof(interval.interface.flow)=='character') { message('\nMissing interval interface flow data from solution .db file.')}}
+if (exists('interval.reserve.provision')) { if (typeof(interval.reserve.provision)=='character') { message('\nMissing interval reserve provision data from solution .db file.')}}
+if (exists('interval.da.committment')) { if (typeof(interval.da.committment)=='character') { message('\nMissing interval available capacity from day ahead solution .db file.')}}
 
+if( length(rz.unique$Region)!=length(region.names) ) { message('\nWarning: Number of regions in generation to region/zone mapping file different than number of regions from region load query! Check region.names object.') }
+if( length(rz.unique$Zone)!=length(zone.names) ) { message('\nWarning: Number of zones in generation to region/zone mapping file different than number of zones from zone load query! Check zone.names object.') }

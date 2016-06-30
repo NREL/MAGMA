@@ -60,14 +60,14 @@ if (length(db.day.ahead.loc)==0) { db.day.ahead.loc = db.loc }
 use.gen.type.mapping.csv = as.logical(na.exclude(inputs$Using.Gen.Type.Mapping.CSV))
 if (length(use.gen.type.mapping.csv)==0) { 
   use.gen.type.mapping.csv = FALSE
-  print('Must select TRUE or FALSE for if using generator generation type mapping file!') 
+  message('\nMust select TRUE or FALSE for if using generator generation type mapping file!') 
 }
 
 # Reassign zones based on region to zone mapping file?
 reassign.zones = as.logical(na.exclude(inputs$reassign.zones))
 if (length(reassign.zones)==0) { 
   reassign.zones = FALSE
-  print('Must select TRUE or FALSE for if reassigning what regions are in what zones!')
+  message('\nMust select TRUE or FALSE for if reassigning what regions are in what zones!')
 }
 
 if ( use.gen.type.mapping.csv ) {
@@ -77,7 +77,7 @@ if ( use.gen.type.mapping.csv ) {
 } else {
   # Assign generation type according to PLEXOS category
   category2type = data.frame(category = as.character(na.omit(inputs$PLEXOS.Gen.Category)), Type = as.character(na.omit(inputs$PLEXOS.Desired.Type)) )  
-  if (length(category2type[,1])==0) { print('If not using generator name to type mapping CSV, you must specify PLEXOS categories and desired generation type.') }
+  if (length(category2type[,1])==0) { message('\nIf not using generator name to type mapping CSV, you must specify PLEXOS categories and desired generation type.') }
 }
 
 # Read mapping file to map generator names to region and zone (can be same file as gen name to type).
@@ -96,7 +96,7 @@ gen.order = rev(as.character(na.omit(inputs$Gen.Order)))
 # Types of renewables to be considered for curtailment calculations
 re.types = as.character(na.omit(inputs$Renewable.Types.for.Curtailment)) 
 if (length(re.types)==0) { 
-  print('No variable generation types specified for curtailment.')
+  message('\nNo variable generation types specified for curtailment.')
   daily.curtailment = FALSE
   yearly.curtailment = FALSE
 }
@@ -104,7 +104,7 @@ if (length(re.types)==0) {
 # Types of generation to be plotted in the DA-RT committmet dispatch plots
 da.rt.types = as.character(na.omit(inputs$DA.RT.Plot.Types))
 if (length(da.rt.types)==0) {
-  print('No generation types specified for DA-RT plots. Plots will not be created.')
+  message('\nNo generation types specified for DA-RT plots. Plots will not be created.')
   commit.dispatch.region=FALSE
   commit.dispatch.zone=FALSE
 }
@@ -112,7 +112,7 @@ if (length(da.rt.types)==0) {
 # Names of key periods
 period.names = as.character(na.omit(inputs$Key.Periods)) 
 if (length(period.names)==0) {
-  print('No key periods specified. No plots will be created for these.')
+  message('\nNo key periods specified. No plots will be created for these.')
   key.period.dispatch.total.log = FALSE
   key.period.dispatch.zone.log = FALSE
   key.period.dispatch.region.log = FALSE
@@ -148,7 +148,7 @@ ignore.regions = as.character(na.omit(inputs$Ignore.Regions))
 # Interfaces to look at flows for
 interfaces = as.character(na.omit(inputs$Interfaces.for.Flows))
 if (length(interfaces)==0) {
-  print('No interfaces specified. No interface data will be shown.')
+  message('\nNo interfaces specified. No interface data will be shown.')
   interface.flow.table = FALSE
   interface.flow.plots = FALSE
   key.period.interface.flow.plots = FALSE
