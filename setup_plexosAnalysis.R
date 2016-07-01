@@ -163,7 +163,7 @@ if(length(list.files(pattern = "\\.zip$",path=db.loc))!=0 ) {
               file.info(file.path(db.loc,list.files(pattern = "\\.zip$",path=db.loc)))$mtime) {
     message(paste0('The db is older than the zip or the .db file in ',db.loc))
     run.rplx=T
-  }
+  } else {message(paste0('\nFound .db solution file: ', list.files(pattern='\\.db$',path=db.loc), '\n'))}
   if(run.rplx) {
     if(readline('Do you want to run the rPLEXOS db creation tool now? (y/n):')=='y'){
       message('Running process_folder')
