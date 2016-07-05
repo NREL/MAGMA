@@ -41,12 +41,13 @@ gen_by_type = function(total.generation, total.avail.cap) {
     if (length(avail[,1])>0) { avail = dcast(avail, property ~ Type, sum) }
     
   }
+  
   avail = avail[,2:ncol(avail)]
   
   # Pull out generation data for types used in curtailment calculation.
   re.gen = yr.gen %>%
     filter(Type %in% re.types )
-  if (length(re.gen[,1])>0) { re.gen = dcast(avail, property ~ Type, sum) }
+  if (length(re.gen[,1])>0) { re.gen = dcast(re.gen, property ~ Type, sum) }
   re.gen = re.gen[,2:ncol(re.gen)]
 
   # Sum up generation by type
@@ -182,9 +183,12 @@ interval_generation = function(interval.region.load, interval.zone.load, interva
       select(name, time, value, category) %>%
       join(gen.type.mapping, by = 'name') %>%
       join(region.zone.mapping, by = 'name') %>%
-      dcast(time+Region+Zone ~ Type, sum) %>%
-      subset(select = c('time',spatialcol,re.types)) %>%
-      join(re.gen[,c('time',spatialcol)],by=c('time',spatialcol),type='full')
+      dcast(time+Region+Zone ~ Type, sum)
+    if (re.types!='none_specified') { 
+      int.avail = int.avail %>%
+        subset(select = c('time',spatialcol,re.types)) %>%
+        join(int.avail, re.gen[,c('time',spatialcol)],by=c('time',spatialcol),type='full')
+    } else { int.avail = 0 }
     
   } else {
     int.avail = interval.avail.cap %>%
@@ -197,6 +201,7 @@ interval_generation = function(interval.region.load, interval.zone.load, interva
         subset(select = c('time',spatialcol,re.types)) %>%
         join(int.avail, re.gen[,c('time',spatialcol)],by=c('time',spatialcol),type='full')
     } else { int.avail = 0 }
+    
   }
  
   if (re.types!='none_specified') { 
