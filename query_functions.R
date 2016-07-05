@@ -23,8 +23,8 @@ gen_by_type = function(total.generation, total.avail.cap) {
       filter(property == 'Available Energy') %>%
       join(gen.type.mapping, by = 'name') %>%
       select(Type, property, value) %>%
-      filter(Type %in% re.types ) %>%
-      dcast(property ~ Type, sum)
+      filter(Type %in% re.types )
+    if (length(avail[,1])>0) { avail = dcast(avail, property ~ Type, sum) }
     
     # Same as above section except this is for if you are using the PLEXOS category to match generation type instead of a mapping CSV file.
   } else {
@@ -37,15 +37,16 @@ gen_by_type = function(total.generation, total.avail.cap) {
       filter(property == 'Available Energy') %>%
       join(category2type, by = 'category') %>%
       select(Type, property, value) %>%
-      filter(Type %in% re.types ) %>%
-      dcast(property ~ Type, sum)
+      filter(Type %in% re.types )
+    if (length(avail[,1])>0) { avail = dcast(avail, property ~ Type, sum) }
+    
   }
   avail = avail[,2:ncol(avail)]
   
   # Pull out generation data for types used in curtailment calculation.
   re.gen = yr.gen %>%
-    filter(Type %in% re.types ) %>%
-    dcast(property ~ Type, sum)
+    filter(Type %in% re.types )
+  if (length(re.gen[,1])>0) { re.gen = dcast(avail, property ~ Type, sum) }
   re.gen = re.gen[,2:ncol(re.gen)]
 
   # Sum up generation by type
@@ -55,12 +56,14 @@ gen_by_type = function(total.generation, total.avail.cap) {
     ddply('Type', numcolwise(sum)) 
     
   # Calculate curtailment
-  curt = avail - re.gen
-  curt.tot = sum(curt)
+  if (length(avail[,1])>0 & length(re.gen[,1])>0) {
+    curt = avail - re.gen
+    curt.tot = sum(curt)
 
-  # Combine everything before returning the resulting data.
-  yr.gen = rbind(yr.gen, data.frame(Type = 'Curtailment', GWh = curt.tot))
-  
+    # Combine everything before returning the resulting data.
+    yr.gen = rbind(yr.gen, data.frame(Type = 'Curtailment', GWh = curt.tot))
+  } 
+
   return(yr.gen)
 }
 
@@ -112,13 +115,15 @@ region_zone_gen = function(total.generation, total.avail.cap) {
     filter(Type %in% re.types ) %>%
     join(avail.data, by = 'name')
   
-  curt$Type = 'Curtailment'
-  curt$value = curt$Avail - curt$value
-  curt$Avail = NULL
+  if (length(curt[,1])>0){
+    curt$Type = 'Curtailment'
+    curt$value = curt$Avail - curt$value
+    curt$Avail = NULL
+     
+    # Combine generation and curtailment and return.
+    gen.data = rbind(gen.data, curt)
+  }
   
-  # Combine generation and curtailment and return.
-  gen.data = rbind(gen.data, curt)
-
   return(gen.data)
 }
 
@@ -166,9 +171,11 @@ interval_generation = function(interval.region.load, interval.zone.load, interva
   int.gen = merge(int.gen[,!names(int.gen) %in% names(rz.unique)[names(rz.unique) != spatialcol]],
                   rz.unique,by=spatialcol,all.y=T)
   
-  # Pull out renewable data for curtilment calculations. 
-  re.gen = subset(int.gen, select = c('time',spatialcol,re.types))
-
+  if (re.types!='none_specified'){
+    #  Pull out renewable data for curtilment calculations. 
+    re.gen = subset(int.gen, select = c('time',spatialcol,re.types))
+  } else { re.gen=0 }
+  
   # Pull out interval generation capacity and add generation type, region, and zone based on matching generator names.
   if ( use.gen.type.mapping.csv ) {
     int.avail = interval.avail.cap %>%
@@ -184,23 +191,28 @@ interval_generation = function(interval.region.load, interval.zone.load, interva
       select(name, time, value, category) %>%
       join(category2type, by = 'category') %>%
       join(region.zone.mapping, by = 'name') %>%
-      dcast(time+Region+Zone ~ Type, sum) %>%
-      subset(select = c('time',spatialcol,re.types)) %>%
-      join(re.gen[,c('time',spatialcol)],by=c('time',spatialcol),type='full')
+      dcast(time+Region+Zone ~ Type, sum)
+    if (re.types!='none_specified') { 
+      int.avail = int.avail %>%
+        subset(select = c('time',spatialcol,re.types)) %>%
+        join(int.avail, re.gen[,c('time',spatialcol)],by=c('time',spatialcol),type='full')
+    } else { int.avail = 0 }
   }
-  
-  # Calculate curtailment and add it to generation and load data from above. 
-  int.avail[is.na(int.avail)] = 0
-  re.gen[is.na(re.gen)] = 0
-  curtailed = merge(int.avail,re.gen,by=c('time',spatialcol))
-  for (i in re.types){
-    curtailed[,i] = curtailed[,paste(i,'x',sep='.')]-curtailed[,paste(i,'y',sep='.')]
+ 
+  if (re.types!='none_specified') { 
+    # Calculate curtailment and add it to generation and load data from above. 
+    int.avail[is.na(int.avail)] = 0
+    re.gen[is.na(re.gen)] = 0
+    curtailed = merge(int.avail,re.gen,by=c('time',spatialcol))
+    for (i in re.types){
+      curtailed[,i] = curtailed[,paste(i,'x',sep='.')]-curtailed[,paste(i,'y',sep='.')]
+    }
+    curtailed$Curtailment = rowSums(curtailed[,re.types])
+    int.gen = merge(int.gen,curtailed[,c('time',spatialcol,'Curtailment')],by=c('time',spatialcol))
   }
-  curtailed$Curtailment = rowSums(curtailed[,re.types])
-  int.gen = merge(int.gen,curtailed[,c('time',spatialcol,'Curtailment')],by=c('time',spatialcol))
+ 
   int.gen[is.na(int.gen)] = 0
   
-
   return(int.gen)
 }
 

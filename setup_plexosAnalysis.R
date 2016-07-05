@@ -99,6 +99,7 @@ if (length(re.types)==0) {
   message('\nNo variable generation types specified for curtailment.')
   daily.curtailment = FALSE
   yearly.curtailment = FALSE
+  re.types = 'none_specified'
 }
 
 # Types of generation to be plotted in the DA-RT committmet dispatch plots

@@ -14,9 +14,15 @@ if ( typeof(committed.cap)=='character' | typeof(int.gen)=='character' | typeof(
 } else {
   
   # Remove unneccessary data columns and rearrange the data for plotting. This is interval generation data in the real time.
-  da.rt.data = int.gen %>%
-    select(-Curtailment, -Load) %>%
-    melt(id.vars = .(time, Region, Zone), variable.name = 'Type', value.name='RT.gen')
+  if (sum(colnames(int.gen)=='Curtailment')==0) {
+    da.rt.data = int.gen %>%
+      select(-Load) %>%
+      melt(id.vars = .(time, Region, Zone), variable.name = 'Type', value.name='RT.gen')
+  } else {
+    da.rt.data = int.gen %>%
+      select(-Curtailment, -Load) %>%
+      melt(id.vars = .(time, Region, Zone), variable.name = 'Type', value.name='RT.gen')
+  }
   
   names(avail.cap.rt)[names(avail.cap.rt)=='committed.cap']='RT.cap'
   names(committed.cap)[names(committed.cap)=='committed.cap']='DA.cap'

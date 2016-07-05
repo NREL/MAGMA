@@ -30,7 +30,7 @@ p1 = ggplot(interface.flows, aes(x=time, y=value/1000, color=name, group=name))+
 
 # Aggregate interval flow data into daily flow data
 daily.flows = dcast(interface.flows, time ~ name, value.var = 'value', fun.aggregate=mean)
-daily.flows$day = rep(1:(nrow(daily.flows)/24), each=24)
+daily.flows$day = rep(1:(nrow(daily.flows)/intervals.per.day), each=intervals.per.day)
 daily.flows = melt(daily.flows, id.vars = 'day', measure.vars = interfaces, variable.name = 'name')
 
 daily.flows = daily.flows %>%
