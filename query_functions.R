@@ -56,14 +56,22 @@ gen_by_type = function(total.generation, total.avail.cap) {
     rename(GWh = Generation) %>%
     ddply('Type', numcolwise(sum)) 
     
-  # Calculate curtailment
-  if (length(avail[,1])>0 & length(re.gen[,1])>0) {
+  if(typeof(avail)=='double' & typeof(re.gen)=='double') {
+    # Calculate curtailment
     curt = avail - re.gen
     curt.tot = sum(curt)
-
+    
     # Combine everything before returning the resulting data.
     yr.gen = rbind(yr.gen, data.frame(Type = 'Curtailment', GWh = curt.tot))
-  } 
+    
+  } else if (length(avail[,1])>0 & length(re.gen[,1])>0) {
+    # Calculate curtailment
+    curt = avail - re.gen
+    curt.tot = sum(curt)
+    
+    # Combine everything before returning the resulting data.
+    yr.gen = rbind(yr.gen, data.frame(Type = 'Curtailment', GWh = curt.tot))
+  }
 
   return(yr.gen)
 }
@@ -174,7 +182,8 @@ interval_generation = function(interval.region.load, interval.zone.load, interva
   
   if (re.types!='none_specified'){
     #  Pull out renewable data for curtilment calculations. 
-    re.gen = subset(int.gen, select = c('time',spatialcol,re.types))
+    re.gen = int.gen[, c('time', spatialcol, re.types[re.types %in% colnames(int.gen)])]
+    re.gen[is.na(re.gen)] = 0
   } else { re.gen=0 }
   
   # Pull out interval generation capacity and add generation type, region, and zone based on matching generator names.
@@ -184,40 +193,35 @@ interval_generation = function(interval.region.load, interval.zone.load, interva
       join(gen.type.mapping, by = 'name') %>%
       join(region.zone.mapping, by = 'name') %>%
       dcast(time+Region+Zone ~ Type, sum)
-    if (re.types!='none_specified') { 
-      int.avail = int.avail %>%
-        subset(select = c('time',spatialcol,re.types)) %>%
-        join(int.avail, re.gen[,c('time',spatialcol)],by=c('time',spatialcol),type='full')
-    } else { int.avail = 0 }
-    
+
   } else {
     int.avail = interval.avail.cap %>%
       select(name, time, value, category) %>%
       join(category2type, by = 'category') %>%
       join(region.zone.mapping, by = 'name') %>%
       dcast(time+Region+Zone ~ Type, sum)
-    if (re.types!='none_specified') { 
-      int.avail = int.avail %>%
-        subset(select = c('time',spatialcol,re.types)) %>%
-        join(int.avail, re.gen[,c('time',spatialcol)],by=c('time',spatialcol),type='full')
-    } else { int.avail = 0 }
-    
   }
  
   if (re.types!='none_specified') { 
-    # Calculate curtailment and add it to generation and load data from above. 
+
+    int.avail = int.avail[, c('time', spatialcol, re.types[re.types %in% colnames(int.avail)])]
+    int.avail = join(int.avail, re.gen[,c('time',spatialcol)], by=c('time',spatialcol), type='full')
     int.avail[is.na(int.avail)] = 0
-    re.gen[is.na(re.gen)] = 0
+    
+    # Calculate curtailment and add it to generation and load data from above.
     curtailed = merge(int.avail,re.gen,by=c('time',spatialcol))
-    for (i in re.types){
+    
+    for ( i in re.types[c(re.types %in% colnames(re.gen))] ) {
       curtailed[,i] = curtailed[,paste(i,'x',sep='.')]-curtailed[,paste(i,'y',sep='.')]
     }
-    curtailed$Curtailment = rowSums(curtailed[,re.types])
-    int.gen = merge(int.gen,curtailed[,c('time',spatialcol,'Curtailment')],by=c('time',spatialcol))
-  }
- 
-  int.gen[is.na(int.gen)] = 0
+    
+    curtailed$Curtailment = rowSums(curtailed[re.types[re.types %in% colnames(curtailed)]])
+    
+    int.gen = merge(int.gen, curtailed[,c('time',spatialcol,'Curtailment')], by=c('time',spatialcol) )
+    int.gen[is.na(int.gen)] = 0
   
+  } else { int.avail = 0 }
+ 
   return(int.gen)
 }
 
@@ -226,7 +230,7 @@ interval_generation = function(interval.region.load, interval.zone.load, interva
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Calculates interval level total curtailment
 
-daily_curtailment = function(interval.generation, interval.avail.cap) {
+total_curtailment = function(interval.generation, interval.avail.cap) {
   
   gen.data = interval.generation
   avail.data = interval.avail.cap
@@ -236,37 +240,45 @@ daily_curtailment = function(interval.generation, interval.avail.cap) {
     c.gen = gen.data %>%
       join(gen.type.mapping, by = 'name') %>%
       select(time, Type, value) %>%
-      dcast(time ~ Type, value.var = 'value', fun.aggregate = sum) %>%
-      subset(select = re.types)
+      dcast(time ~ Type, value.var = 'value', fun.aggregate = sum)
+    c.gen = c.gen[, c(re.types[re.types %in% colnames(c.gen)])]
     
     c.avail = avail.data %>%
       join(gen.type.mapping, by = 'name') %>%
       select(time, Type, value) %>%
-      dcast(time ~ Type, sum) %>%
-      subset(select = re.types)
+      dcast(time ~ Type, sum)
+    c.avail = c.avail[, c(re.types[re.types %in% colnames(c.avail)])] 
     
     # Below does the same thing as above except matches generation type using PLEXOS categories instead of a mapping file.
   } else {
     c.gen = gen.data %>%
       join(category2type, by = 'category') %>%
       select(time, Type, value) %>%
-      dcast(time ~ Type, value.var = 'value', fun.aggregate = sum) %>%
-      subset(select = re.types)
+      dcast(time ~ Type, value.var = 'value', fun.aggregate = sum)
+    c.gen = c.gen[, c(re.types[re.types %in% colnames(c.gen)])]
     
     c.avail = avail.data %>%
       join(category2type, by = 'category') %>%
       select(time, Type, value) %>%
-      dcast(time ~ Type, sum) %>%
-      subset(select = re.types)  
+      dcast(time ~ Type, sum)
+    c.avail = c.avail[, c(re.types[re.types %in% colnames(c.avail)])] 
   }
 
-  # Summing up total curtailment for each interval
-  curt = c.avail - c.gen
-  curt.tot = data.frame(rowSums(curt))
-  colnames(curt.tot) = 'Curtailment'
-  curt.tot = t(curt.tot)
-  dim(curt.tot) = c(intervals.per.day, length(curt.tot)/intervals.per.day)
-  curt.tot = data.frame(curt.tot)
+  if (typeof(c.avail)=='double' & typeof(c.gen)=='double') {
+    curt.tot = c.avail - c.gen
+    curt.tot = data.frame(curt.tot)
+    curt.tot = t(curt.tot)
+    dim(curt.tot) = c(intervals.per.day, length(curt.tot)/intervals.per.day)
+    curt.tot = data.frame(curt.tot)
+  } else {
+    # Summing up total curtailment for each interval
+    curt = c.avail - c.gen
+    curt.tot = data.frame(rowSums(curt))
+    colnames(curt.tot) = 'Curtailment'
+    curt.tot = t(curt.tot)
+    dim(curt.tot) = c(intervals.per.day, length(curt.tot)/intervals.per.day)
+    curt.tot = data.frame(curt.tot)
+  }
 
   return(curt.tot)
 }

@@ -171,7 +171,7 @@ if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.di
 ### 8. Average Daily Curtailment
 ```{r yearly-curtailment}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_yearly_curtailment.R')
+source('source_scripts/p_daily_curtailment.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -179,7 +179,7 @@ source('source_scripts/p_yearly_curtailment.R')
 ### 9. Average Interval Curtailment
 ```{r daily-curtailment}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_daily_curtailment.R')
+source('source_scripts/p_interval_curtailment.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 

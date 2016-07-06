@@ -31,8 +31,8 @@ if(4 %in% run.sections)  {individual.region.stacks.log=TRUE}    else {individual
 if(5 %in% run.sections)  {key.period.dispatch.total.log=TRUE}   else {key.period.dispatch.total.log=FALSE}
 if(6 %in% run.sections)  {key.period.dispatch.zone.log=TRUE}    else {key.period.dispatch.zone.log=FALSE}
 if(7 %in% run.sections)  {key.period.dispatch.region.log=TRUE}  else {key.period.dispatch.region.log=FALSE}
-if(8 %in% run.sections)  {yearly.curtailment=TRUE}              else {yearly.curtailment=FALSE}
-if(9 %in% run.sections)  {daily.curtailment=TRUE}               else {daily.curtailment=FALSE}
+if(8 %in% run.sections)  {daily.curtailment=TRUE}               else {daily.curtailment=FALSE}
+if(9 %in% run.sections)  {interval.curtailment=TRUE}            else {interval.curtailment=FALSE}
 if(10 %in% run.sections) {annual.generation.table=TRUE}         else {annual.generation.table=FALSE}
 if(11 %in% run.sections) {annual.cost.table=TRUE}               else {annual.cost.table=FALSE}
 if(12 %in% run.sections) {region.zone.flow.table=TRUE}          else {region.zone.flow.table=FALSE}
@@ -97,8 +97,8 @@ gen.order = rev(as.character(na.omit(inputs$Gen.Order)))
 re.types = as.character(na.omit(inputs$Renewable.Types.for.Curtailment)) 
 if (length(re.types)==0) { 
   message('\nNo variable generation types specified for curtailment.')
+  interval.curtailment = FALSE
   daily.curtailment = FALSE
-  yearly.curtailment = FALSE
   re.types = 'none_specified'
 }
 

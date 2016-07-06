@@ -29,7 +29,7 @@ total.interface.flow = tryCatch( total_interface_flow(db), error = function(cond
 # If certain logicals are true, then the below interval queries will be called.
 
 if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period.dispatch.zone.log |
-     yearly.curtailment | daily.curtailment | commit.dispatch.zone | commit.dispatch.region ) {
+     daily.curtailment | interval.curtailment | commit.dispatch.zone | commit.dispatch.region ) {
   
   interval.generation   = tryCatch( interval_gen(db), error = function(cond) { return('ERROR') } ) # Interval level generation for each generator.
   interval.avail.cap    = tryCatch( interval_avail_cap(db), error = function(cond) { return('ERROR') } ) # Interval level available capacity for each generator.
@@ -92,5 +92,5 @@ if (exists('interval.interface.flow')) { if (typeof(interval.interface.flow)=='c
 if (exists('interval.reserve.provision')) { if (typeof(interval.reserve.provision)=='character') { message('\nMissing interval reserve provision data from solution .db file.')}}
 if (exists('interval.da.committment')) { if (typeof(interval.da.committment)=='character') { message('\nMissing interval available capacity from day ahead solution .db file.')}}
 
-if( length(rz.unique$Region)!=length(region.names) ) { message('\nWarning: Number of regions in generation to region/zone mapping file different than number of regions from region load query! Check region.names object.') }
-if( length(rz.unique$Zone)!=length(zone.names) ) { message('\nWarning: Number of zones in generation to region/zone mapping file different than number of zones from zone load query! Check zone.names object.') }
+if( length(unique(rz.unique$Region))!=length(region.names) ) { message('\nWarning: Number of regions in generation to region/zone mapping file different than number of regions from region load query! Check region.names object.') }
+if( length(unique(rz.unique$Zone))!=length(zone.names) ) { message('\nWarning: Number of zones in generation to region/zone mapping file different than number of zones from zone load query! Check zone.names object.') }
