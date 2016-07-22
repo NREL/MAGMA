@@ -31,7 +31,7 @@ if ( typeof(committed.cap)=='character' | typeof(int.gen)=='character' | typeof(
   da.rt.data = da.rt.data %>%
     merge(avail.cap.rt, by=c('time', 'Region', 'Zone', 'Type') ) %>%
     merge(committed.cap, by=c('time', 'Region', 'Zone', 'Type') ) 
-  
+                
   # Only pull out data for the time spans that were requested in the input file. 
   for ( i in 1:n.periods ) {
     key.period.time = seq(start.end.times[i,'start'], start.end.times[i,'end'], 

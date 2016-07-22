@@ -44,8 +44,8 @@ if(17 %in% run.sections) {reserves.plots=TRUE}                  else {reserves.p
 if(18 %in% run.sections) {region.zone.gen.table=TRUE}           else {region.zone.gen.table=FALSE}
 if(19 %in% run.sections) {capacity.factor.table=TRUE}           else {capacity.factor.table=FALSE}
 if(20 %in% run.sections) {price.duration.curve=TRUE}            else {price.duration.curve=FALSE}
-if(21 %in% run.sections) {commit.dispatch.region=TRUE}          else {commit.dispatch.region=FALSE}
-if(22 %in% run.sections) {commit.dispatch.zone=TRUE}            else {commit.dispatch.zone=FALSE}
+if(21 %in% run.sections) {commit.dispatch.zone=TRUE}            else {commit.dispatch.zone=FALSE}
+if(22 %in% run.sections) {commit.dispatch.region=TRUE}          else {commit.dispatch.region=FALSE}
 
 # -----------------------------------------------------------------------
 # Read in the data from the input_data.csv file that was just loaded
