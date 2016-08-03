@@ -416,7 +416,7 @@ zone_load = function(total.region.load, total.zone.load) {
       join(select(region.zone.mapping, name=Region, Zone), by='name', match='first') %>%
       select(name=Zone, value) %>%
       group_by(name) %>%
-      summarise(value = sum(value))
+      ddply(.(name),summarize,value = sum(value))
   } else {
     z.load = select(total.zone.load, name, value)
   }

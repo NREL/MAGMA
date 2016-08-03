@@ -21,6 +21,7 @@ scen.pal = c("goldenrod2", "blue", "darkblue", "firebrick3", "deeppink", "chartr
 # Read CSV file with all inputs
 inputs = read.csv(file.path(input.csv))
 inputs[inputs==""]=NA
+inputs = data.table(inputs)
 
 # Assign a logical to each chunk run selector. 
 run.sections = na.omit(inputs$Sections.to.Run)
@@ -72,23 +73,22 @@ if (length(reassign.zones)==0) {
 
 if ( use.gen.type.mapping.csv ) {
   # Read mapping tile to map generator names to generation type
-  gen.type.mapping = read.csv(as.character(na.exclude(inputs$CSV.Gen.Type.File.Location)), stringsAsFactors=FALSE)
-  gen.type.mapping = select(gen.type.mapping, name, Type)
+  gen.type.mapping = data.table(read.csv(as.character(na.exclude(inputs$CSV.Gen.Type.File.Location)), stringsAsFactors=FALSE))
+  gen.type.mapping = gen.type.mapping[,.(name, Type)]
 } else {
   # Assign generation type according to PLEXOS category
-  category2type = data.frame(category = as.character(na.omit(inputs$PLEXOS.Gen.Category)), Type = as.character(na.omit(inputs$PLEXOS.Desired.Type)) )  
+  category2type = data.table(category = as.character(na.omit(inputs$PLEXOS.Gen.Category)), Type = as.character(na.omit(inputs$PLEXOS.Desired.Type)) )  
   if (length(category2type[,1])==0) { message('\nIf not using generator name to type mapping CSV, you must specify PLEXOS categories and desired generation type.') }
 }
 
 # Read mapping file to map generator names to region and zone (can be same file as gen name to type).
-region.zone.mapping = read.csv(as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename)), stringsAsFactors=FALSE)
-region.zone.mapping = select(region.zone.mapping, name, Region, Zone)
-rz.unique = unique(region.zone.mapping[,c('Region','Zone')])
+region.zone.mapping = data.table(read.csv(as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename)), stringsAsFactors=FALSE))
+region.zone.mapping = region.zone.mapping[, .(name, Region, Zone)]
+rz.unique = unique(region.zone.mapping[,.(Region,Zone)])
 
 # Set plot color for each generation type
-Gen.col = data.frame(Type = na.omit(inputs$Gen.Type), Color = na.omit(inputs$Plot.Color) )
-gen.color<-as.character(Gen.col$Color)
-names(gen.color)<-Gen.col$Type
+Gen.col = data.table(Type = na.omit(inputs$Gen.Type), Color = na.omit(inputs$Plot.Color) )
+gen.color<-setNames(as.character(Gen.col$Color),Gen.col$Type)
 
 # Generation type order for plots
 gen.order = rev(as.character(na.omit(inputs$Gen.Order))) 
