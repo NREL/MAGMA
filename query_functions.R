@@ -63,14 +63,18 @@ region_zone_gen = function(total.generation, total.avail.cap) {
   # Filter out generation and available capacity data and add generation type by matching generator name.
   # Also add region and zone by matching generator name in the region and zone mapping file. 
   gen.data = r.z.gen[property=='Generation', .(name,category,value)][gen.type.zone.region]
+  gen.data = gen.data[, .(value=sum(value)), by=.(Type, Region, Zone)]
   
-  avail.data = r.z.gen[property == 'Available Energy' & Type %in% re.types, 
+  avail.data = r.z.gen[property == 'Available Energy', 
                        .(name,category,value)][gen.type.zone.region]
-  avail.data = avail.data[.(name, Avail = value)]
+  avail.data = avail.data[Type %in% re.types, .(Avail = sum(value)), by=.(Type, Region, Zone)]
     
 
   # Curtailment calculation based on renewable types specified in input file
-  curt = gen.data[Type %in% re.types, ][avail.data]
+  setkey(avail.data,Type,Region,Zone)
+  curt = gen.data[Type %in% re.types, ]
+  setkey(curt,Type,Region,Zone)
+  curt = curt[avail.data]
   curt[,Type := 'Curtailment']
   curt[,value := Avail - value]
   curt[,Avail := NULL ]
@@ -288,7 +292,7 @@ zone_stats = function(total.region.load, total.region.imports, total.region.expo
 # Returns region level and zone level load data for the entire run. 
 
 region_load = function(total.region.load) {
-  r.load = total.region.load[,.(name, value)]
+  r.load = total.region.load[,.(value=sum(value)), by=.(name)]
   return(r.load)
 }
 
@@ -299,7 +303,7 @@ zone_load = function(total.region.load, total.zone.load) {
     z.load = rz.unique[total.region.load][, .(value=sum(value)), by=.(Zone)]
     setnames(z.load,"Zone","name")
   } else {
-    z.load = total.zone.load[,.(name, value)]
+    z.load = total.zone.load[,.(value=sum(value)), by=.(name)]
   }
   return(z.load)
 }

@@ -11,7 +11,7 @@ if ( typeof(int.gen)=='character' ) {
   # From the full year of data, pull out only the data corresponding to the key periods specified in the input file. 
   timediff = int.gen[,.(timediff=diff(time)),by=.(Region,Type,Zone)][,.(min(timediff))][,V1]
   for ( i in 1:n.periods ) {
-    key.period.time = seq(start.end.times[i,'start'], start.end.times[i,'end'], 
+    key.period.time = seq(start.end.times[i,start], start.end.times[i,end], 
                           by = timediff)
     key.period.gen = int.gen[int.gen$time %in% key.period.time]
     key.period.gen[, Period := period.names[i]]
@@ -43,6 +43,8 @@ if ( typeof(int.gen)=='character' ) {
     
   gen.type.region = gen.type[,.(value=sum(value,na.rm=TRUE)),by=.(time,Region,Type,Period)]
   gen.load.region = gen.load[,.(value=sum(value,na.rm=TRUE)),by=.(time,Region,Type,Period)] 
+  setorder(gen.type.region, Type)
+  setorder(gen.load.region, Type)
   
   # ###############################################################################
   # Zone Data
@@ -50,6 +52,8 @@ if ( typeof(int.gen)=='character' ) {
   
   gen.type.zone = gen.type[,.(value=sum(value,na.rm=TRUE)),by=.(time,Zone,Type,Period)]
   gen.load.zone = gen.load[,.(value=sum(value,na.rm=TRUE)),by=.(time,Zone,Type,Period)]  
+  setorder(gen.type.zone, Type)
+  setorder(gen.load.zone, Type)
   
   # ###############################################################################
   # Total database Data
@@ -57,5 +61,7 @@ if ( typeof(int.gen)=='character' ) {
   
   gen.type.total = gen.type[,.(value=sum(value,na.rm=TRUE)),by=.(time,Type,Period)]
   gen.load.total = gen.load[,.(value=sum(value,na.rm=TRUE)),by=.(time,Type,Period)]
+  setorder(gen.type.total, Type)
+  setorder(gen.load.total, Type)
 
 }

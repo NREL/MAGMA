@@ -37,6 +37,7 @@ if ( typeof(r.z.gen)=='character' ) {
   # py=pretty(r.z.gen.sum$TWh, n=5, min.n = 5)
   # seq.py=seq(0, py[length(py)], 10*(py[2]-py[1]))
   
+  setorder(r.z.gen.plot,Type)
   # Create plot
   p1 = ggplot() +
     geom_bar(data = r.z.gen.plot, aes(x = Region, y = TWh, fill=Type, order=as.numeric(Type)), stat='identity', position="stack" ) +

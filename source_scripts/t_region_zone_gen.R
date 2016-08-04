@@ -37,8 +37,8 @@ if ( typeof(r.z.gen)=='character' ) {
     z.gen.table = 'ERROR: zone_load function not returning correct results.'
   } else {
     zone.load = z.load[, .(Zone = name, Load = value)]
-    setkey(region.load,Zone)
-    setkey(r.gen.table,Zone)
+    setkey(zone.load,Zone)
+    setkey(z.gen.table,Zone)
     z.gen.table = z.gen.table[zone.load]
   }
   

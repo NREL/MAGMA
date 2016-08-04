@@ -25,6 +25,7 @@ if ( typeof(yr.gen)=='character' ) {
   py = pretty(gen.sum$TWh, n=5, min.n = 5)
   seq.py = seq(0, py[length(py)], 10*(py[2]-py[1]))
 
+  setorder(gen.plot,Type)
   # Create plot
   p1 = ggplot() +
          geom_bar(data = gen.plot, aes(x = 'Dispatch', y = TWh, fill=Type, order=as.numeric(Type)), stat="identity", position="stack" ) +

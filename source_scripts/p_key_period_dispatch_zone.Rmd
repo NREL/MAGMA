@@ -15,14 +15,14 @@ figure.height = 6
 # ###############################################################################   
 
 # this is just for scaling the y-axis (either by load or generation, whichever is bigger)
-stack.z = gen.type.zone[Period==p.name && Zone==z.name, .(value=sum(value)), by=.(time)]
+stack.z = gen.type.zone[Period==p.name & Zone==z.name, .(value=sum(value)), by=.(time)]
 
 # Check to make sure there is actually generation data for this zone If not, no plot is crated.
 if ( length(stack.z$value)>0 & sum(stack.z$value)>0 ) {
 
   # If load is larger than generation, reassign y-axis height so load isn't cut off 
-  if (max(gen.load.zone[Period==p.name && Zone==z.name, value])>max(stack.z$value)){
-    stack.z = gen.load.zone[Period==p.name && Zone==z.name, .(value=sum(value)), by=.(time)]
+  if (max(gen.load.zone[Period==p.name & Zone==z.name, value])>max(stack.z$value)){
+    stack.z = gen.load.zone[Period==p.name & Zone==z.name, .(value=sum(value)), by=.(time)]
   }
   
   # This automatically creates the y-axis scaling
@@ -32,11 +32,11 @@ if ( length(stack.z$value)>0 & sum(stack.z$value)>0 ) {
   # #############################################################################################################
   # Zone database plots
   # #############################################################################################################
-  ggplot(gen.type.zone[Period==p.name && Zone==z.name, ], aes(time, value/1000, group=Type, fill=Type, order=as.numeric(Type)), color="black")+
+  ggplot(gen.type.zone[Period==p.name & Zone==z.name, ], aes(time, value/1000, group=Type, fill=Type, order=as.numeric(Type)), color="black")+
     geom_area(color=NA)+
     geom_line(position="stack", size=0.3)+
     labs(y="Generation (GWh)", x=NULL)+
-    geom_line(data=gen.load.zone[Period==p.name && Zone==z.name, ], linetype="longdash", aes(color="load"),size=0.8)+
+    geom_line(data=gen.load.zone[Period==p.name & Zone==z.name, ], linetype="longdash", aes(color="load"),size=0.8)+
     scale_fill_manual("",values = gen.color, limits=rev(gen.order))+
     scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
     scale_x_datetime(breaks = date_breaks(width = "1 day"), labels = date_format("%b %d\n%I %p"), expand = c(0, 0))+

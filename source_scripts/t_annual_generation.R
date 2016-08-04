@@ -26,6 +26,7 @@ if (annual.generation.table){
     yr.gen[, Total:=NULL]
     curt[, Total:=GWh+yr.gen[Type %in% re.types, sum(GWh)] ]
     curt[, Percent:=GWh/Total*100]
+    curt[, Total:=NULL]
     
     # combine back into one table. 
     yr.gen = rbindlist(list(yr.gen, curt))
