@@ -13,31 +13,25 @@ figure.height = 6
 if ( !z.name %in% ignore.zones ) {
   
   # Pull out only the data for the generation types specified in the input file and the current zone and period. Summarise by zone.
-  plot.data = plot.data.all %>%
-    filter(Type %in% da.rt.types, Zone==z.name, Period==p.name) %>%
-    group_by(Zone, time, Type, Period) %>%
-    summarise(RT.gen = sum(RT.gen), RT.cap = sum(RT.cap), DA.cap = sum(DA.cap))
+  plot.data = plot.data.all[Type %in% da.rt.types && Zone==z.name && Period==p.name, 
+                            .(RT.gen = sum(RT.gen), RT.cap = sum(RT.cap), DA.cap = sum(DA.cap)), 
+                            by=.(Zone, time, Type, Period)]
   
   # Assign the order which the generation types will appear in the plot.
-  plot.data$Type = factor(plot.data$Type, levels=rev(gen.order))
+  plot.data[, Type := factor(Type, levels=rev(gen.order))]
   
   # this is just for scaling the y-axis (either by load or generation, whichever is bigger)
-  stack.r = filter(plot.data, Period==p.name, Zone==z.name) %>% 
-    group_by(time) %>%
-    summarise(value = sum(DA.cap))
+  stack.r = plot.data[Period==p.name && Zone==z.name, .(value=sum(DA.cap)), by=.(time)]
 
 # Check that there is actually generation data to plot, otherwise don't make a plot.
 if ( length(stack.r$value)>0 & sum(stack.r$value)>0 ) {
 
-  blank_data = plot.data %>%
-    group_by(time, Type) %>%
-    summarise(ylim=sum(RT.cap)/1000) %>%   #calculate from MWh
-    mutate(ylim=ylim*1.06)  
+  blank_data = plot.data[, .(ylim=sum(RT.cap)/1000*1.06), by=.(time,Type)]
   
   # Create plot
   ggplot()+geom_area(data=plot.data, aes(time, RT.gen/1000, fill=Type), alpha=0.4)+
-    geom_line(data=filter(plot.data, !Type %in% 'Hydro'), aes(time, RT.cap/1000, color=Type), size=1)+
-    geom_line(data=filter(plot.data, !Type %in% 'Hydro'), aes(time, DA.cap/1000, linetype="DA Committed Capacity or \nForecasted Generation"), color="grey50", size=1, alpha=0.5)+
+    geom_line(data=plot.data[Type != 'Hydro', ], aes(time, RT.cap/1000, color=Type), size=1)+
+    geom_line(data=plot.data[Type != 'Hydro', ], aes(time, DA.cap/1000, linetype="DA Committed Capacity or \nForecasted Generation"), color="grey50", size=1, alpha=0.5)+
     geom_blank(data=blank_data, aes(x=time, y=ylim))+
     expand_limits(y=0)+
     scale_linetype_manual("",values=c(1,1))+

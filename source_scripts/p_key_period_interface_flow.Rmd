@@ -9,7 +9,7 @@ figure.height = 6
 
 ```{r key-period-interface-flow-plots-{{period.name}}, fig.width=figure.width, fig.height=figure.height, include=TRUE}
 
-ggplot(filter(plot.flows, Period==p.name), aes(time, value/1000, group=name, color=name))+
+ggplot(plot.flows[Period==p.name, ], aes(time, value/1000, group=name, color=name))+
       geom_line(size = 1.2)+
       geom_hline(yintercept=0, color="black", size=0.3)+
       labs(y="Flow (GW)", x=NULL)+

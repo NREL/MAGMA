@@ -18,16 +18,13 @@ if ( typeof(interval.curt)=='character' ) {
     avg.curt = interval.curt
   } else {
     # Sum up the curtailment each interval to get average interval curtailment. Assign an interval to each row.
-    avg.curt = data.frame(rowMeans(interval.curt))
-    avg.curt['time'] = 1:intervals.per.day
-    colnames(avg.curt) = c('Curtailment', 'time')
+    avg.curt = interval.curt[,.(Curtailment=sum(Curtailment)),by=.(interval)]
+    setnames(avg.curt, 'interval', 'time')
   }
   
   # this is just for scaling the y-axis (either by load or generation, whichever is bigger)
-  stack = avg.curt %>% 
-    group_by(time) %>%
-    summarise(value = sum(Curtailment))
-  stack$Type = "ALL"
+  stack = avg.curt[,.(value = sum(Curtailment)), by=.(time)]
+  stack[, Type := "ALL"]
                     
   # This automatically creates the y-axis scaling
   py  =pretty(stack$value)

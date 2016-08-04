@@ -74,16 +74,19 @@ if (length(reassign.zones)==0) {
 if ( use.gen.type.mapping.csv ) {
   # Read mapping tile to map generator names to generation type
   gen.type.mapping = data.table(read.csv(as.character(na.exclude(inputs$CSV.Gen.Type.File.Location)), stringsAsFactors=FALSE))
-  gen.type.mapping = gen.type.mapping[,.(name, Type)]
+  gen.type.mapping = unique(gen.type.mapping[,.(name, Type)])
+  setkey(gen.type.mapping,name)
 } else {
   # Assign generation type according to PLEXOS category
-  category2type = data.table(category = as.character(na.omit(inputs$PLEXOS.Gen.Category)), Type = as.character(na.omit(inputs$PLEXOS.Desired.Type)) )  
-  if (length(category2type[,1])==0) { message('\nIf not using generator name to type mapping CSV, you must specify PLEXOS categories and desired generation type.') }
+  gen.type.mapping = data.table(name = as.character(na.omit(inputs$PLEXOS.Gen.Category)), Type = as.character(na.omit(inputs$PLEXOS.Desired.Type)) )  
+  setkey(gen.type.mapping,name)
+  if (length(gen.type.mapping[,1])==0) { message('\nIf not using generator name to type mapping CSV, you must specify PLEXOS categories and desired generation type.') }
 }
 
 # Read mapping file to map generator names to region and zone (can be same file as gen name to type).
 region.zone.mapping = data.table(read.csv(as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename)), stringsAsFactors=FALSE))
-region.zone.mapping = region.zone.mapping[, .(name, Region, Zone)]
+region.zone.mapping = unique(region.zone.mapping[, .(name, Region, Zone)])
+setkey(region.zone.mapping,name)
 rz.unique = unique(region.zone.mapping[,.(Region,Zone)])
 
 # Set plot color for each generation type
@@ -124,7 +127,7 @@ if (length(period.names)==0) {
 n.periods = length(period.names) 
 
 # Start and end times for key periods
-start.end.times = data.frame(start = as.POSIXct( strptime( na.omit(inputs$Start.Time), format = '%m/%d/%Y %H:%M'), tz='UTC'), 
+start.end.times = data.table(start = as.POSIXct( strptime( na.omit(inputs$Start.Time), format = '%m/%d/%Y %H:%M'), tz='UTC'), 
                              end = as.POSIXct( strptime( na.omit(inputs$End.Time), format = '%m/%d/%Y %H:%M'), tz='UTC' ) )
 
 # First and last day of simulation

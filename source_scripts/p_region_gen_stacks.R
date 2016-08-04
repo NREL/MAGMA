@@ -14,27 +14,22 @@ if ( typeof(r.z.gen)=='character' ) {
 } else {
   
   # reorder the levels of Type to plot them in order
-  r.z.gen$Type = factor(r.z.gen$Type, levels = gen.order)
+  r.z.gen[, Type := factor(Type, levels = gen.order)]
     
   # r.z.gen.sum is just used to set the maximum height on the plot, see pretty() fcn below
-  r.z.gen.sum = r.z.gen %>% 
-    dplyr::summarise(TWh=sum(GWh)/1000) #change GWh generation to TWh
+  r.z.gen.sum = r.z.gen[, .(TWh = sum(GWh)/1000)]  #change GWh generation to TWh
   
   # Convert GWh to TWh and remove region and zone data that should be ignored
-  r.z.gen.plot = r.z.gen %>%
-    group_by(Type, Region, Zone) %>%
-    dplyr::summarise(TWh = sum(GWh)/1000) %>%
-    filter(!Zone %in% ignore.zones) %>%
-    filter(!Region %in% ignore.regions)
+  r.z.gen.plot = r.z.gen[(!Zone %in% ignore.zones && !Region %in% ignore.regions), 
+                         .(TWh = sum(GWh)/1000), by=.(Type, Region, Zone)]
     
-  region.load = filter(r.load, !name %in% ignore.regions) # Remove load data from regions being ignored
-  colnames(region.load)[which(colnames(region.load)=='name')]='Region'
-  region.load$value = region.load$value/1000
+  region.load = r.load[!name %in% ignore.regions, ] # Remove load data from regions being ignored
+  setnames(region.load, 'name', 'Region')
+  region.load[, value := value/1000]
   
-  region.load = region.load %>%
-    join(region.zone.mapping[,c('Zone', 'Region')], by = 'Region', type='left', match='first') %>%
-    filter(!Zone %in% ignore.zones) %>%
-    filter(!Region %in% ignore.regions) # This line of code is mostly redundant since the ignored regions are removed a couple lines above. 
+  setkey(region.load,Region)
+  setkey(rz.unique,Region)
+  region.load = rz.unique[region.load][!Zone %in% ignore.zones, ] # ignored regions removed in line 26 
   region.load = region.load[complete.cases(region.load),]
   
   # *** Not needed for these plots as y-axis is varying. ***

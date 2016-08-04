@@ -9,18 +9,16 @@ if ( typeof(interval.curt)=='character' ) {
   print('ERROR: daily_curtailment function not returning correct results.')
 } else {
 
-  daily.curt = data.frame(colMeans(interval.curt) ) # Calculate average curtailment for each day 
-  daily.curt['time'] = seq(first.day, last.day, by = 'day') # Add time column
-  colnames(daily.curt) = c('Curtailment', 'time')
+  # Calculate average curtailment for each day 
+  daily.curt = interval.curt[,.(Curtailment = mean(Curtailment)),by=.(day)] 
+  daily.curt[, time := seq(first.day, last.day, by = 'day')] # Add time column
 
   # this is just for scaling the y-axis (either by load or generation, whichever is bigger)
-  stack = daily.curt %>% 
-    group_by(time) %>%
-    summarise(value = sum(Curtailment))
-  stack$Type = "ALL"
+  stack = daily.curt[, .(value=sum(Curtailment)),by=.(time)] 
+  stack[, Type := "ALL"]
                   
   # This automatically creates the y-axis scaling
-  py  =pretty(stack$value)
+  py = pretty(stack$value)
   seq.py = seq(0, py[length(py)], 2*(py[2]-py[1])) # get whole breaks sequence
 
   # Create plot

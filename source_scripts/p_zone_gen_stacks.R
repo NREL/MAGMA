@@ -12,20 +12,17 @@ if ( typeof(r.z.gen)=='character' ) {
 } else {
 
   # reorder the levels of Type to plot them in order
-  r.z.gen$Type = factor(r.z.gen$Type, levels = gen.order)
+  r.z.gen[, Type := factor(Type, levels = gen.order)]
     
   # r.z.gen.sum is just used to set the maximum height on the plot, see pretty() fcn below
-  r.z.gen.sum = r.z.gen %>% 
-    dplyr::summarise(TWh=sum(GWh)/1000) #change GWh generation to TWh
+  r.z.gen.sum = r.z.gen[, .(TWh = sum(GWh)/1000)] #change GWh generation to TWh
   
   # Remove regions or zones to ignore and convert GWh to TWh
-  r.z.gen.plot = r.z.gen %>%
-    group_by(Type, Zone) %>%
-    dplyr::summarise(TWh = sum(GWh)/1000) %>%
-    filter(!Zone %in% ignore.zones)
+  r.z.gen.plot = r.z.gen[!Zone %in% ignore.zones, 
+                         .(TWh = sum(GWh)/1000), by=.(Type,Zone)]
     
-  zone.load = filter(z.load, !name %in% ignore.zones) # Remove load from zones that are being ignored
-  zone.load$value = zone.load$value/1000
+  zone.load = z.load[!name %in% ignore.zones, ] # Remove load from zones that are being ignored
+  zone.load[, value := value/1000]
 
   # ***Not needed for these plots as the y axis scaling changes***
   # This automatically creates the y-axis scaling. 

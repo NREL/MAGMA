@@ -8,9 +8,7 @@ if(interface.flow.table) {
     annual.flows = interface.flows
   } else {
   
-  annual.flows = interface.flows %>% 
-    select(name, value)
-  colnames(annual.flows)[2] = 'GWh'
+  annual.flows = interface.flows[,.(name,GWh=value)]
 
   }
 

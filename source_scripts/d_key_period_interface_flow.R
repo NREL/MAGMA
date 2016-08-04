@@ -12,16 +12,16 @@ if ( typeof(interface.flows)=='character' ) {
 } else {
 
   # From the full set of data, pull out only the data corresponding to the key period specified in the input file. 
+  timediff = interface.flows[,.(timediff=diff(time)),by=.(Region,Type,Zone)][,.(min(timediff))][,V1]
   for ( i in 1:n.periods ) {
-    key.period.time = seq(start.end.times[i,'start'], start.end.times[i,'end'], 
-                          by = min(interface.flows$time[interface.flows$time>min(interface.flows$time)]) - min(interface.flows$time))
-    key.period.flow = filter(interface.flows, time %in% key.period.time)
-    key.period.flow$Period = period.names[i]
+    key.period.time = seq(start.end.times[i,'start'], start.end.times[i,'end'], by = timediff)
+    key.period.flow = interface.flows[interface.flows$time %in% key.period.time, ]
+    key.period.flow[, Period := period.names[i]]
     
     if ( i == 1 ) {
       interface.flows.key.periods = key.period.flow
     } else {
-      interface.flows.key.periods = rbind(interface.flows.key.periods, key.period.flow)
+      interface.flows.key.periods = rbindlist(list(interface.flows.key.periods, key.period.flow))
     }
   }
   plot.flows = interface.flows.key.periods

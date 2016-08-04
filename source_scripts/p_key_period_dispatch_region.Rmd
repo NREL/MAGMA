@@ -15,19 +15,15 @@ figure.height = 6
 # ###############################################################################  
 
 # this is just for scaling the y-axis (either by load or generation, whichever is bigger)
-stack.r = filter(gen.type.region, Period==p.name, Region==r.name) %>% 
-  group_by(time) %>%
-  summarise(value = sum(value))
+stack.r = gen.type.region[Period==p.name && Region==r.name, .(value = sum(value)), by=.(time)]
 # stack.r$Type = "ALL"
 
 # Check to make sure there is actually generation data for this region. If not, no plot is crated.
 if ( length(stack.r$value)>0 & sum(stack.r$value)>0 ) {
   
   # If load is larger than generation, reassign the y-axis height so load isn't cut off.
-  if (max(filter(gen.load, Period==p.name, Region==r.name)$value)>max(stack.r$value)){
-    stack.r = filter(gen.load, Period==p.name, Region==r.name) %>%
-      group_by(time) %>%
-      summarise(value=sum(value))
+  if (max(gen.load[Period==p.name && Region==r.name, value])>max(stack.r$value)){
+    stack.r = gen.load[Period==p.name && Region==r.name, .(value=sum(value)), by=.(time)]
   }
 
   # This automatically creates the y-axis scaling
@@ -37,11 +33,11 @@ if ( length(stack.r$value)>0 & sum(stack.r$value)>0 ) {
   # #############################################################################################################
   # Region plots
   # #############################################################################################################
-  ggplot(filter(gen.type.region, Period==p.name, Region==r.name), aes(time, value/1000, group=Type, fill=Type, order=as.numeric(Type)), color="black")+
+  ggplot(gen.type.region[Period==p.name && Region==r.name, ], aes(time, value/1000, group=Type, fill=Type, order=as.numeric(Type)), color="black")+
         geom_area(color=NA)+
         geom_line(position="stack", size=0.3)+
         labs(y="Generation (GWh)", x=NULL)+
-        geom_line(data=filter(gen.load.region, Period==p.name, Region==r.name), linetype="longdash", aes(color="load"),size=0.8)+
+        geom_line(data=gen.load.region[Period==p.name && Region==r.name, ], linetype="longdash", aes(color="load"),size=0.8)+
         scale_fill_manual("",values = gen.color, limits=rev(gen.order))+
         scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
         scale_x_datetime(breaks = date_breaks(width = "1 day"), labels = date_format("%b %d\n%I %p"), expand = c(0, 0))+
