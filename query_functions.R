@@ -10,22 +10,22 @@
 
 gen_by_type = function(total.generation, total.avail.cap) {
   
-  yr.data = rbindlist(list(total.generation, total.avail.cap))
-  setkey(yr.data,'name')
+  setkey(total.generation,'name')
+  setkey(total.avail.cap,'name')
   
   # Filter out generation and available capacity data and add generation type by matching generator name. 
-  yr.gen = yr.data[property == 'Generation',][gen.type.mapping][,.(Type,property,value)]
+  yr.gen = total.generation[property == 'Generation',][gen.type.mapping][,.(scenario,Type,property,value)]
   
-  avail = yr.data[property == 'Available Energy',][gen.type.mapping][,.(Type,property,value)]
-  avail = avail[Type %in% re.types,.(value=sum(value)),by=.(Type,property)]
+  avail = total.avail.cap[property == 'Available Energy',][gen.type.mapping][,.(scenario,Type,property,value)]
+  avail = avail[Type %in% re.types,.(value=sum(value)),by=.(scenario,Type,property)]
   avail[,property:=NULL]
   
   # Pull out generation data for types used in curtailment calculation.
-  re.gen = yr.gen[Type %in% re.types, .(value=sum(value)),by=.(Type,property)]
+  re.gen = yr.gen[Type %in% re.types, .(value=sum(value)),by=.(scenario,Type,property)]
   re.gen[,property:=NULL]
 
   # Sum up generation by type
-  yr.gen = yr.gen[,.(GWh=sum(value)),by=.(Type)]
+  yr.gen = yr.gen[,.(GWh=sum(value)),by=.(scenario,Type)]
     
   if(typeof(avail)=='double' & typeof(re.gen)=='double') {
     # Calculate curtailment
@@ -33,14 +33,14 @@ gen_by_type = function(total.generation, total.avail.cap) {
     curt.tot = sum(curt)
     
     # Combine everything before returning the resulting data.
-    yr.gen = rbind(yr.gen, data.table(Type = 'Curtailment', GWh = curt.tot))
+    yr.gen = rbind(yr.gen, data.table(scenario = unique(yr.gen[,scenario]), Type = 'Curtailment', GWh = curt.tot))
     
   } else if (length(avail[,1])>0 & length(re.gen[,1])>0) {
     # Calculate curtailment
-    setkey(avail,Type)
-    setkey(re.gen,Type)
+    setkey(avail, Type, scenario)
+    setkey(re.gen, Type, scenario)
     curt = avail[re.gen][,curt:=value-i.value]
-    curt.tot = curt[,.(Type='Curtailment',GWh=sum(curt))]
+    curt.tot = curt[,.(Type='Curtailment',GWh=sum(curt)), by=.(scenario)]
     
     # Combine everything before returning the resulting data.
     yr.gen = rbindlist(list(yr.gen, curt.tot))
@@ -56,24 +56,24 @@ gen_by_type = function(total.generation, total.avail.cap) {
 
 region_zone_gen = function(total.generation, total.avail.cap) {
   
-  r.z.gen = rbindlist(list(total.generation, total.avail.cap))
-  setkey(r.z.gen,'name')
+  setkey(total.generation,'name')
+  setkey(total.avail.cap,'name')
   gen.type.zone.region = gen.type.mapping[region.zone.mapping]
   
   # Filter out generation and available capacity data and add generation type by matching generator name.
   # Also add region and zone by matching generator name in the region and zone mapping file. 
-  gen.data = r.z.gen[property=='Generation', .(name,category,value)][gen.type.zone.region]
-  gen.data = gen.data[, .(value=sum(value)), by=.(Type, Region, Zone)]
+  gen.data = total.generation[property=='Generation', .(scenario,name,category,value)][gen.type.zone.region]
+  gen.data = gen.data[, .(value=sum(value)), by=.(scenario,Type, Region, Zone)]
   
-  avail.data = r.z.gen[property == 'Available Energy', 
-                       .(name,category,value)][gen.type.zone.region]
-  avail.data = avail.data[Type %in% re.types, .(Avail = sum(value)), by=.(Type, Region, Zone)]
+  avail.data = total.avail.cap[property == 'Available Energy', 
+                               .(scenario,name,category,value)][gen.type.zone.region]
+  avail.data = avail.data[Type %in% re.types, .(Avail = sum(value)), by=.(scenario,Type, Region, Zone)]
     
 
   # Curtailment calculation based on renewable types specified in input file
-  setkey(avail.data,Type,Region,Zone)
+  setkey(avail.data,scenario,Type,Region,Zone)
   curt = gen.data[Type %in% re.types, ]
-  setkey(curt,Type,Region,Zone)
+  setkey(curt,scenario,Type,Region,Zone)
   curt = curt[avail.data]
   curt[,Type := 'Curtailment']
   curt[,value := Avail - value]
@@ -185,23 +185,19 @@ total_curtailment = function(interval.generation, interval.avail.cap) {
 # Returns a table of total run costs
 
 costs = function(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom.cost) {
+  
+  cost.data = rbindlist(list(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom.cost))
+  cost.table = cost.data[,.(Cost = sum(value/1000)), by=.(scenario,property)]
+  cost.table[, property:=gsub("Cost","",property)]
+  tot.cost = cost.table[,.(property = "Total", Cost = sum(Cost)), by=.(scenario)]
+  cost.table = rbindlist(list(cost.table,tot.cost))
 
-  cost = rbindlist(list(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom.cost))
-  cost[, value := value / 1000000 ]
-  
-  e.cost = cost[property == 'Emissions Cost', .(sum(value*1000))]
-  
-  f.cost = cost[property == 'Fuel Cost', .(sum(value*1000))]
-  
-  s.s.cost = cost[property == 'Start & Shutdown Cost', .(sum(value*1000))]
-  
-  VOM.cost = cost[property == 'VO&M Cost', .(sum(value*1000))]
-
-  tot.cost = e.cost + f.cost + s.s.cost + VOM.cost
-
-  cost.table = data.table(Type = c('Emissions', 'Fuel', 'Start_Shutdown', 'VOM', 'Total_Cost'), 
-                          Cost = c(e.cost, f.cost, s.s.cost, VOM.cost, tot.cost))
+  setnames(cost.table, "property","Type")
   setnames(cost.table, "Cost", "Cost (MM$)")
+
+  if (length(unique(cost.table$scenario))==1){
+    cost.table[, scenario := NULL]
+  }
 
 return(cost.table)
 }
@@ -292,7 +288,7 @@ zone_stats = function(total.region.load, total.region.imports, total.region.expo
 # Returns region level and zone level load data for the entire run. 
 
 region_load = function(total.region.load) {
-  r.load = total.region.load[,.(value=sum(value)), by=.(name)]
+  r.load = total.region.load[,.(value=sum(value)), by=.(scenario,name)]
   return(r.load)
 }
 
@@ -377,49 +373,49 @@ cap_committed = function(interval.da.committment) {
 # Full run generation data
 total_generation = function(database) {
   total.gen = data.table(query_year(database, 'Generator', 'Generation', columns = c('category', 'name')))
-  total.gen[, .(property, name, category, value)]
+  total.gen[, .(scenario, property, name, category, value)]
   return(total.gen)
 }
 
 # Full run available capacity
 total_avail_cap = function(database) {
   total.avail.cap = data.table(query_year(database, 'Generator', 'Available Energy', columns = c('category', 'name')))
-  total.avail.cap[, .(property, name, category, value)]
+  total.avail.cap[, .(scenario, property, name, category, value)]
   return(total.avail.cap)
 }
 
 # Full run emissions cost
 total_emissions = function(database) {
   total.emissions.cost = data.table(query_year(database, 'Generator', 'Emissions Cost', columns = c('category', 'name')))
-  total.emissions.cost[, .(property, name, category, value)]
+  total.emissions.cost[, .(scenario, property, name, category, value)]
   return(total.emissions.cost)
 }
 
 # Full run fuel cost
 total_fuel = function(database) {
   total.fuel.cost = data.table(query_year(database, 'Generator', 'Fuel Cost', columns = c('category', 'name')))
-  total.fuel.cost[, .(property, name, category, value)]
+  total.fuel.cost[, .(scenario, property, name, category, value)]
   return(total.fuel.cost)
 }
 
 # Full run S&S cost
 total_ss = function(database) {
   total.ss.cost = data.table(query_year(database, 'Generator', 'Start & Shutdown Cost', columns = c('category', 'name')))
-  total.ss.cost[, .(property, name, category, value)]
+  total.ss.cost[, .(scenario, property, name, category, value)]
   return(total.ss.cost)
 }
 
 # Full run VO&M cost
 total_vom = function(database) {
   total.vom.cost = data.table(query_year(database, 'Generator', 'VO&M Cost', columns = c('category', 'name')))
-  total.vom.cost[, .(property, name, category, value)]
+  total.vom.cost[, .(scenario, property, name, category, value)]
   return(total.vom.cost)
 }
 
 # Full run installed capacity
 total_installed_cap = function(database) {
   total.installed.cap = data.table(query_year(database, 'Generator', 'Installed Capacity', columns = c('category', 'name')))
-  total.installed.cap[, .(property, name, category, value)]
+  total.installed.cap[, .(scenario, property, name, category, value)]
   return(total.installed.cap)
 }
 
@@ -430,28 +426,28 @@ total_installed_cap = function(database) {
 # Full run region load
 total_region_load = function(database) {
   total.region.load = data.table(query_year(database, 'Region', 'Load'))
-  total.region.load[, .(property, name, value)]
+  total.region.load[, .(scenario, property, name, value)]
   return(total.region.load)
 }
 
 # Full run region imports
 total_region_imports = function(database) {
   total.region.imports = data.table(query_year(database, 'Region', 'Imports'))
-  total.region.imports[, .(property, name, value)]
+  total.region.imports[, .(scenario, property, name, value)]
   return(total.region.imports)
 }
 
 # Full run region exports
 total_region_exports = function(database) {
   total.region.exports = data.table(query_year(database, 'Region', 'Exports'))
-  total.region.exports[, .(property, name, value)]
+  total.region.exports[, .(scenario, property, name, value)]
   return(total.region.exports)
 }
 
 # Full run region unserved energy
 total_region_ue = function(database) {
   total.region.ue = data.table(query_year(database, 'Region', 'Unserved Energy'))
-  total.region.ue[, .(property, name, value)]
+  total.region.ue[, .(scenario, property, name, value)]
   return(total.region.ue)
 }
 
@@ -462,28 +458,28 @@ total_region_ue = function(database) {
 # Full run zone load
 total_zone_load = function(database) {
   total.zone.load = data.table(query_year(database, 'Zone', 'Load'))
-  total.zone.load[, .(property, name, value)]
+  total.zone.load[, .(scenario, property, name, value)]
   return(total.zone.load)
 }
 
 # Full run zone imports
 total_zone_imports = function(database) {
   total.zone.imports = data.table(query_year(database, 'Zone', 'Imports'))
-  total.zone.imports[, .(property, name, value)]
+  total.zone.imports[, .(scenario, property, name, value)]
   return(total.zone.imports)
 }
 
 # Full run zone exports
 total_zone_exports = function(database) {
   total.zone.exports = data.table(query_year(database, 'Zone', 'Exports'))
-  total.zone.exports[, .(property, name, value)]
+  total.zone.exports[, .(scenario, property, name, value)]
   return(total.zone.exports)
 }
 
 # Full run zone unserved energy
 total_zone_ue = function(database) {
   total.zone.ue = data.table(query_year(database, 'Zone', 'Unserved Energy'))
-  total.zone.ue[, .(property, name, value)]
+  total.zone.ue[, .(scenario, property, name, value)]
   return(total.zone.ue)
 }
 
@@ -494,14 +490,14 @@ total_zone_ue = function(database) {
 # Full run reserves provision
 total_reserve_provision = function(database) {
   total.reserve.provision = data.table(query_year(database, 'Reserve', 'Provision'))
-  total.reserve.provision[, .(property, name, value))
+  total.reserve.provision[, .(scenario, property, name, value)]
   return(total.reserve.provision)
 }
 
 # Full run reserves shortage
 total_reserve_shortage = function(database) {
   total.reserve.shortage = data.table(query_year(database, 'Reserve', 'Shortage'))
-  total.reserve.shortage[, .(property, name, value))
+  total.reserve.shortage[, .(scenario, property, name, value)]
   return(total.reserve.shortage)
 }
 
@@ -512,7 +508,7 @@ total_reserve_shortage = function(database) {
 # Full run interface flows
 total_interface_flow = function(database) {
   total.interface = data.table(query_year(database, 'Interface', 'Flow'))
-  total.interface[, .(property, name, value, time)]
+  total.interface[, .(scenario, property, name, value, time)]
   return(total.interface)
 }
 
@@ -523,48 +519,48 @@ total_interface_flow = function(database) {
 # Interval level generator generation
 interval_gen = function(database) {
   interval.gen = data.table(query_interval(database, 'Generator', 'Generation', columns = c('category', 'name'))) 
-  interval.gen[,.(property, name, value, time, category) ]
+  interval.gen[,.(scenario, property, name, value, time, category) ]
   return(inteval.gen)
 }
 
 # Interval level generator capacity
 interval_avail_cap = function(database) {
   interval.avail.cap = data.table(query_interval(database, 'Generator', 'Available Capacity', columns = c('category', 'name'))) 
-  interval.avail.cap[,.(property, name, value, time, category) ]
+  interval.avail.cap[,.(scenario, property, name, value, time, category) ]
   return(interval.aail.cap)
 }
 
 # Interval level region load 
 interval_region_load = function(database) {
   interval.region.load = data.table(query_interval(database, 'Region', 'Load'))
-  interval.region.load[, .(property, name, time, value)]
+  interval.region.load[, .(scenario, property, name, time, value)]
   return(interval.region.load)
 }
 
 # Interval level region load and price
 interval_region_price = function(database) {
   interval.region.price = data.table(query_interval(database, 'Region', 'Price'))
-  interval.region.price[, .(property, name, time, value)]
+  interval.region.price[, .(scenario, property, name, time, value)]
   return(interval.region.price)
 }
 
 # Interval level zone load
 interval_zone_load = function(database) {
   interval.zone.load = data.table(query_interval(database, 'Zone', 'Load'))
-  interval.zone.load[, .(property, name, time, value)]
+  interval.zone.load[, .(scenario, property, name, time, value)]
   return(interval.zone.load)
 }
 
 # Interval level interface flows
 interval_interface_flow = function(database) {
   interval.interface.flow = data.table(query_interval(database, 'Interface', 'Flow'))
-  interval.interface.flow[, .(property, name, time, value)]
+  interval.interface.flow[, .(scenario, property, name, time, value)]
   return(interval.interface.flow)
 }
 
 # Interval level reserve provisions
 interval_reserve_provision = function(database) {
   interval.reserve.provision = data.table(query_interval(database, 'Reserve', 'Provision'))
-  interval.reserve.provision[, .(property, name, time, value)]
+  interval.reserve.provision[, .(scenario, property, name, time, value)]
   return(interval.reserve.provision)
 }

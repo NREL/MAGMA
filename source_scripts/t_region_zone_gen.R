@@ -16,11 +16,13 @@ if ( typeof(r.z.gen)=='character' ) {
   
   # Sum regional generation by type
   r.gen.table = r.z.gen[, .(GWh = sum(GWh)), by=.(Region, Type)] %>%
-    dcast(Region~Type, value.var = 'GWh')
+    dcast.data.table(Region~Type, value.var = 'GWh')
+  r.gen.table[is.na(r.gen.table)] = 0
   
   # Sum zonal generation by type
   z.gen.table = r.z.gen[, .(GWh = sum(GWh)), by=.(Zone, Type)] %>%
-    dcast(Zone~Type, value.var = 'GWh')
+    dcast.data.table(Zone~Type, value.var = 'GWh')
+  z.gen.table[is.na(z.gen.table)] = 0
   
   # If the data looks good, add load to the regional generation.
   if (typeof(r.load)=='character' ) {

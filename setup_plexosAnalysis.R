@@ -2,7 +2,12 @@
 # Main setup file for general PLEXOS run analysis.
 
 # -----------------------------------------------------------------------
-library(pacman)
+if (!require(pacman)){
+  install.packages(pacman)
+  library(pacman)
+}else{
+  library(pacman)
+}
 p_load(ggplot2, reshape2, plyr, lubridate, scales, RSQLite, grid, knitr, markdown, grid, gridExtra, RColorBrewer, snow,
        doParallel, xtable, data.table, dplyr, extrafont, tidyr, stringr, rplexos, rmarkdown)
 
@@ -163,8 +168,8 @@ if(length(list.files(pattern = "\\.zip$",path=db.loc))!=0 ) {
   if(length(list.files(pattern = "\\.db$",path=db.loc))==0) {
     message(paste0('The .db file is absent from ',db.loc))
     run.rplx=T
-  } else if(file.info(file.path(db.loc,list.files(pattern = "\\.db$",path=db.loc)))$mtime <
-              file.info(file.path(db.loc,list.files(pattern = "\\.zip$",path=db.loc)))$mtime) {
+  } else if(any(file.info(file.path(db.loc,list.files(pattern = "\\.db$",path=db.loc)))$mtime <
+                file.info(file.path(db.loc,list.files(pattern = "\\.zip$",path=db.loc)))$mtime, na.rm=TRUE)) {
     message(paste0('The db is older than the zip or the .db file in ',db.loc))
     run.rplx=T
   } else {message(paste0('\nFound .db solution file: ', list.files(pattern='\\.db$',path=db.loc), '\n'))}
@@ -179,12 +184,12 @@ if(length(list.files(pattern = "\\.zip$",path=db.loc))!=0 ) {
 } else {message('No .zip or .db file... are you in the right directory?')}
 # -----------------------------------------------------------------------
 # Open the database file ( must already have created this using rplexos ) 
-db = plexos_open(db.loc)
+db = plexos_open(db.loc, basename(db.loc))
 # db = db[1,] # This line queries only the first solution .db file if there are multiple in one location. 
 attributes(db)$class = c("rplexos","data.frame","tbl_df")
 
 # Open the day ahead database file
-db.day.ahead = tryCatch(plexos_open(db.day.ahead.loc), error = function(cond) { return(data.frame('ERROR'))})
+db.day.ahead = tryCatch(plexos_open(db.day.ahead.loc, basename(db.day.ahead.loc)), error = function(cond) { return(data.frame('ERROR'))})
 # db.day.ahead = db.day.ahead[1,] # This line queries only the first solution .db file if there are multiple in one location. 
 attributes(db.day.ahead)$class = c('rplexos', 'data.frame', 'tbl_df')
 

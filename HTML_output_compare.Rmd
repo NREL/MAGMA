@@ -1,6 +1,6 @@
 ---
-title: "Comparison Plots"
-author: "`r Sys.info()['user']`"
+title: "Multi-area Grid Metrics Analyzer Comparison Plots"
+author: "Created by: `r Sys.info()['user']`"
 date: "`r format(Sys.time(), '%d %B %Y')`"
 output: 
   html_document: 
@@ -11,52 +11,52 @@ output:
 ```{r setOptions, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-files = list.files(pattern = 'RData', path = db.loc)
-n.files = length(files)
-yr.files = c('yr.data.generator', 'yr.data.interface.flow', 'yr.data.region', 'yr.data.zone', 'yr.data.reserve')
-int.files = c('int.data.avail.cap', 'int.data.gen', 'int.data.interface', 'int.data.region', 'int.data.reserve')
+# files = list.files(pattern = 'RData', path = db.loc)
+# n.files = length(files)
+# yr.files = c('yr.data.generator', 'yr.data.interface.flow', 'yr.data.region', 'yr.data.zone', 'yr.data.reserve')
+# int.files = c('int.data.avail.cap', 'int.data.gen', 'int.data.interface', 'int.data.region', 'int.data.reserve')
 
-for ( i in 1:length(files) ) {
-  load(paste0(db.loc, '/', files[i]))
+# for ( i in 1:length(files) ) {
+#   load(paste0(db.loc, '/', files[i]))
   
-  for ( j in 1:length(yr.files) ) {
-    assign(paste0('SC', i, '.', yr.files[j]), get(yr.files[j]))
-  }
+#   for ( j in 1:length(yr.files) ) {
+#     assign(paste0('SC', i, '.', yr.files[j]), get(yr.files[j]))
+#   }
   
-  for ( j in 1:length(int.files) ) {
-    assign(paste0('SC', i, '.', int.files[j]), get(int.files[j]))
-  }
+#   for ( j in 1:length(int.files) ) {
+#     assign(paste0('SC', i, '.', int.files[j]), get(int.files[j]))
+#   }
 
-  r.load = tryCatch( region_load(), error = function(cond) { return('ERROR') } )
-  z.load = tryCatch( zone_load(), error = function(cond) { return('ERROR') } )
-  region.names = region_stats()$name
-  zone.names = zone_stats()$name
+#   r.load = tryCatch( region_load(), error = function(cond) { return('ERROR') } )
+#   z.load = tryCatch( zone_load(), error = function(cond) { return('ERROR') } )
+#   region.names = region_stats()$name
+#   zone.names = zone_stats()$name
 
-  assign(paste0('SC', i, '.r.load'), r.load)
-  assign(paste0('SC', i, '.z.load'), z.load)
-  assign(paste0('SC', i, '.region.names'), region.names)
-  assign(paste0('SC', i, '.zone.names'), zone.names)
+#   assign(paste0('SC', i, '.r.load'), r.load)
+#   assign(paste0('SC', i, '.z.load'), z.load)
+#   assign(paste0('SC', i, '.region.names'), region.names)
+#   assign(paste0('SC', i, '.zone.names'), zone.names)
 
-}
+# }
 
 # Set up default options for chunks, turn off error or warning messages.
 knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, include=FALSE,
-                      fig.path=fig.path.name, cache.path=cache.path.name, dev='png')
+                      fig.path=fig.path.name, dev='png')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
+
+### Data below generated for:
+"`r gsub('.*Model', 'Model', db$filename)`"
 
 ***
 ## Annual Dispatch Stacks 
 ***
-## 1. Total Generation
-```{r total-gen-stack}
+## 1. Generation Differences
+```{r gen-diff-stack}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (1 %in% run.sections){
-  total.gen.stack = knit_child('source_scripts/compare/c_p_total_gen_stack.Rmd')
-} else { total.gen.stack = 'Section not run according to input file.' }
+source('source_scripts/c_p_diff_gen_stack.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
-`r total.gen.stack`
 
 ***
 ## 2. Zonal Generation

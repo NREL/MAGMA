@@ -1,123 +1,25 @@
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# This file contains functions for the general PLEXOS solution analysis that reports an HTML of common figures.
+# This file contains functions for comparing PLEXOS solutions that reports an HTML of common figures.
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Query General Data
+# Generation Difference by type
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-yr_gen_query = function(database) {
-  yr.data.generator = select(query_year(database, 'Generator', 
-                                        prop = c('Generation', 'Available Energy', 'Emissions Cost', 'Fuel Cost', 'Start & Shutdown Cost', 'VO&M Cost', 'Installed Capacity'),
-                                        columns = c('category', 'name')), property, name, category, value)
-  return(yr.data.generator)
-}
-
-yr_region_query = function(database) {
-  yr.data.region = select(query_year(database, 'Region', c('Load', 'Imports', 'Exports', 'Unserved Energy')), property, name, value)
-  return(yr.data.region)
-}
+gen_diff_by_type = function(total.generation, total.avail.cap) {
   
-# yr_zone_query = function(database) {
-#   yr.data.zone = select(query_year(database, 'Zone', c('Load', 'Imports', 'Exports', 'Unserved Energy')), property, name, value)
-#   return(yr.data.zone)
-# }
-  
-yr_reserve_query = function(database) {
-  yr.data.reserve = select(query_year(database, 'Reserve', c('Provision', 'Shortage')), property, name, value)
-  return(yr.data.reserve)
-}
+  #*************************** Potentially make this an input
+  yr.gen = tryCatch( gen_by_type(total.generation, total.avail.cap), error = function(cond) { return('ERROR') } )
+  all.combos = data.table(expand.grid(unique(yr.gen$scenario), unique(yr.gen$Type)))
+  setkey(all.combos,Var1,Var2)
+  setkey(yr.gen,scenario,Type)
+  yr.gen = yr.gen[all.combos]
+  yr.gen[is.na(GWh), GWh:=0]
 
-yr_interface_query = function(database) {
-  yr.data.interface.flow = select(query_year(database, 'Interface', 'Flow'), property, name, value, time)
-  return(yr.data.interface.flow)
-}
+  gen.diff = yr.gen[, GWh:=GWh-GWh[scenario==ref.scenario], by=.(Type)]
 
-int_gen_query = function(database) {
-  int.data.gen = select(query_interval(database, 'Generator', 'Generation', columns = c('category', 'name')), 
-                              property, name, value, time, category)
-  return(int.data.gen)
-}
-
-int_avail_cap_query = function(database) {
-  int.data.avail.cap = select(query_interval(database, 'Generator', 'Available Capacity', columns = c('category', 'name')), 
-                              property, name, value, time, category)
-  return(int.data.avail.cap)
-}
-
-int_region_query = function(database) {
-  int.data.region = select(query_interval(database, 'Region', 'Load'), property, name, time, value)
-  return(int.data.region)
-}
-
-# int_zone_query = function(database) {
-#   int.data.zone = select(query_interval(database, 'Zone', 'Load'), property, name, time, value)
-#   return(int.data.zone)
-# }
-
-int_interface_query = function(database) {
-  int.data.interface = select(query_interval(database, 'Interface', 'Flow'), property, name, time, value)
-  return(int.data.interface)
-}
-
-int_reserve_query = function(database) {
-  int.data.reserve = select(query_interval(database, 'Reserve', 'Provision'), property, name, time, value)
-  return(int.data.reserve)
-}
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Generation by type
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-gen_by_type = function(yr.data.generator) {
-  
-  yr.data = yr.data.generator
-  
-  if ( use.gen.type.mapping.csv ) {
-    yr.gen = yr.data %>%
-      filter(property == 'Generation') %>%
-      join(gen.type.mapping, by = 'name') %>%
-      select(Type, property, value)
-    
-    avail = yr.data %>%
-      filter(property == 'Available Energy') %>%
-      join(gen.type.mapping, by = 'name') %>%
-      select(Type, property, value) %>%
-      filter(Type %in% re.types ) %>%
-      dcast(property ~ Type, sum)
-    
-  } else {
-    yr.gen = yr.data %>%
-      filter(property == 'Generation') %>%
-      join(category2type, by = 'category') %>%
-      select(Type, property, value)
-    
-    avail = yr.data %>%
-      filter(property == 'Available Energy') %>%
-      join(category2type, by = 'category') %>%
-      select(Type, property, value) %>%
-      filter(Type %in% re.types ) %>%
-      dcast(property ~ Type, sum)
-  }
-  avail = avail[,2:ncol(avail)]
-  
-  re.gen = yr.gen %>%
-    filter(Type %in% re.types ) %>%
-    dcast(property ~ Type, sum)
-  re.gen = re.gen[,2:ncol(re.gen)]
-
-  yr.gen = yr.gen %>%
-    dcast(Type ~ property, sum) %>%
-    rename(GWh = Generation) %>%
-    ddply('Type', numcolwise(sum)) 
-    
-  curt = avail - re.gen
-  curt.tot = sum(curt)
-
-  yr.gen = rbind(yr.gen, data.frame(Type = 'Curtailment', GWh = curt.tot))
-  
-  return(yr.gen)
+  return(gen.diff)
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -287,30 +189,14 @@ daily_curtailment = function() {
 # Cost 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-costs = function() {
+costs_diff = function() {
 
-  cost = yr.data.generator
-  cost['value'] = cost['value'] / 1000000
-  
-  e.cost = filter(cost, property == 'Emissions Cost')
-  e.cost = e.cost['value'] * 1000
-  
-  f.cost = filter(cost, property == 'Fuel Cost')
-  f.cost = f.cost['value'] * 1000
-  
-  s.s.cost = filter(cost, property == 'Start & Shutdown Cost')
-  s.s.cost = s.s.cost['value'] * 1000
-  
-  VOM.cost = filter(cost, property == 'VO&M Cost')
-  VOM.cost = VOM.cost['value'] * 1000
+  cost.table = tryCatch( costs(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom.cost), 
+                         error = function(cond) { return('ERROR: costs function not returning correct results.') })
+  cost.diff = cost.table[, .(scenario, `Cost (MM$)` = `Cost (MM$)` - `Cost (MM$)`[scenario == ref.scenario]), by=.(Type)]
+  cost.diff.table = dcast.data.table(cost.diff, Type~scenario, value.var = 'Cost (MM$)')
 
-  tot.cost = e.cost + f.cost + s.s.cost + VOM.cost
-
-  cost.table = data.frame(Type = c('Emissions', 'Fuel', 'Start_Shutdown', 'VOM', 'Total_Cost'), 
-                          Cost = c(sum(e.cost), sum(f.cost), sum(s.s.cost), sum(VOM.cost), sum(tot.cost)))
-  cost.table = rename(cost.table, `Cost (MM$)` = Cost)
-
-return(cost.table)
+return(cost.diff.table)
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
