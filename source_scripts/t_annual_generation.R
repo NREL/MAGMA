@@ -22,7 +22,7 @@ if (annual.generation.table){
     
     # Calculate the percent generation of each type, and percent curtailment
     yr.gen[, Total:=sum(GWh)]
-    yr.gen[, Percent:=GWh/Total]
+    yr.gen[, Percent:=GWh/Total*100]
     yr.gen[, Total:=NULL]
     curt[, Total:=GWh+yr.gen[Type %in% re.types, sum(GWh)] ]
     curt[, Percent:=GWh/Total*100]
