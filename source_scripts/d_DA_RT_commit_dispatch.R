@@ -30,8 +30,8 @@ if ( typeof(committed.cap)=='character' | typeof(int.gen)=='character' | typeof(
   # Only pull out data for the time spans that were requested in the input file. 
   timediff = da.rt.data[,.(timediff=diff(time)),by=.(Region,Type,Zone)][,.(min(timediff))][,V1]
   for ( i in 1:n.periods ) {
-    key.period.time = seq(start.end.times[i,'start'], start.end.times[i,'end'], 
-                          by = timediff))
+    key.period.time = seq(start.end.times[i,start], start.end.times[i,end], 
+                          by = timediff)
     plot.data = da.rt.data[da.rt.data$time %in% key.period.time, ]
     plot.data[, Period := period.names[i]]
     
