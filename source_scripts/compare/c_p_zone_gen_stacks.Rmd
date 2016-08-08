@@ -1,84 +1,66 @@
 
-```{r zone_gen_stacks, include=TRUE}
+if (zone.gen.stacks & length(db.loc)>1) {
 
-for ( i in 1:n.files ) {
-
+if( !exists('z.gen.scen') ) {
   # Query region and zonal generation
-  r.z.gen = tryCatch( select(region_zone_gen(get(paste0('SC', i, '.yr.data.generator'))), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR') } )
-  
-  # If the query doesn't work, return an error. Else run code to create plot.
-  if ( typeof(r.z.gen)=='character' ) {
-    print('ERROR: region_zone_gen function not returning correct results.')
-  } else if ( typeof(z.load) == 'character' ) { 
-    print('ERROR: zone_load function not returning correct results.')
-  } else {
-  
-    # reorder the levels of Type to plot them in order
-    r.z.gen$Type = factor(r.z.gen$Type, levels = gen.order)
-      
-    # r.z.gen.sum is just used to set the maximum height on the plot, see pretty() fcn below
-    r.z.gen.sum = r.z.gen %>% 
-      dplyr::summarise(TWh=sum(GWh)/1000) #change GWh generation to TWh
-    
-    # Remove regions or zones to ignore and convert GWh to TWh
-    r.z.gen.plot = r.z.gen %>%
-      group_by(Type, Zone) %>%
-      dplyr::summarise(TWh = sum(GWh)/1000) %>%
-      filter(!Zone %in% ignore.zones)
-      
-    zone.load = filter(z.load, !name %in% ignore.zones)
-    zone.load$value = zone.load$value/1000
-      
-    if ( i == 1) {
-      plot.compare = expand.grid(unique(r.z.gen$Type), zone.names)
-      plot.compare$TWh = 0
-      plot.base = plot.compare
-      names(plot.compare) = c('Type', 'Zone', 'Base')
-      names(plot.base) = c('Type', 'Zone', 'Base')
-      plot.base = join(plot.base, r.z.gen.plot, by = c('Type', 'Zone'))
-      plot.base[is.na(plot.base)]=0
-      plot.base = transmute(plot.base, Type, Zone, Base.TWh = plot.base$Base+plot.base$TWh)
-    
-    } else {
-      diff = join(plot.base, r.z.gen.plot, by = c('Type', 'Zone'))
-      diff[is.na(diff)]=0
-      plot.compare = cbind(plot.compare, diff$Base.TWh-diff$TWh)
-      names(plot.compare)[i+2] = paste0('SC', i)
-    }
-    
-    # ***Not needed for these plots as the y axis scaling changes***
-    # This automatically creates the y-axis scaling. 
-    # py=pretty(r.z.gen.sum$TWh, n=5, min.n = 5)
-    # seq.py=seq(0, py[length(py)], 10*(py[2]-py[1]))
-  
-  }
+  z.gen.scen = tryCatch( zone_gen_diff(total.generation, total.avail.cap), error = function(cond) { return('ERROR') } )
 }
 
-plot.data = melt(plot.compare, id.vars = c('Type', 'Zone'), variable.name = 'Run')
-plot.data = filter(plot.data, !Zone %in% ignore.zones)
-plot.data.pos = plot.data
-plot.data.neg = plot.data
-plot.data.pos$value[plot.data.pos$value<=0]=0
-plot.data.neg$value[plot.data.neg$value>0]=0
+# Check if zonal.gen query worked and create plot of regional gen, else return an error.
+if ( typeof(z.gen.scen)=='character' ) {
+  print('ERROR: region_zone_gen function not returning correct results.')
+} else if ( typeof(r.load) == 'character' ) {
+  print('ERROR: region_load function not returning correct results.')
+} else {
+  
+  # reorder the levels of Type to plot them in order
+  z.gen.scen[, Type := factor(Type, levels = gen.order)]
 
-# Create plot
-ggplot() +
-  geom_bar(data = plot.data.pos, aes(x = Zone, y = value, fill=Type, order=as.numeric(Type)), stat="identity", position="stack" ) +
-  geom_bar(data = plot.data.neg, aes(x = Zone, y = value, fill=Type, order=as.numeric(Type)), stat="identity", position="stack" ) +
-  # geom_hline(aes(yintercept=0), color='black', size=0.45, linetype='longdash')+
-  scale_fill_manual('', values = gen.color, limits=rev(gen.order))+
-  labs(y="Generation (TWh)", x=NULL)+
-  facet_grid(. ~ Run, scales = 'free_y')+
-  # scale_y_continuous(breaks=seq.py, expand=c(0,0), label=comma)+
-  guides(color = guide_legend(order=1), fill = guide_legend(order=2, reverse=TRUE))+
-  theme(    legend.key =      element_rect(color="grey80", size = 0.8), 
-             legend.key.size = grid::unit(1.0, "lines"),
-             legend.text =     element_text(size=text.plot), 
-             legend.title =    element_blank(),
-     #                         text = element_text(family="Arial"),
-             axis.text =       element_text(size=text.plot/1.2), 
-             axis.text.x =     element_text(angle=-45, hjust=0),
-             axis.title =      element_text(size=text.plot, face=2), 
-             axis.title.y =    element_text(vjust=1.2), 
-             panel.margin =    unit(1.5, "lines"))
-```
+  # Separate out the positive and negative halves for easier plotting
+  # also convert to TWh and filter out ignored zones
+  dat.pos = z.gen.scen[GWh>=0 & scenario!=ref.scenario & !Zone %in% ignore.zones, 
+                        .(TWh = sum(GWh)/1000), by=.(scenario,Zone,Type)]
+  dat.neg = z.gen.scen[GWh<0 & scenario!=ref.scenario & !Zone %in% ignore.zones, 
+                        .(TWh = sum(GWh)/1000), by=.(scenario,Zone,Type)]
+    
+  # z.gen.sum is just used to set the maximum height on the plot, see pretty() fcn below
+  z.gen.sum = rbindlist(list(dat.pos[, .(TWh = sum(TWh))], dat.neg[, .(TWh = sum(TWh))]))  
+  
+  # Calculate difference in load
+  zone.load.scen = z.load[!name %in% ignore.zones, .(value = sum(value)/1000), by=.(scenario,name)]
+  diff.load = zone.load.scen[, .(scenario, TWh = value-value[scenario==ref.scenario]), by=.(name)]
+  diff.load = diff.load[scenario!=ref.scenario, ]
+  setnames(diff.load,"name","Zone")
+  
+  # *** Not needed for these plots as y-axis is varying. ***
+  # # This automatically creates the y-axis scaling
+  # py=pretty(z.gen.sum$TWh, n=5, min.n = 5)
+  # seq.py=seq(0, py[length(py)], 10*(py[2]-py[1]))
+  
+  setorder(dat.pos,Type)
+  setorder(dat.neg,Type)
+
+  # Create plot
+  p1 = ggplot() +
+          geom_bar(data = dat.pos, aes(x = scenario, y = TWh, fill=Type), stat="identity", position="stack" ) +
+          geom_bar(data = dat.neg, aes(x = scenario, y = TWh, fill=Type), stat="identity", position="stack" ) +
+          geom_errorbar(data = diff.load, aes(x = scenario, ymin=TWh, ymax=TWh, color='load'), size=0.45, linetype='longdash')+
+          scale_fill_manual(values = gen.color, guide = guide_legend(reverse = TRUE))+
+          scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
+          labs(y="Difference in Generation (TWh)", x=NULL)+
+          # scale_y_continuous(breaks=seq.py, expand=c(0,0), label=comma)+
+          guides(color = guide_legend(order=1), fill = guide_legend(order=2, reverse=TRUE))+
+               theme(    legend.key =      element_rect(color="grey80", size = 0.8), 
+                         legend.key.size = grid::unit(1.0, "lines"),
+                         legend.text =     element_text(size=text.plot), 
+                         legend.title =    element_blank(),
+                 #                         text = element_text(family="Arial"),
+                         axis.text =       element_text(size=text.plot/1.2), 
+                         axis.title =      element_text(size=text.plot, face=2), 
+                         axis.title.y =    element_text(vjust=1.2), 
+                         panel.margin =    unit(1.5, "lines"))+
+              facet_wrap(~Zone, scales = 'free', ncol=3)
+  print(p1)
+}
+
+} else { print('Section not run according to input file.') }

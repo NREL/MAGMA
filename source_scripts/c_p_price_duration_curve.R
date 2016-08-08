@@ -10,16 +10,18 @@ if ( typeof(region.data)=='character' ) {
 } else {
 
   # Pull out price from the regional data query
-  region.data = region.data[property == 'Price', ]
+  region.data = region.data[property == 'Price', .(scenario,name,time,value) ]
   
   # Separate price for each region and create a duration curve for each region. 
-  region.data[, interval := rank(-value,ties.method="random"), by=.(property,name)]
+  region.data[, interval := rank(-value,ties.method="random"), by=.(scenario,name)]
   setnames(region.data,'name','area')
   
     # Create plot
 p.1 = ggplot(region.data)+
-         geom_line(aes(x=interval, y=value, color=area), size=0.8)+  
+         geom_line(aes(x=interval, y=value, color=scenario), size=0.8)+  
          labs(y="Price ($/MWh)", x='Hours of Year')+
+         scale_color_brewer(palette="Set1")+
+         facet_wrap(~area, ncol=2)+
          theme( legend.key =       element_rect(color = "grey80", size = 0.4),
                 legend.key.size =  grid::unit(0.9, "lines"), 
                 legend.text =      element_text(size=text.plot/1.1),
@@ -34,9 +36,11 @@ p.1 = ggplot(region.data)+
   
   # Create plot with slightly different y-axis limit.
 p.2 = ggplot(region.data)+
-         geom_line(aes(x=interval, y=value, color=area), size=0.8)+  
+         geom_line(aes(x=interval, y=value, color=scenario), size=0.8)+  
          ylim(c(0,200))+
          labs(y="Price ($/MWh)", x='Hours of Year')+
+         scale_color_brewer(palette="Set1")+
+         facet_wrap(~area, ncol=2)+
          theme( legend.key =       element_rect(color = "grey80", size = 0.4),
                 legend.key.size =  grid::unit(0.9, "lines"), 
                 legend.text =      element_text(size=text.plot/1.1),

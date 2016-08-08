@@ -8,6 +8,7 @@ total.emissions.cost = tryCatch( total_emissions(db), error = function(cond) { r
 total.fuel.cost      = tryCatch( total_fuel(db), error = function(cond) { return('ERROR') } ) # Total fuel cost
 total.ss.cost        = tryCatch( total_ss(db), error = function(cond) { return('ERROR') } ) # Total start and shutdown cost
 total.vom.cost       = tryCatch( total_vom(db), error = function(cond) { return('ERROR') } ) # Total VO&M cost
+total.gen.res        = tryCatch( total_gen_reserve_provision(db), error = function(cond) { return('ERROR') } ) # Total reserve provision by generator
 total.installed.cap  = tryCatch( total_installed_cap(db), error = function(cond) { return('ERROR') } ) # Total installed capacity
 
 total.region.load    = tryCatch( total_region_load(db), error = function(cond) { return('ERROR') } ) # Total region load 
@@ -30,11 +31,13 @@ total.interface.flow = tryCatch( total_interface_flow(db), error = function(cond
 
 if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period.dispatch.zone.log |
      daily.curtailment | interval.curtailment | commit.dispatch.zone | commit.dispatch.region ) {
-  
   interval.generation   = tryCatch( interval_gen(db), error = function(cond) { return('ERROR') } ) # Interval level generation for each generator.
   interval.avail.cap    = tryCatch( interval_avail_cap(db), error = function(cond) { return('ERROR') } ) # Interval level available capacity for each generator.
+}
+
+if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period.dispatch.zone.log |
+     commit.dispatch.zone | commit.dispatch.region ){
   interval.region.load  = tryCatch( interval_region_load(db), error = function(cond) { return('ERROR') } ) # interval level region load.
-  interval.region.price = tryCatch( interval_region_price(db), error = function(cond) { return('ERROR') } ) # interval level region price.
   interval.zone.load    = tryCatch( interval_zone_load(db), error = function(cond) { return('ERROR') } ) # Interval level zone load
 }
 

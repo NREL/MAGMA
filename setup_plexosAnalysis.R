@@ -52,6 +52,10 @@ if(19 %in% run.sections) {capacity.factor.table=TRUE}           else {capacity.f
 if(20 %in% run.sections) {price.duration.curve=TRUE}            else {price.duration.curve=FALSE}
 if(21 %in% run.sections) {commit.dispatch.zone=TRUE}            else {commit.dispatch.zone=FALSE}
 if(22 %in% run.sections) {commit.dispatch.region=TRUE}          else {commit.dispatch.region=FALSE}
+if(23 %in% run.sections) {reserve.stack=TRUE}                   else {reserve.stack=FALSE}
+if(24 %in% run.sections) {annual.res.short.table=TRUE}          else {annual.res.short.table=FALSE}
+if(25 %in% run.sections) {curtailment.diff.table=TRUE}          else {curtailment.diff.table=FALSE}
+if(26 %in% run.sections) {price.duration.curve.scen=TRUE}       else {price.duration.curve.scen=FALSE}
 
 # -----------------------------------------------------------------------
 # Read in the data from the input_data.csv file that was just loaded
@@ -61,6 +65,9 @@ if(22 %in% run.sections) {commit.dispatch.region=TRUE}          else {commit.dis
 db.loc = file.path(as.character(na.exclude(inputs$Database.Location))) 
 db.day.ahead.loc = file.path(as.character(na.exclude(inputs$DayAhead.Database.Location)))
 if (length(db.day.ahead.loc)==0) { db.day.ahead.loc = db.loc }
+
+# reference scenario, used if comparing scenarios
+ref.scenario = inputs$ref.scenario
 
 # Using CSV file to map generator types to names?
 use.gen.type.mapping.csv = as.logical(na.exclude(inputs$Using.Gen.Type.Mapping.CSV))
@@ -84,7 +91,7 @@ if ( use.gen.type.mapping.csv ) {
 } else {
   # Assign generation type according to PLEXOS category
   gen.type.mapping = data.table(name = as.character(na.omit(inputs$PLEXOS.Gen.Category)), Type = as.character(na.omit(inputs$PLEXOS.Desired.Type)) )  
-  gen.type.mapping,name = setNames(gen.type.mapping$Type, gen.type.mapping$name)
+  gen.type.mapping = setNames(gen.type.mapping$Type, gen.type.mapping$name)
   if (length(gen.type.mapping)==0) { message('\nIf not using generator name to type mapping CSV, you must specify PLEXOS categories and desired generation type.') }
 }
 

@@ -1,5 +1,5 @@
 # Check if this section was selected run in the input file
-if (total.gen.stack){
+if (total.gen.stack & length(db.loc)>1){
 
 # Query annual generation by type.
 yr.gen.scen = tryCatch( gen_diff_by_type(total.generation, total.avail.cap), error = function(cond) { return('ERROR') } )
@@ -42,7 +42,7 @@ if ( typeof(yr.gen)=='character' ) {
          geom_errorbar(data = diff.load, aes(x = scenario, ymin=TWh, ymax=TWh, color='load'), size=0.45, linetype='longdash')+
          scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
          scale_fill_manual('', values = gen.color, limits=rev(gen.order))+     
-         labs(y="Generation (TWh)", x=NULL)+
+         labs(y="Difference in Generation (TWh)", x=NULL)+
          scale_y_continuous(breaks=seq.py, limits=c(min(py), max(py)), expand=c(0,0), label=comma)+
          guides(color = guide_legend(order=1), fill = guide_legend(order=2))+
          theme(    legend.key =      element_rect(color="grey80", size = 0.8),

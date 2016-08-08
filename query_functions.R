@@ -191,6 +191,7 @@ costs = function(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom
   cost.table[, property:=gsub("Cost","",property)]
   tot.cost = cost.table[,.(property = "Total", Cost = sum(Cost)), by=.(scenario)]
   cost.table = rbindlist(list(cost.table,tot.cost))
+  cost.table[,Type:=factor(Type,levels=unique(Type))]
 
   setnames(cost.table, "property","Type")
   setnames(cost.table, "Cost", "Cost (MM$)")
@@ -209,13 +210,13 @@ return(cost.table)
 
 annual_reserves = function(total.reserve.provision, total.reserve.shortage) {
     
-  provision = total.reserve.provision[, .(Type = name,`Provisions (GWh)` = sum(value)),by = .(name)]
+  provision = total.reserve.provision[, .(Type = name,`Provisions (GWh)` = sum(value)),by = .(scenario, name)]
   provision[,name:=NULL]
-  shortage = total.reserve.shortage[, .(Type = name, `Shortage (GWh)` = sum(value)),by = .(name)]
+  shortage = total.reserve.shortage[, .(Type = name, `Shortage (GWh)` = sum(value)),by = .(scenario, name)]
   shortage[,name:=NULL]
   
-  setkey(provision,Type)
-  setkey(shortage,Type)
+  setkey(provision,scenario,Type)
+  setkey(shortage,scenario,Type)
   r.data = provision[shortage]
   
   return(r.data)
@@ -296,10 +297,10 @@ zone_load = function(total.region.load, total.zone.load) {
   if (reassign.zones==TRUE | total.zone.load=='ERROR'){
     setkey(total.region.load,name)
     setkey(rz.unique,Region)
-    z.load = rz.unique[total.region.load][, .(value=sum(value)), by=.(Zone)]
+    z.load = rz.unique[total.region.load][, .(value=sum(value)), by=.(scenario, Zone)]
     setnames(z.load,"Zone","name")
   } else {
-    z.load = total.zone.load[,.(value=sum(value)), by=.(name)]
+    z.load = total.zone.load[,.(value=sum(value)), by=.(scenario, name)]
   }
   return(z.load)
 }
@@ -417,6 +418,13 @@ total_installed_cap = function(database) {
   total.installed.cap = data.table(query_year(database, 'Generator', 'Installed Capacity', columns = c('category', 'name')))
   total.installed.cap[, .(scenario, property, name, category, value)]
   return(total.installed.cap)
+}
+
+# Full run reserve provision
+total_gen_reserve_provision = function(database) {
+  total.res.provision = data.table(query_year(database, 'Reserve.Generators', 'Provision', columns = c('category', 'name')))
+  total.res.provision[, .(scenario, property, name, category, value)]
+  return(total.res.provision)
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

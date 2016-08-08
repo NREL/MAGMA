@@ -25,53 +25,38 @@ gen_diff_by_type = function(total.generation, total.avail.cap) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Region and Zone Generation by type according to generator name
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- 
-region_zone_gen = function() {
+ # Calculate regional generation differences
+region_gen_diff = function(total.generation, total.avail.cap) {
   
-  r.z.gen = yr.data.generator
-  
-  if ( use.gen.type.mapping.csv ) {
-    gen.data = r.z.gen %>%
-      filter(property=='Generation') %>%
-      select(name, category, value) %>%
-      plyr::join(region.zone.mapping, by='name') %>%
-      plyr::join(gen.type.mapping, by = 'name')  
-    
-    avail.data = r.z.gen %>%
-      filter(property == 'Available Energy') %>%
-      select(name, category, value) %>%
-      plyr::join(region.zone.mapping, by='name') %>%
-      plyr::join(gen.type.mapping, by = 'name')  %>%
-      filter(Type %in% re.types) %>%
-      select(name, Avail = value)
-    
-  } else {
-    gen.data = r.z.gen %>%
-      filter(property=='Generation') %>%
-      select(name, category, value) %>%
-      plyr::join(region.zone.mapping, by='name') %>%
-      plyr::join(category2type, by = 'category')
-    
-    avail.data = r.z.gen %>%
-      filter(property == 'Available Energy') %>%
-      select(name, category, value) %>%
-      plyr::join(region.zone.mapping, by='name') %>%
-      plyr::join(category2type, by = 'category') %>%
-      filter(Type %in% re.types) %>%
-      select(name, Avail = value)
-  }
+  r.z.gen = tryCatch( region_zone_gen(total.generation, total.avail.cap)[, .(GWh=sum(value)), by=.(scenario, Region, Type)], 
+                      error = function(cond) { return('ERROR') } )
 
-  curt = gen.data %>%
-    filter(Type %in% re.types ) %>%
-    join(avail.data, by = 'name')
-  
-  curt$Type = 'Curtailment'
-  curt$value = curt$Avail - curt$value
-  curt$Avail = NULL
-  
-  gen.data = rbind(gen.data, curt)
+  all.combos = data.table(expand.grid(unique(r.z.gen$scenario), unique(r.z.gen$Region), unique(r.z.gen$Type)))
+  setkey(all.combos,Var1,Var2,Var3)
+  setkey(r.z.gen,scenario, Region,Type)
+  r.z.gen = r.z.gen[all.combos]
+  r.z.gen[is.na(GWh), GWh:=0]
 
-  return(gen.data)
+  r.z.diff = r.z.gen[, GWh := GWh - GWh[scenario == ref.scenario], by=.(Region, Type)]
+
+  return(r.z.diff)
+}
+
+ # Calculate zonal generation differences
+zone_gen_diff = function(total.generation, total.avail.cap) {
+  
+  r.z.gen = tryCatch( region_zone_gen(total.generation, total.avail.cap)[, .(GWh=sum(value)), by=.(scenario, Zone, Type)], 
+                      error = function(cond) { return('ERROR') } )
+
+  all.combos = data.table(expand.grid(unique(r.z.gen$scenario), unique(r.z.gen$Zone), unique(r.z.gen$Type)))
+  setkey(all.combos,Var1,Var2,Var3)
+  setkey(r.z.gen,scenario,Zone,Type)
+  r.z.gen = r.z.gen[all.combos]
+  r.z.gen[is.na(GWh), GWh:=0]
+
+  r.z.diff = r.z.gen[, GWh := GWh - GWh[scenario == ref.scenario], by=.(Zone, Type)]
+  
+  return(r.z.diff)
 }
 
 
@@ -82,114 +67,30 @@ region_zone_gen = function() {
 
 interval_gen = function() {
   
-  if ( use.gen.type.mapping.csv ) {
-    int.gen = int.data.gen %>%
-      filter(property == 'Generation') %>%
-      select(name, time, value, category) %>%
-      join(gen.type.mapping, by = 'name') %>%
-      join(region.zone.mapping, by = 'name') %>%
-      dcast(time+Region+Zone ~ Type, value.var = 'value', fun.aggregate = sum)
-    
-  } else {
-    int.gen = int.data.gen %>%
-      filter(property == 'Generation') %>%
-      select(name, time, value, category) %>%
-      join(category2type, by = 'category') %>%
-      join(region.zone.mapping, by = 'name') %>%
-      dcast(time+Region+Zone ~ Type, value.var = 'value', fun.aggregate = sum)
-  }
-  
-  re.gen = subset(int.gen, select = re.types)
-
-  if ( use.gen.type.mapping.csv ) {
-    int.avail = int.data.avail.cap %>%
-      filter(property == 'Available Capacity') %>%
-      select(name, time, value, category) %>%
-      join(gen.type.mapping, by = 'name') %>%
-      join(region.zone.mapping, by = 'name') %>%
-      dcast(time+Region+Zone ~ Type, sum) %>%
-      subset(select = re.types)
-    
-  } else {
-    int.avail = int.data.avail.cap %>%
-      filter(property == 'Available Capacity') %>%
-      select(name, time, value, category) %>%
-      join(category2type, by = 'category') %>%
-      join(region.zone.mapping, by = 'name') %>%
-      dcast(time+Region+Zone ~ Type, sum) %>%
-      subset(select = re.types)
-  }
-
-  curtailed = int.avail - re.gen
-  curtailed = data.frame(rowSums(curtailed))
-  colnames(curtailed) = 'Curtailment'
-  
-  load = dcast(int.data.region, time+name~property, value.var = 'value', fun.aggregate = sum)
-  colnames(load)[colnames(load)=='name'] = 'Region'
-  
-  int.gen = int.gen %>%
-    cbind(curtailed) %>%
-    join(load, by = c('time', 'Region')) 
-    # melt(id.vars = c('time', 'Region', 'Zone'), variable.name = 'Type', value.name = 'value') # Not necessary to melt here. 
-
+ 
   return(int.gen)
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Total Curtailment
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Calculate difference in total curtailment for each scenario
 
-daily_curtailment = function() {
+curtailment_diff = function(total.generation, total.avail.cap) {
   
-  gen.data = int.data.gen
-  avail.data = int.data.avail.cap
-  
-  if ( use.gen.type.mapping.csv ) {
-    c.gen = gen.data %>%
-      filter(property == 'Generation') %>%
-      join(gen.type.mapping, by = 'name') %>%
-      select(time, Type, value) %>%
-      dcast(time ~ Type, value.var = 'value', fun.aggregate = sum) %>%
-      subset(select = re.types)
-    
-    c.avail = avail.data %>%
-      filter(property == 'Available Capacity') %>%
-      join(gen.type.mapping, by = 'name') %>%
-      select(time, Type, value) %>%
-      dcast(time ~ Type, sum) %>%
-      subset(select = re.types)
-    
-  } else {
-    c.gen = gen.data %>%
-      filter(property == 'Generation') %>%
-      join(category2type, by = 'category') %>%
-      select(time, Type, value) %>%
-      dcast(time ~ Type, value.var = 'value', fun.aggregate = sum) %>%
-      subset(select = re.types)
-    
-    c.avail = avail.data %>%
-      filter(property == 'Available Capacity') %>%
-      join(category2type, by = 'category') %>%
-      select(time, Type, value) %>%
-      dcast(time ~ Type, sum) %>%
-      subset(select = re.types)  
-  }
+  yr.gen = tryCatch( gen_by_type(total.generation, total.avail.cap), error = function(cond) { return('ERROR') } )
 
-  curt = c.avail - c.gen
-  curt.tot = data.frame(rowSums(curt))
-  colnames(curt.tot) = 'Curtailment'
-  curt.tot = t(curt.tot)
-  dim(curt.tot) = c(intervals.per.day, length(curt.tot)/intervals.per.day)
-  curt.tot = data.frame(curt.tot)
+  curt.diff = yr.gen[Type=='Curtailment', .(GWh = GWh - GWh[scenario==ref.scenario])]
 
-  return(curt.tot)
+  return(curt.diff)
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Cost 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Calculate difference in costs between scenarios
 
-costs_diff = function() {
+costs_diff = function(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom.cost) {
 
   cost.table = tryCatch( costs(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom.cost), 
                          error = function(cond) { return('ERROR: costs function not returning correct results.') })
@@ -200,32 +101,30 @@ return(cost.diff.table)
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Annual Reserve Provisions
+# Annual Reserve Shortages
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-annual_reserves = function() {
+annual_reserves_short = function(total.reserve.provision, total.reserve.shortage) {
   
-  r.data = yr.data.reserve
+  annual.reserves.scen = tryCatch( annual_reserves(total.reserve.provision, total.reserve.shortage), error = function(cond) { return('ERROR: annual_reserves function not returning correct results.') })
+  reserves.shortage.table = dcast.data.table(annual.reserves.scen, Type~scenario, value.var = "Shortage (GWh)")
   
-  provision =  select( filter(r.data, property == 'Provision'), name, value)
-  colnames(provision) = c('Type', 'Provisions (GWh)')  
-  
-  shortage = select( filter(r.data, property == 'Shortage'), name, value)
-  colnames(shortage) = c('Type', 'Shortage (GWh)')
-  
-  r.data = join(provision, shortage, by = 'Type')
-  
-  return(r.data)
+  return(reserves.shortage.table)
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Interval Reserve Provisions 
+# Annual Reserve Provision
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Calculates total reserve provision by generator type for each reserve product
 
-interval_reserves = function() {
-  provision = int.data.reserve
-  provision = dcast(provision, time ~ name, value.var = 'value')
-  return(provision)
+annual_reserves_provision = function(total.gen.res) {
+  
+  setkey(total.gen.res, name)
+  yr.gen.res = total.gen.res[property == 'Provision', Type:=gen.type.mapping[name] ]
+  yr.gen.res = yr.gen.res[, .(GWh = sum(value)), by=.(scenario,parent,Type)]
+  setnames(yr.gen.res,"parent","Reserve")
+  
+  return(yr.gen.res)
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
