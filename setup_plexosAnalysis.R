@@ -80,12 +80,12 @@ if ( use.gen.type.mapping.csv ) {
   # Read mapping tile to map generator names to generation type
   gen.type.mapping = data.table(read.csv(as.character(na.exclude(inputs$CSV.Gen.Type.File.Location)), stringsAsFactors=FALSE))
   gen.type.mapping = unique(gen.type.mapping[,.(name, Type)])
-  setkey(gen.type.mapping,name)
+  gen.type.mapping = setNames(gen.type.mapping$Type, gen.type.mapping$name)
 } else {
   # Assign generation type according to PLEXOS category
   gen.type.mapping = data.table(name = as.character(na.omit(inputs$PLEXOS.Gen.Category)), Type = as.character(na.omit(inputs$PLEXOS.Desired.Type)) )  
-  setkey(gen.type.mapping,name)
-  if (length(gen.type.mapping[,1])==0) { message('\nIf not using generator name to type mapping CSV, you must specify PLEXOS categories and desired generation type.') }
+  gen.type.mapping,name = setNames(gen.type.mapping$Type, gen.type.mapping$name)
+  if (length(gen.type.mapping)==0) { message('\nIf not using generator name to type mapping CSV, you must specify PLEXOS categories and desired generation type.') }
 }
 
 # Read mapping file to map generator names to region and zone (can be same file as gen name to type).

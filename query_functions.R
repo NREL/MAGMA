@@ -14,9 +14,9 @@ gen_by_type = function(total.generation, total.avail.cap) {
   setkey(total.avail.cap,'name')
   
   # Filter out generation and available capacity data and add generation type by matching generator name. 
-  yr.gen = total.generation[property == 'Generation',][gen.type.mapping][,.(scenario,Type,property,value)]
+  yr.gen = total.generation[property == 'Generation',][, Type:=gen.type.mapping[name] ][,.(scenario,Type,property,value)]
   
-  avail = total.avail.cap[property == 'Available Energy',][gen.type.mapping][,.(scenario,Type,property,value)]
+  avail = total.avail.cap[property == 'Available Energy',][, Type:=gen.type.mapping[name] ][,.(scenario,Type,property,value)]
   avail = avail[Type %in% re.types,.(value=sum(value)),by=.(scenario,Type,property)]
   avail[,property:=NULL]
   
@@ -158,8 +158,8 @@ total_curtailment = function(interval.generation, interval.avail.cap) {
   setkey(interval.avail.cap,name)
   
   # Separate generation and available capacity data by type for each interval.
-  c.gen = interval.generation[gen.type.mapping][Type %in% re.types,.(value=sum(value)),by=.(time, Type)]
-  c.avail = interval.avail.cap[gen.type.mapping][Type %in% re.types,.(value=sum(value)),by=.(time, Type)]
+  c.gen = interval.generation[, Type:=gen.type.mapping[name] ][Type %in% re.types,.(value=sum(value)),by=.(time, Type)]
+  c.avail = interval.avail.cap[, Type:=gen.type.mapping[name] ][Type %in% re.types,.(value=sum(value)),by=.(time, Type)]
 
   if (typeof(c.avail)=='double' & typeof(c.gen)=='double') {
     curt.tot = c.avail - c.gen
@@ -315,10 +315,10 @@ capacity_factor = function(total.generation, total.installed.cap) {
   setkey(total.generation,name)
   
   # Pull out installed capacity and generation and match them to generation type by generator name. 
-  mc = total.installed.cap[gen.type.mapping]
+  mc = total.installed.cap[, Type:=gen.type.mapping[name] ]
   setnames(mc,'value','MaxCap')
   
-  gen = total.generation[gen.type.mapping]
+  gen = total.generation[, Type:=gen.type.mapping[name] ]
   setnames(gen,'value','Gen')
         
   mc[, Type := factor(Type, levels = rev(c(gen.order)))]
