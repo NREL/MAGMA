@@ -84,7 +84,7 @@ if ( use.gen.type.mapping.csv ) {
 } else {
   # Assign generation type according to PLEXOS category
   gen.type.mapping = data.table(name = as.character(na.omit(inputs$PLEXOS.Gen.Category)), Type = as.character(na.omit(inputs$PLEXOS.Desired.Type)) )  
-  gen.type.mapping,name = setNames(gen.type.mapping$Type, gen.type.mapping$name)
+  gen.type.mapping = setNames(gen.type.mapping$Type, gen.type.mapping$name)
   if (length(gen.type.mapping)==0) { message('\nIf not using generator name to type mapping CSV, you must specify PLEXOS categories and desired generation type.') }
 }
 
