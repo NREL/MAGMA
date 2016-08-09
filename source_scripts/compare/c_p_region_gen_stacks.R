@@ -28,6 +28,7 @@ if ( typeof(r.gen.scen)=='character' ) {
   
   # Calculate difference in load
   region.load.scen = r.load[!name %in% ignore.regions, .(value = sum(value)/1000), by=.(scenario,name)]
+  region.load.scen[, scenario:=as.character(scenario)]
   diff.load = region.load.scen[, .(scenario, TWh = value-value[scenario==ref.scenario]), by=.(name)]
   diff.load = diff.load[scenario!=ref.scenario, ]
   setnames(diff.load,"name","Region")

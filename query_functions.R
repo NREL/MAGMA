@@ -191,7 +191,7 @@ costs = function(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom
   cost.table[, property:=gsub("Cost","",property)]
   tot.cost = cost.table[,.(property = "Total", Cost = sum(Cost)), by=.(scenario)]
   cost.table = rbindlist(list(cost.table,tot.cost))
-  cost.table[,Type:=factor(Type,levels=unique(Type))]
+  cost.table[,property:=factor(property,levels=unique(property))]
 
   setnames(cost.table, "property","Type")
   setnames(cost.table, "Cost", "Cost (MM$)")
@@ -416,7 +416,7 @@ total_installed_cap = function(database) {
 # Full run reserve provision
 total_gen_reserve_provision = function(database) {
   total.res.provision = data.table(query_year(database, 'Reserve.Generators', 'Provision', columns = c('category', 'name')))
-  return(total.res.provision[, .(scenario, property, name, category, value)])
+  return(total.res.provision[, .(scenario, property, name, parent, category, value)])
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

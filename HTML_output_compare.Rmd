@@ -54,7 +54,7 @@ knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, incl
 ## 1. Generation Differences
 ```{r gen-diff-stack}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/c_p_diff_gen_stack.R')
+source('source_scripts/compare/c_p_diff_gen_stack.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -91,15 +91,12 @@ print("not done yet")
 #```
 
 ### Total
-#`r key.period.dispatch.total`
 
 ***
 ### Zones
-#`r key.period.dispatch.zone`
 
 ***
 ### Regions
-#`r key.period.dispatch.region`
 
 ***
 ## 8-9. Curtailment
@@ -124,8 +121,8 @@ print("maybe make plot of differences in when curtailment happens")
 ## 10. Total Cost Differences
 ```{r annual-cost-difference-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source("source_scripts/compare/c_t_diff_annual_cost")
-if(exists('cost.diff.table')) { kable(cost.table, format.args = list(big.mark = ',')) }
+source("source_scripts/compare/c_t_diff_annual_cost.R")
+if(exists('cost.diff.table')) { kable(cost.diff.table, format.args = list(big.mark = ',')) }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -159,7 +156,7 @@ if(exists('cost.diff.table')) { kable(cost.table, format.args = list(big.mark = 
 ### 16. Annual Reserve Shortage by Scenario
 ```{r annual-reserves-scen-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/c_t_total_reserve_shortage.R')
+source('source_scripts/compare/c_t_total_reserve_shortage.R')
 if(exists('res.short.table')) { kable(res.short.table, format.args = list(big.mark = ',')) }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```

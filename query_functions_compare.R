@@ -17,6 +17,7 @@ gen_diff_by_type = function(total.generation, total.avail.cap) {
   yr.gen = yr.gen[all.combos]
   yr.gen[is.na(GWh), GWh:=0]
 
+  yr.gen[, scenario:=as.character(scenario)]
   gen.diff = yr.gen[, GWh:=GWh-GWh[scenario==ref.scenario], by=.(Type)]
 
   return(gen.diff)
@@ -37,6 +38,7 @@ region_gen_diff = function(total.generation, total.avail.cap) {
   r.z.gen = r.z.gen[all.combos]
   r.z.gen[is.na(GWh), GWh:=0]
 
+  r.z.gen[, scenario:=as.character(scenario)]
   r.z.diff = r.z.gen[, GWh := GWh - GWh[scenario == ref.scenario], by=.(Region, Type)]
 
   return(r.z.diff)
@@ -54,6 +56,7 @@ zone_gen_diff = function(total.generation, total.avail.cap) {
   r.z.gen = r.z.gen[all.combos]
   r.z.gen[is.na(GWh), GWh:=0]
 
+  r.z.gen[, scenario:=as.character(scenario)]
   r.z.diff = r.z.gen[, GWh := GWh - GWh[scenario == ref.scenario], by=.(Zone, Type)]
   
   return(r.z.diff)
@@ -80,7 +83,8 @@ curtailment_diff = function(total.generation, total.avail.cap) {
   
   yr.gen = tryCatch( gen_by_type(total.generation, total.avail.cap), error = function(cond) { return('ERROR') } )
 
-  curt.diff = yr.gen[Type=='Curtailment', .(GWh = GWh - GWh[scenario==ref.scenario])]
+  yr.gen[,scenario:=as.character(scenario)]
+  curt.diff = yr.gen[Type=='Curtailment', .(scenario, GWh = GWh - GWh[scenario==ref.scenario])]
 
   return(curt.diff)
 }
@@ -94,6 +98,7 @@ costs_diff = function(total.emissions.cost, total.fuel.cost, total.ss.cost, tota
 
   cost.table = tryCatch( costs(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom.cost), 
                          error = function(cond) { return('ERROR: costs function not returning correct results.') })
+  cost.table[, scenario := as.character(scenario)]
   cost.diff = cost.table[, .(scenario, `Cost (MM$)` = `Cost (MM$)` - `Cost (MM$)`[scenario == ref.scenario]), by=.(Type)]
   cost.diff.table = dcast.data.table(cost.diff, Type~scenario, value.var = 'Cost (MM$)')
 

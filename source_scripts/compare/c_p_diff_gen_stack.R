@@ -5,7 +5,7 @@ if (total.gen.stack & length(db.loc)>1){
 yr.gen.scen = tryCatch( gen_diff_by_type(total.generation, total.avail.cap), error = function(cond) { return('ERROR') } )
 
 # If the query doesn't work, print an error. Else continue.
-if ( typeof(yr.gen)=='character' ) {
+if ( typeof(yr.gen.scen)=='character' ) {
   print('ERROR: gen_by_type function not returning correct results.')
 } else {
 
@@ -26,6 +26,7 @@ if ( typeof(yr.gen)=='character' ) {
 
   # Calculate difference in load
   tot.load.scen = r.load[,.(value = sum(value)/1000),by=.(scenario)]
+  tot.load.scen[, scenario:=as.character(scenario)]
   diff.load = tot.load.scen[,.(scenario, TWh = value-value[scenario==ref.scenario])]
   diff.load = diff.load[scenario!=ref.scenario, ]
   

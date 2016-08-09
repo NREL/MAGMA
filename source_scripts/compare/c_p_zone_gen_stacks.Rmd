@@ -28,6 +28,7 @@ if ( typeof(z.gen.scen)=='character' ) {
   
   # Calculate difference in load
   zone.load.scen = z.load[!name %in% ignore.zones, .(value = sum(value)/1000), by=.(scenario,name)]
+  zone.load.scen[, scenario:=as.character(scenario)]
   diff.load = zone.load.scen[, .(scenario, TWh = value-value[scenario==ref.scenario]), by=.(name)]
   diff.load = diff.load[scenario!=ref.scenario, ]
   setnames(diff.load,"name","Zone")
