@@ -127,16 +127,6 @@ n.periods = length(period.names)
 start.end.times = data.frame(start = as.POSIXct( strptime( na.omit(inputs$Start.Time), format = '%m/%d/%Y %H:%M'), tz='UTC'), 
                              end = as.POSIXct( strptime( na.omit(inputs$End.Time), format = '%m/%d/%Y %H:%M'), tz='UTC' ) )
 
-# First and last day of simulation
-first.day = as.POSIXct( strptime( na.omit(inputs$Start.Day), format = '%m/%d/%Y %H:%M'), tz='UTC' )
-last.day = as.POSIXct( strptime( na.omit(inputs$End.Day), format = '%m/%d/%Y %H:%M'), tz='UTC' )
-
-# Number of intervals per day
-intervals.per.day = as.numeric(na.omit(inputs$Intervals.Per.Day))
-
-# What sections to execute code chunks for
-run.sections = na.omit(inputs$Sections.to.Run)
-
 # Location for saved figures
 fig.path.name = paste0(as.character(na.omit(inputs$Fig.Path)),'\\')
 
@@ -185,6 +175,29 @@ db.day.ahead = tryCatch(plexos_open(db.day.ahead.loc), error = function(cond) { 
 # db.day.ahead = db.day.ahead[1,] # This line queries only the first solution .db file if there are multiple in one location. 
 attributes(db.day.ahead)$class = c('rplexos', 'data.frame', 'tbl_df')
 
+
+# Calculate First and last day of simulation and interval length
+model.timesteps = model_timesteps(db)
+model.intervals = model.timesteps[,.(scenario,timestep)]
+
+# Check to make sure no overlapping periods are created
+if (nrow(model.timesteps[, .(unique(start)), by=.(scenario)]) > nrow(model.timesteps)){
+  message("Warning: You have overlapping solutions")
+}
+model.timesteps = model.timesteps[,.(start=min(start),end=max(end)),by=.(scenario)]
+# Check and make sure all scenarios have same start and end times
+if (!(length(unique(model.timesteps$start))==1 & length(unique(model.timesteps$end))==1)){
+  message("Warning: All specified scenarios do not have the same time horizons")
+}
+first.day = min(model.timesteps$start)
+last.day = max(model.timesteps$end)
+
+# Check to make sure all solutions have the same length
+if (length(unique(model.intervals$timestep))!=1){
+  message("Warning: Your databases do not have the same time intervals")
+}
+# Number of intervals per day
+intervals.per.day = 24 / unique(as.numeric(model.intervals$timestep,units='hours'))
 
 
 
