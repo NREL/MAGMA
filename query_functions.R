@@ -554,7 +554,7 @@ interval_reserve_provision = function(database) {
 # Runtime data
 interval_runtime = function(database){
   interval.runtime = data.table(query_log_steps(database))
-  return(interval.runtime[,.(scenario,phase,step,time)] 
+  return(interval.runtime[,.(scenario,phase,step,time)] )
 }
 
 # Timestep data
