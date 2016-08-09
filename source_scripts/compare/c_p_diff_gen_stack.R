@@ -17,7 +17,7 @@ if ( typeof(yr.gen.scen)=='character' ) {
                         .(TWh = sum(GWh)/1000), by=.(scenario,Type)]
 
   # gen.sum is just used to set the maximum height on the plot, see pretty() fcn below
-  gen.sum = rbindlist(list(dat.pos[, .(TWh = sum(TWh))], dat.neg[, .(TWh = sum(TWh))]))  
+  gen.sum = rbindlist(list(dat.pos[, .(TWh = sum(TWh)), by=.(scenario)], dat.neg[, .(TWh = sum(TWh)), by=.(scenario)]))  
 
   # reorder the levels of Type to plot them in order
   dat.pos[, Type := factor(Type, levels = c(gen.order))]
@@ -32,7 +32,7 @@ if ( typeof(yr.gen.scen)=='character' ) {
   
   # This automatically creates the y-axis scaling
   py = pretty(gen.sum$TWh, n=5, min.n = 5)
-  seq.py = seq(py[1], py[length(py)], 0.5*(py[2]-py[1]))
+  seq.py = seq(py[1], py[length(py)], (py[2]-py[1]))
 
   setorder(dat.pos,Type)
   setorder(dat.neg,Type)

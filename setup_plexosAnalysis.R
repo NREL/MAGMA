@@ -66,13 +66,14 @@ if(27 %in% run.sections) {runtime.plots=TRUE}                   else {runtime.pl
 db.loc = file.path(as.character(na.exclude(inputs$Database.Location))) 
 db.day.ahead.loc = file.path(as.character(na.exclude(inputs$DayAhead.Database.Location)))
 if (length(db.day.ahead.loc)==0) { db.day.ahead.loc = db.loc }
+has.multiple.scenarios = (length(db.loc)>1)
 
 # reference scenario, used if comparing scenarios
 ref.scenario = inputs$ref.scenario[!is.na(inputs$ref.scenario)]
 if (length(ref.scenario)>1){
   message('\nYou have more than one reference scenario. This is likely to cause problems with comparison calculations')
 } else{
-  if (length(ref.scenario)==0 & length(db.loc)>1){
+  if (length(ref.scenario)==0 & has.multiple.scenarios){
     message('\nYou have not provided a reference scenario. Comparison plots will not work.')
   }
 }

@@ -60,8 +60,9 @@ if ( commit.dispatch.zone | commit.dispatch.region ) {
 r.load = tryCatch( region_load(total.region.load), error = function(cond) { return('ERROR') } ) # Total region load
 z.load = tryCatch( zone_load(total.region.load, total.zone.load), error = function(cond) { return('ERROR') } ) # Total zone load
 
-region.names = r.load$name # Assign region names based on PLEXOS regions.
-zone.names = z.load$name # Assign zone names based on PLEXOS regions or region to zone mapping file. 
+region.names = unique(r.load$name) # Assign region names based on PLEXOS regions.
+zone.names = unique(z.load$name) # Assign zone names based on PLEXOS regions or region to zone mapping file. 
+reserve.names = unique(total.reserve.provision$name) # Get all reserve types
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check that all queries necessary worked. If not, return an error stating what data is not being output by PLEXOS

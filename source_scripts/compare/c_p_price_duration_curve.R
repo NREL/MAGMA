@@ -21,7 +21,7 @@ p.1 = ggplot(region.data)+
          geom_line(aes(x=interval, y=value, color=scenario), size=0.8)+  
          labs(y="Price ($/MWh)", x='Hours of Year')+
          scale_color_brewer(palette="Set1")+
-         facet_wrap(~area, ncol=2)+
+         facet_wrap(~area, ncol=3)+
          theme( legend.key =       element_rect(color = "grey80", size = 0.4),
                 legend.key.size =  grid::unit(0.9, "lines"), 
                 legend.text =      element_text(size=text.plot/1.1),
@@ -40,7 +40,7 @@ p.2 = ggplot(region.data)+
          ylim(c(0,200))+
          labs(y="Price ($/MWh)", x='Hours of Year')+
          scale_color_brewer(palette="Set1")+
-         facet_wrap(~area, ncol=2)+
+         facet_wrap(~area, ncol=3)+
          theme( legend.key =       element_rect(color = "grey80", size = 0.4),
                 legend.key.size =  grid::unit(0.9, "lines"), 
                 legend.text =      element_text(size=text.plot/1.1),

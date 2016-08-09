@@ -57,9 +57,11 @@ if ( typeof(r.gen.scen)=='character' ) {
                          legend.title =    element_blank(),
                  #                         text = element_text(family="Arial"),
                          axis.text =       element_text(size=text.plot/1.2), 
+                         axis.text.x =     element_text(angle=-20, hjust=0),
                          axis.title =      element_text(size=text.plot, face=2), 
                          axis.title.y =    element_text(vjust=1.2), 
-                         panel.margin =    unit(1.5, "lines"))+
+                         panel.margin =    unit(1.5, "lines"),
+                         aspect.ratio =    2.5/length(unique(dat.pos$scenario)))+
               facet_wrap(~Region, scales = 'free', ncol=3)
   print(p1)
 }

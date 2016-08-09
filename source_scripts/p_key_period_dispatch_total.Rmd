@@ -14,9 +14,7 @@ figure.height = 6
 # ###############################################################################   
 
 # this is just for scaling the y-axis (either by load or generation, whichever is bigger)
-stack.t = gen.type.total[Period==p.name, ] %>% 
-  group_by(time) %>%
-  summarise(value = sum(value))
+stack.t = gen.type.total[Period==p.name, .(value=sum(value)), by=.(time)] 
 
 # If load is much higher than generation, reassign y-axis scaling according to load so it won't be cut out of the plot.
 if (max(gen.load.total[Period==p.name, value])>max(stack.t$value)){
@@ -24,7 +22,7 @@ if (max(gen.load.total[Period==p.name, value])>max(stack.t$value)){
 }
 
 # This automatically creates the y-axis tick mark separation
-py.t  =pretty(stack.t$value/1000, n = 4)
+py.t = pretty(stack.t$value/1000, n = 4)
 seq.py.t = seq(0, py.t[length(py.t)], 2*(py.t[2]-py.t[1])) # get whole breaks sequence 
 
 # #############################################################################################################

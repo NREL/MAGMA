@@ -10,38 +10,14 @@ output:
 
 ```{r setOptions, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-# files = list.files(pattern = 'RData', path = db.loc)
-# n.files = length(files)
-# yr.files = c('yr.data.generator', 'yr.data.interface.flow', 'yr.data.region', 'yr.data.zone', 'yr.data.reserve')
-# int.files = c('int.data.avail.cap', 'int.data.gen', 'int.data.interface', 'int.data.region', 'int.data.reserve')
-
-# for ( i in 1:length(files) ) {
-#   load(paste0(db.loc, '/', files[i]))
-  
-#   for ( j in 1:length(yr.files) ) {
-#     assign(paste0('SC', i, '.', yr.files[j]), get(yr.files[j]))
-#   }
-  
-#   for ( j in 1:length(int.files) ) {
-#     assign(paste0('SC', i, '.', int.files[j]), get(int.files[j]))
-#   }
-
-#   r.load = tryCatch( region_load(), error = function(cond) { return('ERROR') } )
-#   z.load = tryCatch( zone_load(), error = function(cond) { return('ERROR') } )
-#   region.names = region_stats()$name
-#   zone.names = zone_stats()$name
-
-#   assign(paste0('SC', i, '.r.load'), r.load)
-#   assign(paste0('SC', i, '.z.load'), z.load)
-#   assign(paste0('SC', i, '.region.names'), region.names)
-#   assign(paste0('SC', i, '.zone.names'), zone.names)
-
-# }
-
 # Set up default options for chunks, turn off error or warning messages.
-knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, include=FALSE,
-                      fig.path=fig.path.name, dev='png')
+knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, include=TRUE,
+                      fig.path=fig.path.name, dev='png', fig.width=12, cache=FALSE)
+
+# Set dynamic height for figure in regional generation chunk
+z.height = ( length(zone.names) %/% 3 + length(zone.names) %% 3 ) * 5
+r.height = ( length(region.names) %/% 3 + length(region.names) %% 3 ) * 5
+res.height = ( length(reserve.names) %/% 2 + length(reserve.names) %% 2 ) * 5
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -60,7 +36,7 @@ source('source_scripts/compare/c_p_diff_gen_stack.R')
 
 ***
 ## 2. Zonal Generation
-```{r zone-gen-diff-stacks}
+```{r zone-gen-diff-stacks, fig.height=z.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   source('source_scripts/compare/c_p_zone_gen_stacks.Rmd')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -68,27 +44,81 @@ source('source_scripts/compare/c_p_diff_gen_stack.R')
 
 ***
 ## 3. Regional Generation
-```{r region-gen-diff-stacks}
+```{r region-gen-diff-stacks, fig.height=r.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/compare/c_p_region_gen_stacks.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
 ***
-## 4. Individual Regions
-```{r individual-region-diff-stacks}
+## 5-7. Specified Period Dispatch Stacks
+``` {r key-period-dispatch, cache=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-print("not done yet")
+# Check if this section was selected to run in the input file
+if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.dispatch.region.log){  
+
+  # Call interval_gen function and proces data for plots
+  source('source_scripts/d_key_period_dispatch.R')
+
+  # As long as the file exists (previous source found the R script) this loop runs
+  if ( exists('key.period.gen') ) {
+  # Check to see if the right data is ready for plotting.
+    if ( typeof(key.period.gen)=='character' ) {
+      key.period.dispatch.total  = 'ERROR: interval_gen function not returning correct results.'
+      key.period.dispatch.zone   = 'ERROR: interval_gen function not returning correct results.'
+      key.period.dispatch.region = 'ERROR: interval_gen function not returning correct results.'
+    } else {
+  
+      key.plots.total = list() # Creates empty list for plot data
+      key.plots.zone = list() # Creates empty list for plot data
+      key.plots.region = list() # Creates empty list for plot data
+      r.idx = 1
+      z.idx = 1
+      
+      # Create data for each plot for the interesting periods
+      for ( p in 1:n.periods ) {
+        period.name = period.names[p]
+        
+        # Check if total database info was selected in input file.
+        if (key.period.dispatch.total.log) {
+          key.plots.total[[p]] = knit_expand(file = 'source_scripts/c_p_key_period_dispatch_total.Rmd', period.name = period.name)
+        } else {key.period.dispatch.total  = 'Section not run according to input file.'}
+        
+        # Check if zonal dispatch stacks were selected in input file.
+        if (key.period.dispatch.zone.log) {
+          for ( z in 1:length(zone.names) ) {
+            zone.name = zone.names[z]
+            key.plots.zone[[z.idx]] = knit_expand(file = 'source_scripts/c_p_key_period_dispatch_zone.Rmd', period.name = period.name, zone.name = zone.name) 
+            z.idx = z.idx + 1
+          } 
+        } else {key.period.dispatch.zone   = 'Section not run according to input file.'}
+        
+        # Check if regional dispatch stacks were selected in input file.
+        if (key.period.dispatch.region.log) {
+          for ( r in 1:length(region.names) ) {
+            region.name = region.names[r]
+            key.plots.region[[r.idx]] = knit_expand(file = 'source_scripts/c_p_key_period_dispatch_region.Rmd', period.name = period.name, region.name = region.name)
+            r.idx = r.idx + 1
+          }
+        } else {key.period.dispatch.region = 'Section not run according to input file.'}
+      }
+  
+      # Reconstruct the plot data into a format that will be output into the HTML below
+      if (key.period.dispatch.total.log) { key.period.dispatch.total = knit_child(text = unlist(key.plots.total)) }
+      if (key.period.dispatch.zone.log) { key.period.dispatch.zone = knit_child(text = unlist(key.plots.zone)) }
+      if (key.period.dispatch.region.log) { key.period.dispatch.region = knit_child(text = unlist(key.plots.region)) }
+    }
+  } else {
+    key.period.dispatch.total  = 'Problem sourcing or running d_key_period_dispatch.R.'
+    key.period.dispatch.zone   = 'Problem sourcing or running d_key_period_dispatch.R.'
+    key.period.dispatch.region = 'Problem sourcing or running d_key_period_dispatch.R.'
+  }
+} else { key.period.dispatch.total  = 'Section not run according to input file.'
+         key.period.dispatch.zone   = 'Section not run according to input file.' 
+         key.period.dispatch.region = 'Section not run according to input file.' }
+
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
-
-***
-## 5-7. Specified Period Dispatch Stacks
-#``` {r key-period-dispatch, cache=FALSE}
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-#```
 
 ### Total
 
@@ -101,7 +131,7 @@ print("not done yet")
 ***
 ## 8-9. Curtailment
 ***
-### 8. Average Daily Curtailment
+### 8. Total Curtailment Difference
 ```{r yearly-curtailment-diff}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/compare/c_t_diff_curtailment.R')
@@ -163,7 +193,7 @@ if(exists('res.short.table')) { kable(res.short.table, format.args = list(big.ma
 
 ***
 ### 17. Reserve Provisions by generator type
-```{r reserves-stacks}
+```{r reserves-stacks, fig.height=res.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source("source_scripts/compare/c_p_reserves_stack.R")
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -171,7 +201,7 @@ source("source_scripts/compare/c_p_reserves_stack.R")
 
 ***
 ## 20. Region Price Duration Curves
-```{r price-duration-curve-scen}
+```{r price-duration-curve-scen, fig.height=r.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/compare/c_p_price_duration_curve.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
