@@ -14,5 +14,5 @@ setwd(magma.dir)
 source(file.path('query_functions.R'))
 source(file.path('setup_plexosAnalysis.R'))
 source(file.path('setup_dataQueries.R'))
-output.path = file.path(output.dir)
-render(input=file.path('HTML_output.Rmd'), c("html_document"), output_file=output.name, output_dir = output.path)
+render(input=file.path('HTML_output.Rmd'), c("html_document"), 
+	   output_file=output.name, output_dir = file.path(output.dir))

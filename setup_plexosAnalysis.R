@@ -28,7 +28,7 @@ inputs = read.csv(file.path(input.csv))
 inputs[inputs==""]=NA
 inputs = data.table(inputs)
 
-# Assign a logical to each chunk run selector. 
+# What sections to run code for. Assign a logical to each chunk run selector. 
 run.sections = na.omit(inputs$Sections.to.Run)
 if(1 %in% run.sections)  {total.gen.stack=TRUE}                 else {total.gen.stack=FALSE} 
 if(2 %in% run.sections)  {zone.gen.stacks=TRUE}                 else {zone.gen.stacks=FALSE}
@@ -56,6 +56,7 @@ if(23 %in% run.sections) {reserve.stack=TRUE}                   else {reserve.st
 if(24 %in% run.sections) {annual.res.short.table=TRUE}          else {annual.res.short.table=FALSE}
 if(25 %in% run.sections) {curtailment.diff.table=TRUE}          else {curtailment.diff.table=FALSE}
 if(26 %in% run.sections) {price.duration.curve.scen=TRUE}       else {price.duration.curve.scen=FALSE}
+if(27 %in% run.sections) {runtime.plots=TRUE}                   else {runtime.plots=FALSE}
 
 # -----------------------------------------------------------------------
 # Read in the data from the input_data.csv file that was just loaded
@@ -67,7 +68,14 @@ db.day.ahead.loc = file.path(as.character(na.exclude(inputs$DayAhead.Database.Lo
 if (length(db.day.ahead.loc)==0) { db.day.ahead.loc = db.loc }
 
 # reference scenario, used if comparing scenarios
-ref.scenario = inputs$ref.scenario
+ref.scenario = inputs$ref.scenario[!is.na(inputs$ref.scenario)]
+if (length(ref.scenario)>1){
+  message('\nYou have more than one reference scenario. This is likely to cause problems with comparison calculations')
+} else{
+  if (length(ref.scenario)==0 & length(db.loc)>1){
+    message('\nYou have not provided a reference scenario. Comparison plots will not work.')
+  }
+}
 
 # Using CSV file to map generator types to names?
 use.gen.type.mapping.csv = as.logical(na.exclude(inputs$Using.Gen.Type.Mapping.CSV))
