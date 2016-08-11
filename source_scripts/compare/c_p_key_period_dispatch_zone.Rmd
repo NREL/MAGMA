@@ -1,0 +1,61 @@
+
+```{r key-period-dispatch-scen-zone-{{period.name}}-{{zone.name}}, results='asis', include=TRUE}
+p.name = '{{period.name}}' # Assign key period name
+z.name = '{{zone.name}}' # Assign zone name
+cat("### ", p.name, ': ', z.name) # Print key period and zone name above plot
+text.plot=11
+figure.width = 9
+figure.height = s.height
+```
+
+```{r key-period-dispatch-scen-plots-zone-{{period.name}}-{{zone.name}}, fig.width=figure.width, fig.height=figure.height, include=TRUE}
+
+# ###############################################################################
+# Zone Data
+# ###############################################################################   
+
+# this is just for scaling the y-axis (either by load or generation, whichever is bigger)
+stack.z = gen.type.zone[Period==p.name & Zone==z.name, .(value=sum(value)), by=.(scenario,time)]
+
+# Check to make sure there is actually generation data for this zone If not, no plot is crated.
+if ( length(stack.z$value)>0 & sum(stack.z$value)>0 ) {
+  
+  # If load is larger than generation, reassign y-axis height so load isn't cut off 
+  if (max(gen.load.zone[Period==p.name & Zone==z.name, value])>max(stack.z$value)){
+    stack.z = gen.load.zone[Period==p.name & Zone==z.name, .(value=sum(value)), by=.(scenario,time)]
+  }
+  
+  # This automatically creates the y-axis scaling
+  py.z = pretty(stack.z$value/1000, n = 4)
+  seq.py.z = seq(0, py.z[length(py.z)], 2*(py.z[2]-py.z[1])) # get whole breaks sequence
+  
+  # #############################################################################################################
+  # Zone database plots
+  # #############################################################################################################
+  ggplot(gen.type.zone[Period==p.name & Zone==z.name, ], aes(time, value/1000, group=Type, fill=Type, order=as.numeric(Type)), color="black")+
+    geom_area(color=NA)+
+    geom_line(position="stack", size=0.3)+
+    labs(y="Generation (GWh)", x=NULL)+
+    geom_line(data=gen.load.zone[Period==p.name & Zone==z.name, ], linetype="longdash", aes(color="load"),size=0.8)+
+    scale_fill_manual("",values = gen.color, limits=rev(gen.order))+
+    scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
+    scale_x_datetime(breaks = date_breaks(width = "1 day"), labels = date_format("%b %d\n%I %p"), expand = c(0, 0))+
+    scale_y_continuous(breaks=seq.py.z, limits=c(0, max(py.z)), expand=c(0,0))+
+    facet_wrap(~scenario,ncol=1)+
+    theme(legend.key = element_rect(color = "grey80", size = 0.4),
+          legend.key.size = grid::unit(0.9, "lines"), 
+          legend.text = element_text(size=text.plot/1.1),
+          strip.text=element_text(size=rel(0.7)),
+          axis.text=element_text(size=text.plot/1.2), 
+          axis.title=element_text(size=text.plot, face=2), 
+          axis.title.x=element_text(vjust=-0.3),
+          panel.grid.major = element_line(colour = "grey85"),
+          panel.grid.minor = element_line(colour = "grey93"),
+          aspect.ratio = 0.5)
+  
+} else { print('No generation found for this period and zone.')}
+
+```
+
+
+

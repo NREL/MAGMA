@@ -9,7 +9,7 @@ if ( typeof(int.gen)=='character' ) {
 } else {
   
   # From the full year of data, pull out only the data corresponding to the key periods specified in the input file. 
-  timediff = int.gen[,.(timediff=diff(time)),by=.(Region,Type,Zone)][,.(min(timediff))][,V1]
+  timediff = int.gen[,.(timediff=diff(time)),by=.(scenario,Region,Type,Zone)][,.(min(timediff))][,V1]
   for ( i in 1:n.periods ) {
     key.period.time = seq(start.end.times[i,start], start.end.times[i,end], 
                           by = timediff)

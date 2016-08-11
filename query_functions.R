@@ -98,11 +98,11 @@ interval_generation = function(interval.region.load, interval.zone.load, interva
   
   # Either sum up load for each region or each zone, depending on which there are more of. 
   if (length(region.names)>=length(zone.names)){
-    load = interval.region.load[,.(value=sum(value)),by=.(time,name,property)]
+    load = interval.region.load[,.(value=sum(value)),by=.(scenario,time,name,property)]
     setnames(load,"name","Region")
     spatialcol = "Region"    
   } else {
-    load = interval.zone.load[,.(value=sum(value)),by=.(time,name,property)]
+    load = interval.zone.load[,.(value=sum(value)),by=.(scenario,time,name,property)]
     setnames(load,"name","Zone")
     spatialcol = "Zone"
   }
@@ -113,8 +113,8 @@ interval_generation = function(interval.region.load, interval.zone.load, interva
   setnames(load,'property','Type')
   
   # Pull out interval generation data, and add generation type and region and zone according to generator name. Then add load data.
-  int.gen = interval.generation[,.(name, time, value, category)][gen.type.zone.region]
-  int.gen = int.gen[,.(value=sum(value,na.rm=TRUE)),by=.(time,Region,Zone,Type)] 
+  int.gen = interval.generation[,.(scenario, name, time, value, category)][gen.type.zone.region]
+  int.gen = int.gen[,.(value=sum(value,na.rm=TRUE)),by=.(scenario,time,Region,Zone,Type)] 
   setkeyv(int.gen,c('time',spatialcol))
   int.gen = rbindlist(list(int.gen,load),use.names=TRUE)
   
@@ -124,21 +124,21 @@ interval_generation = function(interval.region.load, interval.zone.load, interva
   int.gen = merge(int.gen[,!dropcol,with=FALSE],rz.unique,all.y=TRUE)
   
   # Pull out interval generation capacity and add generation type, region, and zone based on matching generator names.
-  int.avail = interval.avail.cap[,.(name, time, value, category)][gen.type.zone.region]
-  int.avail = int.avail[,.(value=sum(value,na.rm=TRUE)),by=.(time,Region,Zone,Type)]
+  int.avail = interval.avail.cap[,.(scenario, name, time, value, category)][gen.type.zone.region]
+  int.avail = int.avail[,.(value=sum(value,na.rm=TRUE)),by=.(scenario,time,Region,Zone,Type)]
  
   if (re.types!='none_specified'){
     #  Pull out renewable data for curtilment calculations. 
     re.gen = int.gen[Type %in% re.types, ]
-    setkey(re.gen,time,Region,Zone,Type)
+    setkey(re.gen,scenario,time,Region,Zone,Type)
   
     int.avail = int.avail[Type %in% re.types, ]
-    setkey(int.avail,time,Region,Zone,Type)
+    setkey(int.avail,scenario,time,Region,Zone,Type)
     
     # Calculate curtailment and add it to generation and load data from above.
     curtailed = merge(int.avail, re.gen, all=TRUE)
     curtailed[is.na(curtailed)] = 0
-    curtailed=curtailed[,.(Type='Curtailment',value=sum(value.x-value.y)),by=.(time,Region,Zone)]
+    curtailed=curtailed[,.(Type='Curtailment',value=sum(value.x-value.y)),by=.(scenario,time,Region,Zone)]
     
     int.gen = rbindlist(list(int.gen, curtailed), use.names=TRUE)
   
@@ -508,13 +508,13 @@ total_interface_flow = function(database) {
 # Interval level generator generation
 interval_gen = function(database) {
   interval.gen = data.table(query_interval(database, 'Generator', 'Generation', columns = c('category', 'name'))) 
-  return(inteval.gen[,.(scenario, property, name, value, time, category) ])
+  return(interval.gen[,.(scenario, property, name, value, time, category) ])
 }
 
 # Interval level generator capacity
 interval_avail_cap = function(database) {
   interval.avail.cap = data.table(query_interval(database, 'Generator', 'Available Capacity', columns = c('category', 'name'))) 
-  return(interval.aail.cap[,.(scenario, property, name, value, time, category) ])
+  return(interval.avail.cap[,.(scenario, property, name, value, time, category) ])
 }
 
 # Interval level region load 

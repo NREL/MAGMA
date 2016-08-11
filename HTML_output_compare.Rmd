@@ -12,12 +12,13 @@ output:
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Set up default options for chunks, turn off error or warning messages.
 knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, include=TRUE,
-                      fig.path=fig.path.name, dev='png', fig.width=12, cache=FALSE)
+                      fig.path=fig.path.name, dev='png', fig.width=12)
 
 # Set dynamic height for figure in regional generation chunk
 z.height = ( length(zone.names) %/% 3 + length(zone.names) %% 3 ) * 5
 r.height = ( length(region.names) %/% 3 + length(region.names) %% 3 ) * 5
 res.height = ( length(reserve.names) %/% 2 + length(reserve.names) %% 2 ) * 5
+s.height = ( length(db.loc) ) * 6
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -51,8 +52,8 @@ source('source_scripts/compare/c_p_region_gen_stacks.R')
 ```
 
 ***
-## 5-7. Specified Period Dispatch Stacks
-``` {r key-period-dispatch, cache=FALSE}
+## 4-6. Specified Period Dispatch Stacks
+``` {r key-period-dispatch, cache=FALSE, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
 if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.dispatch.region.log){  
@@ -81,14 +82,14 @@ if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.di
         
         # Check if total database info was selected in input file.
         if (key.period.dispatch.total.log) {
-          key.plots.total[[p]] = knit_expand(file = 'source_scripts/c_p_key_period_dispatch_total.Rmd', period.name = period.name)
+          key.plots.total[[p]] = knit_expand(file = 'source_scripts/compare/c_p_key_period_dispatch_total.Rmd', period.name = period.name)
         } else {key.period.dispatch.total  = 'Section not run according to input file.'}
         
         # Check if zonal dispatch stacks were selected in input file.
         if (key.period.dispatch.zone.log) {
           for ( z in 1:length(zone.names) ) {
             zone.name = zone.names[z]
-            key.plots.zone[[z.idx]] = knit_expand(file = 'source_scripts/c_p_key_period_dispatch_zone.Rmd', period.name = period.name, zone.name = zone.name) 
+            key.plots.zone[[z.idx]] = knit_expand(file = 'source_scripts/compare/c_p_key_period_dispatch_zone.Rmd', period.name = period.name, zone.name = zone.name) 
             z.idx = z.idx + 1
           } 
         } else {key.period.dispatch.zone   = 'Section not run according to input file.'}
@@ -97,7 +98,7 @@ if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.di
         if (key.period.dispatch.region.log) {
           for ( r in 1:length(region.names) ) {
             region.name = region.names[r]
-            key.plots.region[[r.idx]] = knit_expand(file = 'source_scripts/c_p_key_period_dispatch_region.Rmd', period.name = period.name, region.name = region.name)
+            key.plots.region[[r.idx]] = knit_expand(file = 'source_scripts/compare/c_p_key_period_dispatch_region.Rmd', period.name = period.name, region.name = region.name)
             r.idx = r.idx + 1
           }
         } else {key.period.dispatch.region = 'Section not run according to input file.'}
@@ -116,17 +117,19 @@ if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.di
 } else { key.period.dispatch.total  = 'Section not run according to input file.'
          key.period.dispatch.zone   = 'Section not run according to input file.' 
          key.period.dispatch.region = 'Section not run according to input file.' }
-
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
 ### Total
+`r key.period.dispatch.total`
 
 ***
 ### Zones
+`r key.period.dispatch.zone`
 
 ***
 ### Regions
+`r key.period.dispatch.region`
 
 ***
 ## 8-9. Curtailment
