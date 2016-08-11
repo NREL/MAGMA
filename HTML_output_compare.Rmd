@@ -19,6 +19,7 @@ z.height = ( length(zone.names) %/% 3 + length(zone.names) %% 3 ) * 5
 r.height = ( length(region.names) %/% 3 + length(region.names) %% 3 ) * 5
 res.height = ( length(reserve.names) %/% 2 + length(reserve.names) %% 2 ) * 5
 s.height = ( length(db.loc) ) * 6
+p.height = ( length(period.names) %/% 2 + length(period.names) %% 2 ) * 5
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -276,5 +277,78 @@ if (commit.dispatch.region | commit.dispatch.zone) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
+### Zones
+`r da.rt.zone`
+
+***
+### Regions
+`r da.rt.region`
+***
+
+
+## 22. Generation comparison by Generator Type
+```{r generation-comparison, include=FALSE}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Check if this section was selected to run in the input file
+if (compare.dispatch.region | compare.dispatch.zone) {
+  
+  source('source_scripts/compare/c_d_gen_comparison.R') # Call this R script which created the data needed for plotting.
+  
+  # As long as the file exists (previous source found the R script) this loop runs
+  if ( exists('plot.data.all') ) {
+    # Check to see if the right data is ready for plotting.
+    if ( typeof(plot.data.all)=='character' ) {
+      print('ERROR: cap_committed function not returning correct results.')
+    } else {
+  
+      comp.gen.zone = list() # Creates empty list for plot data
+      comp.gen.region = list() # Creates empty list for plot data
+      r.idx = 1 # Start the region name index at 1
+      z.idx = 1 # Start the zone name index at 1
+    
+      # Run the loop for each generator type requested.
+      for ( type.name in da.rt.types ) {
+      
+        # Check if zonal DA-RT plots were selected in input file. If so create a plot for each zone
+        if (compare.dispatch.zone) {
+          for ( z in 1:length(zone.names) ) {
+              zone.name = zone.names[z]
+              comp.gen.zone[[z.idx]] = knit_expand(file = 'source_scripts/compare/c_p_key_period_gen_comparison_zone.Rmd', type.name = type.name, zone.name = zone.name) 
+              z.idx = z.idx + 1
+          } 
+        } else {comp.gen.zone = 'Section not run according to input file.'}
+        
+        if (compare.dispatch.region) {  
+          # Create a plot for each region.
+          for ( r in 1:length(region.names) ) {
+              region.name = region.names[r]
+              comp.gen.region[[r.idx]] = knit_expand(file = 'source_scripts/compare/c_p_key_period_gen_comparison_region.Rmd', type.name = type.name, region.name = region.name)
+              r.idx = r.idx + 1
+          }
+        } else {comp.gen.region = 'Section not run according to input file.'}
+        
+      }
+    
+      # Reconstruct the plot data into a format that will be output into the HTML below
+      if (compare.dispatch.zone)   { comp.gen.zone = knit_child(text = unlist(comp.gen.zone)) }
+      if (compare.dispatch.region) { comp.gen.region = knit_child(text = unlist(comp.gen.region)) }
+
+    }
+  } else { comp.gen.zone   = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'
+           comp.gen.region = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'}
+  
+} else { comp.gen.zone   = 'Section not run according to input file.'
+         comp.gen.region = 'Section not run according to input file.' }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+
+### Zones
+`r comp.gen.zone`
+
+***
+### Regions
+`r comp.gen.region`
+***
 
 

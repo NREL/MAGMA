@@ -57,6 +57,9 @@ if(24 %in% run.sections) {annual.res.short.table=TRUE}          else {annual.res
 if(25 %in% run.sections) {curtailment.diff.table=TRUE}          else {curtailment.diff.table=FALSE}
 if(26 %in% run.sections) {price.duration.curve.scen=TRUE}       else {price.duration.curve.scen=FALSE}
 if(27 %in% run.sections) {runtime.plots=TRUE}                   else {runtime.plots=FALSE}
+if(28 %in% run.sections) {compare.dispatch.zone=TRUE}           else {compare.dispatch.zone=FALSE}
+if(29 %in% run.sections) {compare.dispatch.region=TRUE}         else {compare.dispatch.region=FALSE}
+
 
 # -----------------------------------------------------------------------
 # Read in the data from the input_data.csv file that was just loaded
