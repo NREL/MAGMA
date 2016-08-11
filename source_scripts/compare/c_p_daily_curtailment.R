@@ -13,13 +13,12 @@ if (daily.curtailment) {
   } else {
     
     # Calculate average curtailment for each day 
-    daily.curt = interval.curt[,.(Curtailment = mean(Curtailment)),by=.(day, year)] 
+    daily.curt = interval.curt[,.(Curtailment = mean(Curtailment)),by=.(scenario,day,year)] 
     daily.curt[, timeformat := sprintf("%d %d", day+1, year)]
     daily.curt[, time := as.POSIXct(strptime(timeformat,'%j %Y'))] # Add time column
     
     # this is just for scaling the y-axis (either by load or generation, whichever is bigger)
-    stack = daily.curt[, .(value=sum(Curtailment)),by=.(time)] 
-    stack[, Type := "ALL"]
+    stack = daily.curt[, .(value=sum(Curtailment)),by=.(scenario,time)] 
     
     # This automatically creates the y-axis scaling
     py = pretty(stack$value)
@@ -27,10 +26,11 @@ if (daily.curtailment) {
     
     # Create plot
     p1 = ggplot(daily.curt)+
-      geom_bar(aes(x=time, y=Curtailment, color="black"), stat='identity', color=NA)+    
+      geom_line(aes(x=time, y=Curtailment, color=scenario))+    
       labs(y="Curtailment (MWh)", x='Date')+
       scale_x_datetime(breaks   = date_breaks(width = "1 month"), labels = date_format("%b"), expand = c(0, 0))+
       scale_y_continuous(breaks = seq.py, limits=c(0, max(py)), expand=c(0,0))+
+      scale_color_brewer(palette="Set1")+
       theme( legend.key =       element_rect(color = "grey80", size = 0.4),
              legend.key.size =  grid::unit(0.9, "lines"), 
              legend.text =      element_text(size=text.plot/1.1),
@@ -43,6 +43,38 @@ if (daily.curtailment) {
              #               aspect.ratio =     0.5,
              panel.margin =     unit(1.0, "lines") )
     print(p1)
+    
+    
+    # Calculate diffs
+    daily.curt[, scenario:=as.character(scenario)]
+    diff.daily.curt = daily.curt[, .(scenario, Curtailment = Curtailment - Curtailment[scenario==ref.scenario]), by=.(time)]
+    
+    # this is just for scaling the y-axis (either by load or generation, whichever is bigger)
+    stack = diff.daily.curt[,.(value = sum(Curtailment)), by=.(scenario,time)]
+    
+    # This automatically creates the y-axis scaling
+    py = pretty(stack$value)
+    seq.py = seq(py[1], py[length(py)], 2*(py[2]-py[1])) # get whole breaks sequence
+    
+    # Create diff plot
+    p2 = ggplot(diff.daily.curt[scenario!=ref.scenario, ])+
+      geom_line(aes(x=time, y=Curtailment, color=scenario))+    
+      labs(y="Curtailment (MWh)", x='Interval')+
+      #        scale_x_datetime(breaks = date_breaks(width = "1 month"), labels = date_format("%b"), expand = c(0, 0))+
+      scale_y_continuous(breaks=seq.py, limits=c(min(py), max(py)), expand=c(0,0))+
+      scale_color_brewer(palette='Set1')+
+      theme( legend.key =       element_rect(color = "grey80", size = 0.4),
+             legend.key.size =  grid::unit(0.9, "lines"), 
+             legend.text =      element_text(size=text.plot/1.1),
+             strip.text =       element_text(size=rel(0.7)),
+             axis.text =        element_text(size=text.plot/1.2), 
+             axis.title =       element_text(size=text.plot, face=2), 
+             axis.title.x =     element_text(vjust=-0.3),
+             panel.grid.major = element_line(colour = "grey85"),
+             panel.grid.minor = element_line(colour = "grey93"),
+             #             aspect.ratio =     0.5,
+             panel.margin =     unit(1.0, "lines") )
+    print(p2)
   }
   
 } else { print('Section not run according to input file.') }

@@ -132,9 +132,9 @@ if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.di
 `r key.period.dispatch.region`
 
 ***
-## 8-9. Curtailment
+## 7-9. Curtailment
 ***
-### 8. Total Curtailment Difference
+### 7. Total Curtailment Difference
 ```{r yearly-curtailment-diff}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/compare/c_t_diff_curtailment.R')
@@ -143,10 +143,18 @@ if(exists('curt.diff')) { kable(curt.diff, format.args = list(big.mark = ','), d
 ```
 
 ***
-### 9. Average Interval Curtailment
+### 8. Daily Curtailment Difference
 ```{r daily-curtailment-diff}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-print("maybe make plot of differences in when curtailment happens")
+source('source_scripts/compare/c_p_daily_curtailment.R')
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+### 9. Interval Curtailment Difference
+```{r interval-curtailment-diff}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+source('source_scripts/compare/c_p_interval_curtailment.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 

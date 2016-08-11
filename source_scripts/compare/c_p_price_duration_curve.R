@@ -37,7 +37,7 @@ p.1 = ggplot(region.data)+
   # Create plot with slightly different y-axis limit.
 p.2 = ggplot(region.data)+
          geom_line(aes(x=interval, y=value, color=scenario), size=0.8)+  
-         ylim(c(0,200))+
+         coord_cartesian(ylim=c(0,200))+
          labs(y="Price ($/MWh)", x='Hours of Year')+
          scale_color_brewer(palette="Set1")+
          facet_wrap(~area, ncol=3)+
