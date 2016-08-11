@@ -218,7 +218,63 @@ source('source_scripts/compare/c_p_price_duration_curve.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
+***
+## 21. DA-RT Committment and Dispatch Plots
+```{r committment-dispatch, include=FALSE}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Check if this section was selected to run in the input file
+if (commit.dispatch.region | commit.dispatch.zone) {
+  
+  source('source_scripts/d_DA_RT_commit_dispatch.R') # Call this R script which created the data needed for plotting.
+  
+  # As long as the file exists (previous source found the R script) this loop runs
+  if ( exists('plot.data.all') ) {
+    # Check to see if the right data is ready for plotting.
+    if ( typeof(plot.data.all)=='character' ) {
+      print('ERROR: cap_committed function not returning correct results.')
+    } else {
+  
+      da.rt.zone = list() # Creates empty list for plot data
+      da.rt.region = list() # Creates empty list for plot data
+      r.idx = 1 # Start the region name index at 1
+      z.idx = 1 # Start the zone name index at 1
+    
+      # Run the loop for each key period requested.
+      for ( p in 1:n.periods ) {
+        period.name = period.names[p]
+      
+        # Check if zonal DA-RT plots were selected in input file. If so create a plot for each zone
+        if (commit.dispatch.zone) {
+          for ( z in 1:length(zone.names) ) {
+              zone.name = zone.names[z]
+              da.rt.zone[[z.idx]] = knit_expand(file = 'source_scripts/compare/c_p_DA_RT_commit_dispatch_zone.Rmd', period.name = period.name, zone.name = zone.name) 
+              z.idx = z.idx + 1
+          } 
+        } else {da.rt.zone = 'Section not run according to input file.'}
+        
+        if (commit.dispatch.region) {  
+          # Create a plot for each region.
+          for ( r in 1:length(region.names) ) {
+              region.name = region.names[r]
+              da.rt.region[[r.idx]] = knit_expand(file = 'source_scripts/compare/c_p_DA_RT_commit_dispatch_region.Rmd', period.name = period.name, region.name = region.name)
+              r.idx = r.idx + 1
+          }
+        } else {da.rt.region = 'Section not run according to input file.'}
+        
+      }
+    
+      # Reconstruct the plot data into a format that will be output into the HTML below
+      if (commit.dispatch.zone)   { da.rt.zone = knit_child(text = unlist(da.rt.zone)) }
+      if (commit.dispatch.region) { da.rt.region = knit_child(text = unlist(da.rt.region)) }
 
+    }
+  } else { da.rt.zone = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'
+         da.rt.region = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'}
+  
+} else { da.rt.zone = 'Section not run according to input file.'
+         da.rt.region = 'Section not run according to input file.' }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
 
 
 

@@ -354,8 +354,8 @@ cap_committed = function(interval.da.committment) {
   setkey(interval.da.committment,name)
   
   # Query available capacity at the interval level, add generation type and region and zone by matching mapping file with generator names.
-  commit.data = interval.da.committment[,.(time,name,category,value)][gen.type.zone.region]
-  commit.data = commit.data[,.(committed.cap=sum(value)),by=.(time,Region,Zone,Type)]
+  commit.data = interval.da.committment[,.(scenario,time,name,category,value)][gen.type.zone.region]
+  commit.data = commit.data[,.(committed.cap=sum(value)),by=.(scenario,time,Region,Zone,Type)]
   
   return(commit.data)
 } 
