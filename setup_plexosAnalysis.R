@@ -76,18 +76,6 @@ if (length(reassign.zones)==0) {
   message('\nMust select TRUE or FALSE for if reassigning what regions are in what zones!')
 }
 
-if ( use.gen.type.mapping.csv ) {
-  # Read mapping file to map generator names to generation type
-  gen.type.mapping = data.table(read.csv(as.character(na.exclude(inputs$CSV.Gen.Type.File.Location)), stringsAsFactors=FALSE))
-  gen.type.mapping = unique(gen.type.mapping[,.(name, Type)])
-  gen.type.mapping = setNames(gen.type.mapping$Type, gen.type.mapping$name)
-} else {
-  # Assign generation type according to PLEXOS category
-  gen.type.mapping = data.table(name = as.character(na.omit(inputs$PLEXOS.Gen.Category)), Type = as.character(na.omit(inputs$PLEXOS.Desired.Type)) )  
-  gen.type.mapping = setNames(gen.type.mapping$Type, gen.type.mapping$name)
-  if (length(gen.type.mapping)==0) { message('\nIf not using generator name to type mapping CSV, you must specify PLEXOS categories and desired generation type.') }
-}
-
 # Read mapping file to map generator names to region and zone (can be same file as gen name to type).
 region.zone.mapping = data.table(read.csv(as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename)), stringsAsFactors=FALSE))
 region.zone.mapping = unique(region.zone.mapping[, .(name, Region, Zone)])
@@ -192,6 +180,25 @@ attributes(db)$class = c("rplexos","data.frame","tbl_df")
 db.day.ahead = tryCatch(plexos_open(db.day.ahead.loc, basename(db.day.ahead.loc)), error = function(cond) { return(data.frame('ERROR'))})
 # db.day.ahead = db.day.ahead[1,] # This line queries only the first solution .db file if there are multiple in one location. 
 attributes(db.day.ahead)$class = c('rplexos', 'data.frame', 'tbl_df')
+
+
+# Create generator name to type mapping
+if ( use.gen.type.mapping.csv ) {
+  # Read mapping file to map generator names to generation type
+  gen.type.mapping = data.table(read.csv(as.character(na.exclude(inputs$CSV.Gen.Type.File.Location)), stringsAsFactors=FALSE))
+  gen.type.mapping = unique(gen.type.mapping[,.(name, Type)])
+  gen.type.mapping = setNames(gen.type.mapping$Type, gen.type.mapping$name)
+} else {
+  # Assign generation type according to PLEXOS category
+  sql <- "SELECT DISTINCT name, category FROM key WHERE class = 'Generator'"
+  gen.cat.plexos = query_sql(db,sql) 
+  gen.cat.plexos = unique(gen.cat.plexos[,c("name","category")])
+  gen.cat.mapping = data.table(name = as.character(na.omit(inputs$PLEXOS.Gen.Category)), Type = as.character(na.omit(inputs$PLEXOS.Desired.Type)) )  
+  gen.cat.mapping = setNames(gen.cat.mapping$Type, gen.cat.mapping$name)
+  gen.cat.plexos$Type = gen.cat.mapping[gen.cat.plexos$category]
+  gen.type.mapping = setNames(gen.cat.plexos$Type, gen.cat.plexos$name)
+  if (length(gen.type.mapping)==0) { message('\nIf not using generator name to type mapping CSV, you must specify PLEXOS categories and desired generation type.') }
+}
 
 
 
