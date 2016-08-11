@@ -77,7 +77,7 @@ if (length(reassign.zones)==0) {
 }
 
 if ( use.gen.type.mapping.csv ) {
-  # Read mapping tile to map generator names to generation type
+  # Read mapping file to map generator names to generation type
   gen.type.mapping = data.table(read.csv(as.character(na.exclude(inputs$CSV.Gen.Type.File.Location)), stringsAsFactors=FALSE))
   gen.type.mapping = unique(gen.type.mapping[,.(name, Type)])
   gen.type.mapping = setNames(gen.type.mapping$Type, gen.type.mapping$name)

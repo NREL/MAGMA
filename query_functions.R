@@ -260,7 +260,7 @@ region_stats = function(total.region.load, total.region.imports, total.region.ex
 }
 
 zone_stats = function(total.region.load, total.region.imports, total.region.exports, total.region.ue, total.zone.load, total.zone.imports, total.zone.exports, total.zone.ue) {
-  if (reassign.zones==TRUE | total.zone.load=='ERROR'){
+  if (reassign.zones==TRUE | typeof(total.zone.load)=='character'){
     z.data = rbindlist(list(total.region.load, total.region.imports, total.region.exports, total.region.ue))
     setnames(z.data,'name','Region')
     setkey(z.data,Region)
@@ -287,7 +287,7 @@ region_load = function(total.region.load) {
 }
 
 zone_load = function(total.region.load, total.zone.load) {
-  if (reassign.zones==TRUE | total.zone.load=='ERROR'){
+  if (reassign.zones==TRUE | typeof(total.zone.load)=='character'){
     setkey(total.region.load,name)
     setkey(rz.unique,Region)
     z.load = rz.unique[total.region.load][, .(value=sum(value)), by=.(Zone)]
