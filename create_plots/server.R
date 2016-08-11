@@ -43,4 +43,8 @@ shinyServer(function(input, output) {
             panel.grid.minor = element_line(colour = "grey93"),
             panel.margin = unit(0.45, "lines"))+facet_grid(scenario~Type, scales="free_y")
   })
+  
+  output$table <- renderTable({
+    head(avg.curt, n=input$obs)
+  })
 })
