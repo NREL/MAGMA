@@ -1,24 +1,24 @@
 
-```{r key-period-dispatch-total-{{period.name}}, results='asis', include=TRUE}
+```{r key-period-dispatch-scen-total-{{period.name}}, results='asis', include=TRUE}
 p.name = '{{period.name}}' # Set key period name
 cat("### ", p.name) # Print period name above plot
 text.plot=11 # Set plot text size
 figure.width = 9
-figure.height = 6
-```
+figure.height = s.height
+``` 
 
-```{r key-period-dispatch-plots-total-{{period.name}}, fig.width=figure.width, fig.height=figure.height, include=TRUE}
+```{r key-period-dispatch-scen-plots-total-{{period.name}}, fig.width=figure.width, fig.height=figure.height, include=TRUE}
 
 # ###############################################################################
 # Total database Data
 # ###############################################################################   
 
 # this is just for scaling the y-axis (either by load or generation, whichever is bigger)
-stack.t = gen.type.total[Period==p.name, .(value=sum(value)), by=.(time)] 
+stack.t = gen.type.total[Period==p.name, .(value=sum(value)), by=.(scenario,time)] 
 
 # If load is much higher than generation, reassign y-axis scaling according to load so it won't be cut out of the plot.
 if (max(gen.load.total[Period==p.name, value])>max(stack.t$value)){
-  stack.t = gen.load.total[Period==p.name, .(value=sum(value)), by=.(time)]
+  stack.t = gen.load.total[Period==p.name, .(value=sum(value)), by=.(scenario,time)]
 }
 
 # This automatically creates the y-axis tick mark separation
@@ -37,6 +37,7 @@ ggplot(gen.type.total[Period==p.name, ], aes(time, value/1000, group=Type, fill=
       scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
       scale_x_datetime(breaks = date_breaks(width = "1 day"), labels = date_format("%b %d\n%I %p"), expand = c(0, 0))+
       scale_y_continuous(breaks=seq.py.t, limits=c(0, max(py.t)), expand=c(0,0))+
+      facet_wrap(~scenario, ncol = 1)+
       theme(legend.key = element_rect(color = "grey80", size = 0.4),
             legend.key.size = grid::unit(0.9, "lines"), 
             legend.text = element_text(size=text.plot/1.1),

@@ -1,68 +1,68 @@
 
-if (region.gen.stacks) {
+if (region.gen.stacks & length(db.loc)>1) {
 
-if( !exists('r.z.gen') ) {
+if( !exists('r.gen.scen') ) {
   # Query region and zonal generation
-  r.z.gen = tryCatch( select(region_zone_gen(yr.data.generator), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR') } )
+  r.gen.scen = tryCatch( region_gen_diff(total.generation, total.avail.cap), error = function(cond) { return('ERROR') } )
 }
 
 # Check if zonal.gen query worked and create plot of regional gen, else return an error.
-if ( typeof(r.z.gen)=='character' ) {
+if ( typeof(r.gen.scen)=='character' ) {
   print('ERROR: region_zone_gen function not returning correct results.')
 } else if ( typeof(r.load) == 'character' ) {
   print('ERROR: region_load function not returning correct results.')
 } else {
   
   # reorder the levels of Type to plot them in order
-  r.z.gen$Type = factor(r.z.gen$Type, levels = gen.order)
+  r.gen.scen[, Type := factor(Type, levels = gen.order)]
+
+  # Separate out the positive and negative halves for easier plotting
+  # also convert to TWh and filter out ignored regions
+  dat.pos = r.gen.scen[GWh>=0 & scenario!=ref.scenario & !Region %in% ignore.regions, 
+                        .(TWh = sum(GWh)/1000), by=.(scenario,Region,Type)]
+  dat.neg = r.gen.scen[GWh<0 & scenario!=ref.scenario & !Region %in% ignore.regions, 
+                        .(TWh = sum(GWh)/1000), by=.(scenario,Region,Type)]
     
-  # r.z.gen.sum is just used to set the maximum height on the plot, see pretty() fcn below
-  r.z.gen.sum = r.z.gen %>% 
-    dplyr::summarise(TWh=sum(GWh)/1000) #change GWh generation to TWh
+  # r.gen.sum is just used to set the maximum height on the plot, see pretty() fcn below
+  r.gen.sum = rbindlist(list(dat.pos[, .(TWh = sum(TWh))], dat.neg[, .(TWh = sum(TWh))]))  
   
-  # Convert GWh to TWh
-  r.z.gen.plot = r.z.gen %>%
-    group_by(Type, Region, Zone) %>%
-    dplyr::summarise(TWh = sum(GWh)/1000) %>%
-    filter(!Zone %in% ignore.zones) %>%
-    filter(!Region %in% ignore.regions)
-    
-  region.load = filter(r.load, !name %in% ignore.regions)
-  colnames(region.load)[which(colnames(region.load)=='name')]='Region'
-  region.load$value = region.load$value/1000
-  
-  region.load = region.load %>%
-    join(region.zone.mapping[,c('Zone', 'Region')], by = 'Region', type='left', match='first') %>%
-    filter(!Zone %in% ignore.zones) %>%
-    filter(!Region %in% ignore.regions)
-  region.load = region.load[complete.cases(region.load),]
+  # Calculate difference in load
+  region.load.scen = r.load[!name %in% ignore.regions, .(value = sum(value)/1000), by=.(scenario,name)]
+  region.load.scen[, scenario:=as.character(scenario)]
+  diff.load = region.load.scen[, .(scenario, TWh = value-value[scenario==ref.scenario]), by=.(name)]
+  diff.load = diff.load[scenario!=ref.scenario, ]
+  setnames(diff.load,"name","Region")
   
   # *** Not needed for these plots as y-axis is varying. ***
   # # This automatically creates the y-axis scaling
-  # py=pretty(r.z.gen.sum$TWh, n=5, min.n = 5)
+  # py=pretty(r.gen.sum$TWh, n=5, min.n = 5)
   # seq.py=seq(0, py[length(py)], 10*(py[2]-py[1]))
   
+  setorder(dat.pos,Type)
+  setorder(dat.neg,Type)
+
   # Create plot
   p1 = ggplot() +
-    geom_bar(data = r.z.gen.plot, aes(x = Region, y = TWh, fill=Type, order=as.numeric(Type)), stat='identity', position="stack" ) +
-    geom_errorbar(aes(x=Region, y=value, ymin=value, ymax=value, color='load'), data=region.load, linetype='longdash', size=0.45)+
-    scale_fill_manual(values = gen.color, guide = guide_legend(reverse = TRUE))+
-    scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
-    labs(y="Generation (TWh)", x=NULL)+
-    # scale_y_continuous(breaks=seq.py, expand=c(0,0), label=comma)+
-    guides(color = guide_legend(order=1), fill = guide_legend(order=2, reverse=TRUE))+
-         theme(    legend.key =      element_rect(color="grey80", size = 0.8), 
-                   legend.key.size = grid::unit(1.0, "lines"),
-                   legend.text =     element_text(size=text.plot), 
-                   legend.title =    element_blank(),
-           #                         text = element_text(family="Arial"),
-                   axis.text =       element_text(size=text.plot/1.2), 
-                   axis.text.x =     element_text(angle=-45, hjust=0),
-                   axis.title =      element_text(size=text.plot, face=2), 
-                   axis.title.y =    element_text(vjust=1.2), 
-                   panel.margin =    unit(1.5, "lines"))+
-        facet_wrap(~Zone, scales = 'free', ncol=2)
-                   # , nrow=length(unique(r.z.gen.plot$Zone)))
+          geom_bar(data = dat.pos, aes(x = scenario, y = TWh, fill=Type), stat="identity", position="stack" ) +
+          geom_bar(data = dat.neg, aes(x = scenario, y = TWh, fill=Type), stat="identity", position="stack" ) +
+          geom_errorbar(data = diff.load, aes(x = scenario, ymin=TWh, ymax=TWh, color='load'), size=0.45, linetype='longdash')+
+          scale_fill_manual(values = gen.color, guide = guide_legend(reverse = TRUE))+
+          scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
+          labs(y="Difference in Generation (TWh)", x=NULL)+
+          # scale_y_continuous(breaks=seq.py, expand=c(0,0), label=comma)+
+          guides(color = guide_legend(order=1), fill = guide_legend(order=2, reverse=TRUE))+
+               theme(    legend.key =      element_rect(color="grey80", size = 0.8), 
+                         legend.key.size = grid::unit(1.0, "lines"),
+                         legend.text =     element_text(size=text.plot), 
+                         legend.title =    element_blank(),
+                 #                         text = element_text(family="Arial"),
+                         axis.text =       element_text(size=text.plot/1.2), 
+                         axis.text.x =     element_text(angle=-20, hjust=0),
+                         axis.title =      element_text(size=text.plot, face=2), 
+                         axis.title.y =    element_text(vjust=1.2), 
+                         panel.margin =    unit(1.5, "lines"),
+                         aspect.ratio =    2.5/length(unique(dat.pos$scenario)))+
+              facet_wrap(~Region, scales = 'free', ncol=3)
   print(p1)
 }
 

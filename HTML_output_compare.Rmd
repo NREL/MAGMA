@@ -1,6 +1,6 @@
 ---
-title: "Comparison Plots"
-author: "`r Sys.info()['user']`"
+title: "Multi-area Grid Metrics Analyzer Comparison Plots"
+author: "Created by: `r Sys.info()['user']`"
 date: "`r format(Sys.time(), '%d %B %Y')`"
 output: 
   html_document: 
@@ -10,157 +10,111 @@ output:
 
 ```{r setOptions, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-files = list.files(pattern = 'RData', path = db.loc)
-n.files = length(files)
-yr.files = c('yr.data.generator', 'yr.data.interface.flow', 'yr.data.region', 'yr.data.zone', 'yr.data.reserve')
-int.files = c('int.data.avail.cap', 'int.data.gen', 'int.data.interface', 'int.data.region', 'int.data.reserve')
-
-for ( i in 1:length(files) ) {
-  load(paste0(db.loc, '/', files[i]))
-  
-  for ( j in 1:length(yr.files) ) {
-    assign(paste0('SC', i, '.', yr.files[j]), get(yr.files[j]))
-  }
-  
-  for ( j in 1:length(int.files) ) {
-    assign(paste0('SC', i, '.', int.files[j]), get(int.files[j]))
-  }
-
-  r.load = tryCatch( region_load(), error = function(cond) { return('ERROR') } )
-  z.load = tryCatch( zone_load(), error = function(cond) { return('ERROR') } )
-  region.names = region_stats()$name
-  zone.names = zone_stats()$name
-
-  assign(paste0('SC', i, '.r.load'), r.load)
-  assign(paste0('SC', i, '.z.load'), z.load)
-  assign(paste0('SC', i, '.region.names'), region.names)
-  assign(paste0('SC', i, '.zone.names'), zone.names)
-
-}
-
 # Set up default options for chunks, turn off error or warning messages.
-knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, include=FALSE,
-                      fig.path=fig.path.name, cache.path=cache.path.name, dev='png')
+knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, include=TRUE,
+                      fig.path=fig.path.name, dev='png', fig.width=12)
+
+# Set dynamic height for figure in regional generation chunk
+z.height = ( length(zone.names) %/% 3 + length(zone.names) %% 3 ) * 5
+r.height = ( length(region.names) %/% 3 + length(region.names) %% 3 ) * 5
+res.height = ( length(reserve.names) %/% 2 + length(reserve.names) %% 2 ) * 5
+s.height = ( length(db.loc) ) * 6
+p.height = ( length(period.names) %/% 2 + length(period.names) %% 2 ) * 5
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
+
+### Data below generated for:
+"`r gsub('.*Model', 'Model', db$filename)`"
 
 ***
 ## Annual Dispatch Stacks 
 ***
-## 1. Total Generation
-```{r total-gen-stack}
+## 1. Generation Differences
+```{r gen-diff-stack}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (1 %in% run.sections){
-  total.gen.stack = knit_child('source_scripts/compare/c_p_total_gen_stack.Rmd')
-} else { total.gen.stack = 'Section not run according to input file.' }
+source('source_scripts/compare/c_p_diff_gen_stack.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
-`r total.gen.stack`
 
 ***
 ## 2. Zonal Generation
-```{r zone-gen-stacks}
+```{r zone-gen-diff-stacks, fig.height=z.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (2 %in% run.sections) {
-  zone.gen.stacks = knit_child('source_scripts/compare/c_p_zone_gen_stacks.Rmd')
-} else { zone.gen.stacks = 'Section not run according to input file.' }
+  source('source_scripts/compare/c_p_zone_gen_stacks.Rmd')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
-`r zone.gen.stacks`
 
 ***
 ## 3. Regional Generation
-```{r region-gen-stacks}
+```{r region-gen-diff-stacks, fig.height=r.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/compare/c_p_region_gen_stacks.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
 ***
-## 4. Individual Regions
-```{r individual-region-stacks}
+## 4-6. Specified Period Dispatch Stacks
+``` {r key-period-dispatch, cache=FALSE, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (4 %in% run.sections) {
- 
-  # Call region_zone_gen function and create data for plots
-  source('source_scripts/d_individual_region_stacks.R')
-   
-if ( exists('r.z.gen.plot') ) {
-# If the regional query didn't work, return an error. Else create plots.
-if ( typeof(r.z.gen.plot)=='character' ) {
-  print('ERROR: region_zone_gen function not returning correct results.')
-} else if ( typeof(r.load) == 'character' ) {
-  print('ERROR: region_load function not returning correct results.')
-} else {
-
-    key.plots = list() # Creates empty list for plot data
-
-    # Create plot for each region in region.names
-    for ( p in 1:length(region.names) )  {
-      region.name = region.names[p]
-      key.plots[p] = knit_expand(file = 'source_scripts/p_individual_region_stacks.Rmd', region.name=region.name)
-    }
-
-    # Reconstruct the plot data into a format that will be output into the HTML below
-    individual.region.stacks = knit_child(text = unlist(key.plots))
-
-  }
-} else { individual.region.stacks = 'Error in sourcing of "d_individual_region_stacks.R"' }
-} else { individual.region.stacks = 'Section not run according to input file.' }
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-```
-`r individual.region.stacks`
-
-***
-## 5-7. Specified Period Dispatch Stacks
-``` {r key-period-dispatch, cache=FALSE}
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (5 %in% run.sections | 6 %in% run.sections | 7 %in% run.sections){  
+# Check if this section was selected to run in the input file
+if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.dispatch.region.log){  
 
   # Call interval_gen function and proces data for plots
   source('source_scripts/d_key_period_dispatch.R')
 
-if ( typeof(key.period.gen)=='character' ) {
+  # As long as the file exists (previous source found the R script) this loop runs
+  if ( exists('key.period.gen') ) {
+  # Check to see if the right data is ready for plotting.
+    if ( typeof(key.period.gen)=='character' ) {
+      key.period.dispatch.total  = 'ERROR: interval_gen function not returning correct results.'
+      key.period.dispatch.zone   = 'ERROR: interval_gen function not returning correct results.'
+      key.period.dispatch.region = 'ERROR: interval_gen function not returning correct results.'
+    } else {
   
-} else {
-
-  key.plots.total = list() # Creates empty list for plot data
-  key.plots.zone = list() # Creates empty list for plot data
-  key.plots.region = list() # Creates empty list for plot data
-  r.idx = 1
-  z.idx = 1
-  
-  # Create data for each plot for the interesting periods
-  for ( p in 1:n.periods ) {
-    period.name = period.names[p]
-    
-    if (5 %in% run.sections) {
-      key.plots.total[[p]] = knit_expand(file = 'source_scripts/p_key_period_dispatch_total.Rmd', period.name = period.name)
-    } else {key.period.dispatch.total  = 'Section not run according to input file.'}
-    
-    if (6 %in% run.sections) {
-      for ( z in 1:length(zone.names) ) {
-        zone.name = zone.names[z]
-        key.plots.zone[[z.idx]] = knit_expand(file = 'source_scripts/p_key_period_dispatch_zone.Rmd', period.name = period.name, zone.name = zone.name) 
-        z.idx = z.idx + 1
-      } 
-    } else {key.period.dispatch.zone   = 'Section not run according to input file.'}
+      key.plots.total = list() # Creates empty list for plot data
+      key.plots.zone = list() # Creates empty list for plot data
+      key.plots.region = list() # Creates empty list for plot data
+      r.idx = 1
+      z.idx = 1
       
-    if (7 %in% run.sections) {
-      for ( r in 1:length(region.names) ) {
-        region.name = region.names[r]
-        key.plots.region[[r.idx]] = knit_expand(file = 'source_scripts/p_key_period_dispatch_region.Rmd', period.name = period.name, region.name = region.name)
-        r.idx = r.idx + 1
+      # Create data for each plot for the interesting periods
+      for ( p in 1:n.periods ) {
+        period.name = period.names[p]
+        
+        # Check if total database info was selected in input file.
+        if (key.period.dispatch.total.log) {
+          key.plots.total[[p]] = knit_expand(file = 'source_scripts/compare/c_p_key_period_dispatch_total.Rmd', period.name = period.name)
+        } else {key.period.dispatch.total  = 'Section not run according to input file.'}
+        
+        # Check if zonal dispatch stacks were selected in input file.
+        if (key.period.dispatch.zone.log) {
+          for ( z in 1:length(zone.names) ) {
+            zone.name = zone.names[z]
+            key.plots.zone[[z.idx]] = knit_expand(file = 'source_scripts/compare/c_p_key_period_dispatch_zone.Rmd', period.name = period.name, zone.name = zone.name) 
+            z.idx = z.idx + 1
+          } 
+        } else {key.period.dispatch.zone   = 'Section not run according to input file.'}
+        
+        # Check if regional dispatch stacks were selected in input file.
+        if (key.period.dispatch.region.log) {
+          for ( r in 1:length(region.names) ) {
+            region.name = region.names[r]
+            key.plots.region[[r.idx]] = knit_expand(file = 'source_scripts/compare/c_p_key_period_dispatch_region.Rmd', period.name = period.name, region.name = region.name)
+            r.idx = r.idx + 1
+          }
+        } else {key.period.dispatch.region = 'Section not run according to input file.'}
       }
-    } else {key.period.dispatch.region = 'Section not run according to input file.'}
+  
+      # Reconstruct the plot data into a format that will be output into the HTML below
+      if (key.period.dispatch.total.log) { key.period.dispatch.total = knit_child(text = unlist(key.plots.total)) }
+      if (key.period.dispatch.zone.log) { key.period.dispatch.zone = knit_child(text = unlist(key.plots.zone)) }
+      if (key.period.dispatch.region.log) { key.period.dispatch.region = knit_child(text = unlist(key.plots.region)) }
+    }
+  } else {
+    key.period.dispatch.total  = 'Problem sourcing or running d_key_period_dispatch.R.'
+    key.period.dispatch.zone   = 'Problem sourcing or running d_key_period_dispatch.R.'
+    key.period.dispatch.region = 'Problem sourcing or running d_key_period_dispatch.R.'
   }
-
-  # Reconstruct the plot data into a format that will be output into the HTML below
-  if (5 %in% run.sections) { key.period.dispatch.total = knit_child(text = unlist(key.plots.total)) }
-  if (6 %in% run.sections) { key.period.dispatch.zone = knit_child(text = unlist(key.plots.zone)) }
-  if (7 %in% run.sections) { key.period.dispatch.region = knit_child(text = unlist(key.plots.region)) }
-}
 } else { key.period.dispatch.total  = 'Section not run according to input file.'
          key.period.dispatch.zone   = 'Section not run according to input file.' 
          key.period.dispatch.region = 'Section not run according to input file.' }
@@ -179,164 +133,222 @@ if ( typeof(key.period.gen)=='character' ) {
 `r key.period.dispatch.region`
 
 ***
-## 8-9. Curtailment
+## 7-9. Curtailment
 ***
-### 8. Average Daily Curtailment
-```{r yearly-curtailment}
+### 7. Total Curtailment Difference
+```{r yearly-curtailment-diff}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (8 %in% run.sections) {
-  avg.year.curt = knit_child('source_scripts/p_yearly_curtailment.Rmd')
-} else { avg.year.curt = 'Section not run according to input file.' }
+source('source_scripts/compare/c_t_diff_curtailment.R')
+if(exists('curt.diff')) { kable(curt.diff, format.args = list(big.mark = ','), digits=2) }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
-`r avg.year.curt`
 
 ***
-### 9. Average Interval Curtailment
-```{r daily-curtailment}
+### 8. Daily Curtailment Difference
+```{r daily-curtailment-diff}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (9 %in% run.sections){
-  avg.day.curt = knit_child('source_scripts/p_daily_curtailment.Rmd')
-} else { avg.day.curt = 'Section not run according to input file.' }
+source('source_scripts/compare/c_p_daily_curtailment.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
-`r avg.day.curt`
 
 ***
-## 10. Total Gen
-```{r annual-generation-table}
+### 9. Interval Curtailment Difference
+```{r interval-curtailment-diff}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (10 %in% run.sections){
-  annual.gen.table = knit_child('source_scripts/t_annual_generation.Rmd')
-} else { annual.gen.table = 'Section not run according to input file.' }
+source('source_scripts/compare/c_p_interval_curtailment.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
-`r annual.gen.table`
 
 ***
-## 11. Total Costs
-```{r annual-cost-table}
+## 10. Total Cost Differences
+```{r annual-cost-difference-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (11 %in% run.sections) {
-  annual.cost.table = knit_child('source_scripts/t_annual_cost.Rmd')
-} else { annual.cost.table = 'Section not run according to input file.' }
+source("source_scripts/compare/c_t_diff_annual_cost.R")
+if(exists('cost.diff.table')) { kable(cost.diff.table, format.args = list(big.mark = ',')) }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
-`r annual.cost.table`
 
 ***
 ## 12. Region and Zone Info (GWh)
-``` {r region-zone-flow-tables}
+``` {r region-zone-flow-diff-tables}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (12 %in% run.sections) {
-  region.zone.flow.tables = knit_child('source_scripts/t_region_zone_flow.Rmd')
-} else { region.zone.flow.tables = 'Section not run according to input file.' }
+ 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
-`r region.zone.flow.tables`
 
 ***
 ## 13. Interface Flow Table
-```{r interface-flow-table}
+```{r interface-flow-diff-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (13 %in% run.sections) {
-  interface.flow.table = knit_child('source_scripts/t_interface_flow.Rmd')
-} else { interface.flow.table = 'Section not run according to input file.' }
+ 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
-`r interface.flow.table`
 
 ***
 ## 14. Interface Flow Plots
-```{r interface-flow-plots}
+```{r interface-flow-diff-plots}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (14 %in% run.sections) {
-  interface.flow.plots = knit_child('source_scripts/p_interface_flow.Rmd')
-} else { interface.flow.plots = 'Section not run according to input file.' }
+
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-```
-`r interface.flow.plots`
-
-
-***
-## 15. Specified Period Interface Flow Plot
-```{r zonal-flow-plots}
-if (15 %in% run.sections) {
-## 13.
-  # interchange.flows = tryCatch( interchange.flow(db), error=function(cond) {return('ERROR: Interface flows not found in query. Check initial setup file and PLEXOS outputs.')})
-
-# for ( i in 1:n.periods) {
-#   if (i==1) {  
-#     plot.time = data.frame(time = seq(start.end.times$start[i], start.end.times$end[i], by = "1 hour"), Period = period.names[i]) 
-#   } else {
-#     plot.time = rbind(plot.time, data.frame(time = seq(start.end.times$start[i], start.end.times$end[i], by = "1 hour"), Period = period.names[i]))
-#   }
-# }
-#     
-# zonal.flows = zonal.flows %>%
-#   join(plot.time, by = 'time') %>%
-#   filter(time %in% plot.time$time)
-# 
-# key.plots = list()
-# 
-#   for ( p in 1:n.periods ) {
-#     period.name = period.names[p]
-#     key.plots[[p]] = knit_expand(file = '//plexossql/Data/moconnel/gtg/flow_plots.Rmd', period.name = period.name)
-#   }
-# 
-#   # Reconstruct the plot data into a format that will be output into the HTML below
-#   key.period.flow = knit_child(text = unlist(key.plots))
-
-
-} else { key.period.flow = 'Section not run according to input file.' }
 ```
 
 ***
 ## 16-17. Reserves
 ***
-### 16. Annual Reserve Provisions and Shortage
-```{r annual-reserves-table}
+### 16. Annual Reserve Shortage by Scenario
+```{r annual-reserves-scen-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (16 %in% run.sections) {
-  annual.reserves.table = knit_child('source_scripts/t_annual_reserves.Rmd')
-} else { annual.reserves.table = 'Section not run according to input file.' }
+source('source_scripts/compare/c_t_total_reserve_shortage.R')
+if(exists('res.short.table')) { kable(res.short.table, format.args = list(big.mark = ',')) }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
-`r annual.reserves.table`
 
 ***
-### 17. Average Interval and Daily Reserve Provisions
-```{r reserves-plots}
+### 17. Reserve Provisions by generator type
+```{r reserves-stacks, fig.height=res.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (17 %in% run.sections) {
-  reserves.plots = knit_child('source_scripts/p_reserves.Rmd')
-} else { reserves.plots = 'Section not run according to input file.' }
+source("source_scripts/compare/c_p_reserves_stack.R")
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
-`r reserves.plots`
 
 ***
-## 18. Region and Zone Generation (GWh)
-```{r region-zone-gen-table}
+## 20. Region Price Duration Curves
+```{r price-duration-curve-scen, fig.height=r.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (18 %in% run.sections) {
-  region.zone.gen.table = knit_child('source_scripts/t_region_zone_gen.Rmd')
-} else { region.zone.gen.table = 'Section not run according to input file.' }
+source('source_scripts/compare/c_p_price_duration_curve.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
-`r region.zone.gen.table`
 
 ***
-## 19. Capacity Factors
-```{r capacity-factor-table}
+## 21. DA-RT Committment and Dispatch Plots
+```{r committment-dispatch, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (19 %in% run.sections) {
-  capacity.factor.table = knit_child('source_scripts/t_capacity_factor.Rmd')
-} else { capacity.factor.table = 'Section not run according to input file.' }
+# Check if this section was selected to run in the input file
+if (commit.dispatch.region | commit.dispatch.zone) {
+  
+  source('source_scripts/d_DA_RT_commit_dispatch.R') # Call this R script which created the data needed for plotting.
+  
+  # As long as the file exists (previous source found the R script) this loop runs
+  if ( exists('plot.data.all') ) {
+    # Check to see if the right data is ready for plotting.
+    if ( typeof(plot.data.all)=='character' ) {
+      print('ERROR: cap_committed function not returning correct results.')
+    } else {
+  
+      da.rt.zone = list() # Creates empty list for plot data
+      da.rt.region = list() # Creates empty list for plot data
+      r.idx = 1 # Start the region name index at 1
+      z.idx = 1 # Start the zone name index at 1
+    
+      # Run the loop for each key period requested.
+      for ( p in 1:n.periods ) {
+        period.name = period.names[p]
+      
+        # Check if zonal DA-RT plots were selected in input file. If so create a plot for each zone
+        if (commit.dispatch.zone) {
+          for ( z in 1:length(zone.names) ) {
+              zone.name = zone.names[z]
+              da.rt.zone[[z.idx]] = knit_expand(file = 'source_scripts/compare/c_p_DA_RT_commit_dispatch_zone.Rmd', period.name = period.name, zone.name = zone.name) 
+              z.idx = z.idx + 1
+          } 
+        } else {da.rt.zone = 'Section not run according to input file.'}
+        
+        if (commit.dispatch.region) {  
+          # Create a plot for each region.
+          for ( r in 1:length(region.names) ) {
+              region.name = region.names[r]
+              da.rt.region[[r.idx]] = knit_expand(file = 'source_scripts/compare/c_p_DA_RT_commit_dispatch_region.Rmd', period.name = period.name, region.name = region.name)
+              r.idx = r.idx + 1
+          }
+        } else {da.rt.region = 'Section not run according to input file.'}
+        
+      }
+    
+      # Reconstruct the plot data into a format that will be output into the HTML below
+      if (commit.dispatch.zone)   { da.rt.zone = knit_child(text = unlist(da.rt.zone)) }
+      if (commit.dispatch.region) { da.rt.region = knit_child(text = unlist(da.rt.region)) }
+
+    }
+  } else { da.rt.zone = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'
+         da.rt.region = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'}
+  
+} else { da.rt.zone = 'Section not run according to input file.'
+         da.rt.region = 'Section not run according to input file.' }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
-`r capacity.factor.table`
+
+### Zones
+`r da.rt.zone`
+
+***
+### Regions
+`r da.rt.region`
+***
 
 
+## 22. Generation comparison by Generator Type
+```{r generation-comparison, include=FALSE}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Check if this section was selected to run in the input file
+if (compare.dispatch.region | compare.dispatch.zone) {
+  
+  source('source_scripts/compare/c_d_gen_comparison.R') # Call this R script which created the data needed for plotting.
+  
+  # As long as the file exists (previous source found the R script) this loop runs
+  if ( exists('plot.data.all') ) {
+    # Check to see if the right data is ready for plotting.
+    if ( typeof(plot.data.all)=='character' ) {
+      print('ERROR: cap_committed function not returning correct results.')
+    } else {
+  
+      comp.gen.zone = list() # Creates empty list for plot data
+      comp.gen.region = list() # Creates empty list for plot data
+      r.idx = 1 # Start the region name index at 1
+      z.idx = 1 # Start the zone name index at 1
+    
+      # Run the loop for each generator type requested.
+      for ( type.name in da.rt.types ) {
+      
+        # Check if zonal DA-RT plots were selected in input file. If so create a plot for each zone
+        if (compare.dispatch.zone) {
+          for ( z in 1:length(zone.names) ) {
+              zone.name = zone.names[z]
+              comp.gen.zone[[z.idx]] = knit_expand(file = 'source_scripts/compare/c_p_key_period_gen_comparison_zone.Rmd', type.name = type.name, zone.name = zone.name) 
+              z.idx = z.idx + 1
+          } 
+        } else {comp.gen.zone = 'Section not run according to input file.'}
+        
+        if (compare.dispatch.region) {  
+          # Create a plot for each region.
+          for ( r in 1:length(region.names) ) {
+              region.name = region.names[r]
+              comp.gen.region[[r.idx]] = knit_expand(file = 'source_scripts/compare/c_p_key_period_gen_comparison_region.Rmd', type.name = type.name, region.name = region.name)
+              r.idx = r.idx + 1
+          }
+        } else {comp.gen.region = 'Section not run according to input file.'}
+        
+      }
+    
+      # Reconstruct the plot data into a format that will be output into the HTML below
+      if (compare.dispatch.zone)   { comp.gen.zone = knit_child(text = unlist(comp.gen.zone)) }
+      if (compare.dispatch.region) { comp.gen.region = knit_child(text = unlist(comp.gen.region)) }
+
+    }
+  } else { comp.gen.zone   = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'
+           comp.gen.region = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'}
+  
+} else { comp.gen.zone   = 'Section not run according to input file.'
+         comp.gen.region = 'Section not run according to input file.' }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+
+### Zones
+`r comp.gen.zone`
+
+***
+### Regions
+`r comp.gen.region`
+***
 
 

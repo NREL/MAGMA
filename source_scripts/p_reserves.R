@@ -9,21 +9,18 @@ if ( typeof(r)=='character' ) {
 } else {
 
   # Summing reserves types, and adding indexing for interval number and day.
-  r = data.frame( time = r['time'], provision = rowSums(r[2:ncol(r)]))
-  r['interval'] = rep(1:intervals.per.day, times = length(r[,1])/intervals.per.day)
-  r['day'] = rep(1:(length(r[,1])/intervals.per.day), each = intervals.per.day)
+  r[,day := as.POSIXlt(time)[[8]]]
+  r[,interval := 1:intervals.per.day,by=.(day)]
   
   # Average reserve provision at each interval
-  int.avg = ddply(r, 'interval', summarise, Provision = mean(provision))
+  int.avg = r[, .(Provision = mean(provision)), by = .(interval)]
   
   # this is just for scaling the y-axis (either by load or generation, whichever is bigger)
-  stack = int.avg %>% 
-    group_by(interval) %>%
-    summarise(value = sum(Provision))
-  stack$Type = "ALL"
+  stack = int.avg[, .(value=sum(Provision)), by = .(interval)]
+  stack[, Type := "ALL"]
               
   # This automatically creates the y-axis scaling
-  py  =pretty(stack$value/1000)
+  py = pretty(stack$value/1000)
   seq.py = seq(0, py[length(py)], 2*(py[2]-py[1])) # get whole breaks sequence
   
   # Creating interval reserves provisions plot
@@ -45,16 +42,14 @@ if ( typeof(r)=='character' ) {
                   panel.margin =     unit(1.0, "lines") )
 
   # Calculating the daily hourly average
-  dy.avg = ddply(r, 'day', summarise, Provision = mean(provision))
+  dy.avg = r[, .(Provision = mean(provision)), by = .(day)]
 
   # this is just for scaling the y-axis (either by load or generation, whichever is bigger)
-  stack = dy.avg %>% 
-    group_by(day) %>%
-    summarise(value = sum(Provision))
-  stack$Type = "ALL"
+  stack = dy.avg[, .(value = sum(Provision)), by = .(day)]
+  stack[, Type := "ALL"]
                   
   # This automatically creates the y-axis scaling
-  py  =pretty(stack$value/1000)
+  py = pretty(stack$value/1000)
   seq.py = seq(0, py[length(py)], 2*(py[2]-py[1])) # get whole breaks sequence
 
   # Creating average daily reserves provisions plot

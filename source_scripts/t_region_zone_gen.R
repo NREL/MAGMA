@@ -12,30 +12,36 @@ if ( typeof(r.z.gen)=='character' ) {
   z.gen.table = 'ERROR: region_zone_gen function not returning correct results.'
 } else {
 
-  r.z.gen$Type = factor(r.z.gen$Type, levels = gen.order) # Reassign the order which the generation type will be displayed.
+  r.z.gen[, Type := factor(Type, levels = gen.order)] # Reassign the order which the generation type will be displayed.
   
   # Sum regional generation by type
-  r.gen.table = r.z.gen %>%
-    dcast(Region~Type, value.var = 'GWh', fun.aggregate = sum)
+  r.gen.table = r.z.gen[, .(GWh = sum(GWh)), by=.(Region, Type)] %>%
+    dcast.data.table(Region~Type, value.var = 'GWh')
+  r.gen.table[is.na(r.gen.table)] = 0
   
   # Sum zonal generation by type
-  z.gen.table = r.z.gen %>%
-    dcast(Zone~Type, value.var = 'GWh', fun.aggregate = sum)
+  z.gen.table = r.z.gen[, .(GWh = sum(GWh)), by=.(Zone, Type)] %>%
+    dcast.data.table(Zone~Type, value.var = 'GWh')
+  z.gen.table[is.na(z.gen.table)] = 0
   
   # If the data looks good, add load to the regional generation.
   if (typeof(r.load)=='character' ) {
     r.gen.table = 'ERROR: region_load function not returning correct results.'  
   } else {
-    region.load = select(r.load, Region = name, Load = value)
-    r.gen.table = join(r.gen.table, region.load, by = 'Region')
+    region.load = r.load[, .(Region = name, Load = value)]
+    setkey(region.load,Region)
+    setkey(r.gen.table,Region)
+    r.gen.table = r.gen.table[region.load]
   }
   
   # If the data looks good, add load to the zonal generation.
   if (typeof(z.load)=='character' ) {
     z.gen.table = 'ERROR: zone_load function not returning correct results.'
   } else {
-    zone.load = select(z.load, Zone = name, Load = value)
-    z.gen.table = join(z.gen.table, zone.load, by = 'Zone')
+    zone.load = z.load[, .(Zone = name, Load = value)]
+    setkey(zone.load,Zone)
+    setkey(z.gen.table,Zone)
+    z.gen.table = z.gen.table[zone.load]
   }
   
 }

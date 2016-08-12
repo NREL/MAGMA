@@ -2,7 +2,12 @@
 # Main setup file for general PLEXOS run analysis.
 
 # -----------------------------------------------------------------------
-library(pacman)
+if (!require(pacman)){
+  install.packages(pacman)
+  library(pacman)
+}else{
+  library(pacman)
+}
 p_load(ggplot2, reshape2, plyr, lubridate, scales, RSQLite, grid, knitr, markdown, grid, gridExtra, RColorBrewer, snow,
        doParallel, xtable, data.table, dplyr, extrafont, tidyr, stringr, rplexos, rmarkdown)
 
@@ -21,8 +26,9 @@ scen.pal = c("goldenrod2", "blue", "darkblue", "firebrick3", "deeppink", "chartr
 # Read CSV file with all inputs
 inputs = read.csv(file.path(input.csv))
 inputs[inputs==""]=NA
+inputs = data.table(inputs)
 
-# Assign a logical to each chunk run selector. 
+# What sections to run code for. Assign a logical to each chunk run selector. 
 run.sections = na.omit(inputs$Sections.to.Run)
 if(1 %in% run.sections)  {total.gen.stack=TRUE}                 else {total.gen.stack=FALSE} 
 if(2 %in% run.sections)  {zone.gen.stacks=TRUE}                 else {zone.gen.stacks=FALSE}
@@ -46,6 +52,14 @@ if(19 %in% run.sections) {capacity.factor.table=TRUE}           else {capacity.f
 if(20 %in% run.sections) {price.duration.curve=TRUE}            else {price.duration.curve=FALSE}
 if(21 %in% run.sections) {commit.dispatch.zone=TRUE}            else {commit.dispatch.zone=FALSE}
 if(22 %in% run.sections) {commit.dispatch.region=TRUE}          else {commit.dispatch.region=FALSE}
+if(23 %in% run.sections) {reserve.stack=TRUE}                   else {reserve.stack=FALSE}
+if(24 %in% run.sections) {annual.res.short.table=TRUE}          else {annual.res.short.table=FALSE}
+if(25 %in% run.sections) {curtailment.diff.table=TRUE}          else {curtailment.diff.table=FALSE}
+if(26 %in% run.sections) {price.duration.curve.scen=TRUE}       else {price.duration.curve.scen=FALSE}
+if(27 %in% run.sections) {runtime.plots=TRUE}                   else {runtime.plots=FALSE}
+if(28 %in% run.sections) {compare.dispatch.zone=TRUE}           else {compare.dispatch.zone=FALSE}
+if(29 %in% run.sections) {compare.dispatch.region=TRUE}         else {compare.dispatch.region=FALSE}
+
 
 # -----------------------------------------------------------------------
 # Read in the data from the input_data.csv file that was just loaded
@@ -55,6 +69,17 @@ if(22 %in% run.sections) {commit.dispatch.region=TRUE}          else {commit.dis
 db.loc = file.path(as.character(na.exclude(inputs$Database.Location))) 
 db.day.ahead.loc = file.path(as.character(na.exclude(inputs$DayAhead.Database.Location)))
 if (length(db.day.ahead.loc)==0) { db.day.ahead.loc = db.loc }
+has.multiple.scenarios = (length(db.loc)>1)
+
+# reference scenario, used if comparing scenarios
+ref.scenario = inputs$ref.scenario[!is.na(inputs$ref.scenario)]
+if (length(ref.scenario)>1){
+  message('\nYou have more than one reference scenario. This is likely to cause problems with comparison calculations')
+} else{
+  if (length(ref.scenario)==0 & has.multiple.scenarios){
+    message('\nYou have not provided a reference scenario. Comparison plots will not work.')
+  }
+}
 
 # Using CSV file to map generator types to names?
 use.gen.type.mapping.csv = as.logical(na.exclude(inputs$Using.Gen.Type.Mapping.CSV))
@@ -70,25 +95,15 @@ if (length(reassign.zones)==0) {
   message('\nMust select TRUE or FALSE for if reassigning what regions are in what zones!')
 }
 
-if ( use.gen.type.mapping.csv ) {
-  # Read mapping tile to map generator names to generation type
-  gen.type.mapping = read.csv(as.character(na.exclude(inputs$CSV.Gen.Type.File.Location)), stringsAsFactors=FALSE)
-  gen.type.mapping = select(gen.type.mapping, name, Type)
-} else {
-  # Assign generation type according to PLEXOS category
-  category2type = data.frame(category = as.character(na.omit(inputs$PLEXOS.Gen.Category)), Type = as.character(na.omit(inputs$PLEXOS.Desired.Type)) )  
-  if (length(category2type[,1])==0) { message('\nIf not using generator name to type mapping CSV, you must specify PLEXOS categories and desired generation type.') }
-}
-
 # Read mapping file to map generator names to region and zone (can be same file as gen name to type).
-region.zone.mapping = read.csv(as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename)), stringsAsFactors=FALSE)
-region.zone.mapping = select(region.zone.mapping, name, Region, Zone)
-rz.unique = unique(region.zone.mapping[,c('Region','Zone')])
+region.zone.mapping = data.table(read.csv(as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename)), stringsAsFactors=FALSE))
+region.zone.mapping = unique(region.zone.mapping[, .(name, Region, Zone)])
+setkey(region.zone.mapping,name)
+rz.unique = unique(region.zone.mapping[,.(Region,Zone)])
 
 # Set plot color for each generation type
-Gen.col = data.frame(Type = na.omit(inputs$Gen.Type), Color = na.omit(inputs$Plot.Color) )
-gen.color<-as.character(Gen.col$Color)
-names(gen.color)<-Gen.col$Type
+Gen.col = data.table(Type = na.omit(inputs$Gen.Type), Color = na.omit(inputs$Plot.Color) )
+gen.color<-setNames(as.character(Gen.col$Color),Gen.col$Type)
 
 # Generation type order for plots
 gen.order = rev(as.character(na.omit(inputs$Gen.Order))) 
@@ -124,18 +139,8 @@ if (length(period.names)==0) {
 n.periods = length(period.names) 
 
 # Start and end times for key periods
-start.end.times = data.frame(start = as.POSIXct( strptime( na.omit(inputs$Start.Time), format = '%m/%d/%Y %H:%M'), tz='UTC'), 
+start.end.times = data.table(start = as.POSIXct( strptime( na.omit(inputs$Start.Time), format = '%m/%d/%Y %H:%M'), tz='UTC'), 
                              end = as.POSIXct( strptime( na.omit(inputs$End.Time), format = '%m/%d/%Y %H:%M'), tz='UTC' ) )
-
-# First and last day of simulation
-first.day = as.POSIXct( strptime( na.omit(inputs$Start.Day), format = '%m/%d/%Y %H:%M'), tz='UTC' )
-last.day = as.POSIXct( strptime( na.omit(inputs$End.Day), format = '%m/%d/%Y %H:%M'), tz='UTC' )
-
-# Number of intervals per day
-intervals.per.day = as.numeric(na.omit(inputs$Intervals.Per.Day))
-
-# What sections to execute code chunks for
-run.sections = na.omit(inputs$Sections.to.Run)
 
 # Location for saved figures
 fig.path.name = paste0(as.character(na.omit(inputs$Fig.Path)),'\\')
@@ -160,8 +165,8 @@ if(length(list.files(pattern = "\\.zip$",path=db.loc))!=0 ) {
   if(length(list.files(pattern = "\\.db$",path=db.loc))==0) {
     message(paste0('The .db file is absent from ',db.loc))
     run.rplx=T
-  } else if(file.info(file.path(db.loc,list.files(pattern = "\\.db$",path=db.loc)))$mtime <
-              file.info(file.path(db.loc,list.files(pattern = "\\.zip$",path=db.loc)))$mtime) {
+  } else if(any(file.info(file.path(db.loc,list.files(pattern = "\\.db$",path=db.loc)))$mtime <
+                file.info(file.path(db.loc,list.files(pattern = "\\.zip$",path=db.loc)))$mtime, na.rm=TRUE)) {
     message(paste0('The db is older than the zip or the .db file in ',db.loc))
     run.rplx=T
   } else {message(paste0('\nFound .db solution file: ', list.files(pattern='\\.db$',path=db.loc), '\n'))}
@@ -176,16 +181,57 @@ if(length(list.files(pattern = "\\.zip$",path=db.loc))!=0 ) {
 } else {message('No .zip or .db file... are you in the right directory?')}
 # -----------------------------------------------------------------------
 # Open the database file ( must already have created this using rplexos ) 
-db = plexos_open(db.loc)
+db = plexos_open(db.loc, basename(db.loc))
 # db = db[1,] # This line queries only the first solution .db file if there are multiple in one location. 
 attributes(db)$class = c("rplexos","data.frame","tbl_df")
 
 # Open the day ahead database file
-db.day.ahead = tryCatch(plexos_open(db.day.ahead.loc), error = function(cond) { return(data.frame('ERROR'))})
+db.day.ahead = tryCatch(plexos_open(db.day.ahead.loc, basename(db.day.ahead.loc)), error = function(cond) { return(data.frame('ERROR'))})
 # db.day.ahead = db.day.ahead[1,] # This line queries only the first solution .db file if there are multiple in one location. 
 attributes(db.day.ahead)$class = c('rplexos', 'data.frame', 'tbl_df')
 
 
+# Create generator name to type mapping
+if ( use.gen.type.mapping.csv ) {
+  # Read mapping file to map generator names to generation type
+  gen.type.mapping = data.table(read.csv(as.character(na.exclude(inputs$CSV.Gen.Type.File.Location)), stringsAsFactors=FALSE))
+  gen.type.mapping = unique(gen.type.mapping[,.(name, Type)])
+  gen.type.mapping = setNames(gen.type.mapping$Type, gen.type.mapping$name)
+} else {
+  # Assign generation type according to PLEXOS category
+  sql <- "SELECT DISTINCT name, category FROM key WHERE class = 'Generator'"
+  gen.cat.plexos = query_sql(db,sql) 
+  gen.cat.plexos = unique(gen.cat.plexos[,c("name","category")])
+  gen.cat.mapping = data.table(name = as.character(na.omit(inputs$PLEXOS.Gen.Category)), Type = as.character(na.omit(inputs$PLEXOS.Desired.Type)) )  
+  gen.cat.mapping = setNames(gen.cat.mapping$Type, gen.cat.mapping$name)
+  gen.cat.plexos$Type = gen.cat.mapping[gen.cat.plexos$category]
+  gen.type.mapping = setNames(gen.cat.plexos$Type, gen.cat.plexos$name)
+  if (length(gen.type.mapping)==0) { message('\nIf not using generator name to type mapping CSV, you must specify PLEXOS categories and desired generation type.') }
+}
+
+
+# Calculate First and last day of simulation and interval length
+model.timesteps = model_timesteps(db)
+model.intervals = model.timesteps[,.(scenario,timestep)]
+
+# Check to make sure no overlapping periods are created
+if (nrow(model.timesteps[, .(unique(start)), by=.(scenario)]) > nrow(model.timesteps)){
+  message("Warning: You have overlapping solutions")
+}
+model.timesteps = model.timesteps[,.(start=min(start),end=max(end)),by=.(scenario)]
+# Check and make sure all scenarios have same start and end times
+if (!(length(unique(model.timesteps$start))==1 & length(unique(model.timesteps$end))==1)){
+  message("Warning: All specified scenarios do not have the same time horizons")
+}
+first.day = min(model.timesteps$start)
+last.day = max(model.timesteps$end)
+
+# Check to make sure all solutions have the same length
+if (length(unique(model.intervals$timestep))!=1){
+  message("Warning: Your databases do not have the same time intervals")
+}
+# Number of intervals per day
+intervals.per.day = 24 / unique(as.numeric(model.intervals$timestep,units='hours'))
 
 
 

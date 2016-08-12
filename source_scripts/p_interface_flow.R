@@ -10,7 +10,7 @@ print('ERROR: interface_flows function not returning correct results.')
 } else {
 
 # Define zone names, remove region flows, and order zone names for plotting.
-interface.flows$name = factor(interface.flows$name, levels = interfaces) 
+interface.flows[, name := factor(name, levels = interfaces)] 
 
 # Create plot of interval zone interface flow
 p1 = ggplot(interface.flows, aes(x=time, y=value/1000, color=name, group=name))+
@@ -29,13 +29,8 @@ p1 = ggplot(interface.flows, aes(x=time, y=value/1000, color=name, group=name))+
                   panel.margin = unit(0.35, "lines"))
 
 # Aggregate interval flow data into daily flow data
-daily.flows = dcast(interface.flows, time ~ name, value.var = 'value', fun.aggregate=mean)
-daily.flows$day = rep(1:(nrow(daily.flows)/intervals.per.day), each=intervals.per.day)
-daily.flows = melt(daily.flows, id.vars = 'day', measure.vars = interfaces, variable.name = 'name')
-
-daily.flows = daily.flows %>%
-  group_by(day, name) %>%
-  summarise(value = sum(value))
+interface.flows[, day := as.POSIXlt(time)[[8]] ]
+daily.flows = interface.flows[, .(value=sum(value)), by=.(day,name)]
 
 # Create daily flow plot.
 p2 = ggplot()+

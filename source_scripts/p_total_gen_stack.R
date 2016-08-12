@@ -10,24 +10,22 @@ if ( typeof(yr.gen)=='character' ) {
 } else {
 
   # gen.sum is just used to set the maximum height on the plot, see pretty() fcn below
-  gen.sum = yr.gen %>%
-    dplyr::summarise(TWh=sum(GWh)/1000) #change GWh generation to TWh
+  gen.sum = yr.gen[, .(TWh = sum(GWh)/1000)]  #change GWh generation to TWh
 
   # reorder the levels of Type to plot them in order
-  yr.gen$Type = factor(yr.gen$Type, levels = c(gen.order))
+  yr.gen[, Type := factor(Type, levels = c(gen.order))]
   if(any(is.na(yr.gen$Type))) print("ERROR:gen.order doesn't contain all of the gen types: FIX YOUR INPUT DATA CSV")
 
   # Group by type and convert GWh to TWh
-  gen.plot = yr.gen %>%
-    group_by(Type) %>%
-    dplyr::summarise(TWh=sum(GWh)/1000)
+  gen.plot = yr.gen[, .(TWh = sum(GWh)/1000), by=.(Type)]
 
   tot.load = sum(r.load$value)/1000
   
   # This automatically creates the y-axis scaling
-  py=pretty(gen.sum$TWh, n=5, min.n = 5)
-  seq.py=seq(0, py[length(py)], 10*(py[2]-py[1]))
+  py = pretty(gen.sum$TWh, n=5, min.n = 5)
+  seq.py = seq(0, py[length(py)], 10*(py[2]-py[1]))
 
+  setorder(gen.plot,Type)
   # Create plot
   p1 = ggplot() +
          geom_bar(data = gen.plot, aes(x = 'Dispatch', y = TWh, fill=Type, order=as.numeric(Type)), stat="identity", position="stack" ) +

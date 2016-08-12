@@ -9,16 +9,14 @@ figure.height = 3.5 # Set figure height
 
 ```{r individual-region-stack-{{region.name}}, fig.height=figure.height, include=TRUE}
 # Using plot data generated in previously sourced file, filter out only the current region.
-plot.data = r.z.gen.plot %>%
-  filter(Region == r.name)
+plot.data = r.z.gen.plot[Region == r.name, ]
+plot.data[is.na(plot.data)]=0
 
 # Pull out load for the current region and convert to TWh
-region.load = filter(r.load, name == r.name)
-region.load$value = region.load$value/1000
+region.load = r.load[r.load$name == r.name, .(value = value/1000), by=.(name)]
 
 # gen.sum is just used to set the maximum height on the plot, see pretty() fcn below
-plot.data.sum = ungroup(plot.data) %>% 
-  dplyr::summarise(TWh = sum(TWh)) #change GWh generation to TWh
+plot.data.sum = plot.data[, .(TWh = sum(TWh))] #change GWh generation to TWh
 
 # Check to see if the load is higher than the generation, and set plot height to that.
 if (region.load$value>plot.data.sum) {
@@ -32,9 +30,10 @@ seq.py=seq(0, py[length(py)], (py[2]-py[1]))
 # Check to see if there is any generation, otherwise generation is plotted.
 if ( sum(plot.data$TWh)>0 ) { 
 
+  setorder(plot.data,Type)
   # Create plot
   p = ggplot() +
-     geom_bar(data = plot.data, aes(x = r.name, y = TWh, fill=Type, order=as.numeric(Type)), stat="identity", position="stack" ) +
+     geom_bar(data = plot.data, aes(x = Region, y = TWh, fill=Type, order=as.numeric(Type)), stat="identity", position="stack" ) +
      geom_errorbar(aes(x=name, y=value, ymin=value, ymax=value, color='load'), data=region.load, linetype='longdash', size=0.45)+
      scale_fill_manual(values = gen.color, guide = guide_legend(reverse = TRUE))+
      scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+   
