@@ -1,9 +1,9 @@
 ```{r Gen-compare-zone-{{zone.name}}-{{type.name}}, results='asis', include=TRUE}
 z.name = '{{zone.name}}' # Assign zone name
 t.name = '{{type.name}}' # Assign generator type name
-cat("### ", t.name, ': ', r.name) # Print period and zone name above the plot
-text.plot=11 # Plot text size.
-figure.width = 12
+cat("### ", t.name, ': ', z.name) # Print period and zone name above the plot
+text.plot=16 # Plot text size.
+figure.width = 15 
 figure.height = p.height
 ```
 
