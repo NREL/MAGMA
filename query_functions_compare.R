@@ -170,28 +170,16 @@ capacity_factor_diff = function() {
   
   cf = yr.data.generator
   
-  if ( use.gen.type.mapping.csv ) {
-    mc = cf %>%
-      filter(property == 'Installed Capacity') %>%
-      rename(MaxCap = value) %>%
-      join(gen.type.mapping, by = 'name')
+  mc = cf %>%
+    filter(property == 'Installed Capacity') %>%
+    rename(MaxCap = value) %>%
+    join(gen.type.mapping, by = 'name')
+  
+  gen = cf %>%
+    filter(property == 'Generation') %>%
+    rename(Gen = value) %>%
+    join(gen.type.mapping, by = 'name')
     
-    gen = cf %>%
-      filter(property == 'Generation') %>%
-      rename(Gen = value) %>%
-      join(gen.type.mapping, by = 'name')
-    
-  } else {
-    mc = cf %>%
-      filter(property == 'Installed Capacity') %>%
-      rename(MaxCap = value) %>%
-      join(category2type, by = 'category')
-    
-    gen = cf %>%
-      filter(property == 'Generation') %>%
-      rename(Gen = value) %>%
-      join(category2type, by = 'category')
-  }
     
   mc$Type = factor(mc$Type, levels = rev(c(gen.order)))
   

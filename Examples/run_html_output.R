@@ -10,6 +10,12 @@ output.name = '<Desired output file name. Include .html at end.>'
 # Run code to create HTML
 #------------------------------------------------------------------------------|
 setwd(magma.dir)
+
+# Load inputs
+inputs = read.csv(file.path(input.csv))
+inputs[inputs==""]=NA
+inputs = data.table(inputs)
+
 # Sourcing the setup file and required functions
 source(file.path('query_functions.R'))
 source(file.path('setup_plexosAnalysis.R'))

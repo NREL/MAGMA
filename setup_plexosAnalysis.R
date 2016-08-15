@@ -23,10 +23,6 @@ theme_set(theme_bw())
 scen.pal = c("goldenrod2", "blue", "darkblue", "firebrick3", "deeppink", "chartreuse2", "seagreen4")
 
 # -----------------------------------------------------------------------
-# Read CSV file with all inputs
-inputs = read.csv(file.path(input.csv))
-inputs[inputs==""]=NA
-inputs = data.table(inputs)
 
 # What sections to run code for. Assign a logical to each chunk run selector. 
 run.sections = na.omit(inputs$Sections.to.Run)
@@ -64,7 +60,6 @@ if(29 %in% run.sections) {compare.dispatch.region=TRUE}         else {compare.di
 # -----------------------------------------------------------------------
 # Read in the data from the input_data.csv file that was just loaded
 
-
 # location of database
 db.loc = file.path(as.character(na.exclude(inputs$Database.Location))) 
 db.day.ahead.loc = file.path(as.character(na.exclude(inputs$DayAhead.Database.Location)))
@@ -81,29 +76,12 @@ if (length(ref.scenario)>1){
   }
 }
 
-# Using CSV file to map generator types to names?
-use.gen.type.mapping.csv = as.logical(na.exclude(inputs$Using.Gen.Type.Mapping.CSV))
-if (length(use.gen.type.mapping.csv)==0) { 
-  use.gen.type.mapping.csv = FALSE
-  message('\nMust select TRUE or FALSE for if using generator generation type mapping file!') 
-}
-
 # Reassign zones based on region to zone mapping file?
 reassign.zones = as.logical(na.exclude(inputs$reassign.zones))
 if (length(reassign.zones)==0) { 
   reassign.zones = FALSE
   message('\nMust select TRUE or FALSE for if reassigning what regions are in what zones!')
 }
-
-# Read mapping file to map generator names to region and zone (can be same file as gen name to type).
-region.zone.mapping = data.table(read.csv(as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename)), stringsAsFactors=FALSE))
-region.zone.mapping = unique(region.zone.mapping[, .(name, Region, Zone)])
-setkey(region.zone.mapping,name)
-rz.unique = unique(region.zone.mapping[,.(Region,Zone)])
-
-# Set plot color for each generation type
-Gen.col = data.table(Type = na.omit(inputs$Gen.Type), Color = na.omit(inputs$Plot.Color) )
-gen.color<-setNames(as.character(Gen.col$Color),Gen.col$Type)
 
 # Generation type order for plots
 gen.order = rev(as.character(na.omit(inputs$Gen.Order))) 
@@ -191,22 +169,54 @@ db.day.ahead = tryCatch(plexos_open(db.day.ahead.loc, basename(db.day.ahead.loc)
 attributes(db.day.ahead)$class = c('rplexos', 'data.frame', 'tbl_df')
 
 
+# Read mapping file to map generator names to region and zone (can be same file as gen name to type).
+if (is.na(inputs$Gen.Region.Zone.Mapping.Filename)){
+  gen.mapping <- query_generator(db)
+  region.zone.mapping = data.table(unique(gen.mapping[,c('name','region','zone')]))
+  setnames(region.zone.mapping, c("region","zone"), c("Region","Zone"))
+} else{
+  region.zone.mapping = data.table(read.csv(as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename)), 
+                        stringsAsFactors=FALSE))
+}
+region.zone.mapping = unique(region.zone.mapping[, .(name, Region, Zone)])
+setkey(region.zone.mapping,name)
+rz.unique = unique(region.zone.mapping[,.(Region,Zone)])
+
+
 # Create generator name to type mapping
-if ( use.gen.type.mapping.csv ) {
+if ( length(inputs$CSV.Gen.Type.File.Location[!is.na(inputs$CSV.Gen.Type.File.Location)]) > 0 ) {
   # Read mapping file to map generator names to generation type
-  gen.type.mapping = data.table(read.csv(as.character(na.exclude(inputs$CSV.Gen.Type.File.Location)), stringsAsFactors=FALSE))
+  gen.type.mapping = data.table(read.csv(as.character(na.exclude(inputs$CSV.Gen.Type.File.Location)), 
+                                         stringsAsFactors=FALSE))
   gen.type.mapping = unique(gen.type.mapping[,.(name, Type)])
   gen.type.mapping = setNames(gen.type.mapping$Type, gen.type.mapping$name)
-} else {
+  } else {
   # Assign generation type according to PLEXOS category
-  sql <- "SELECT DISTINCT name, category FROM key WHERE class = 'Generator'"
-  gen.cat.plexos = query_sql(db,sql) 
-  gen.cat.plexos = unique(gen.cat.plexos[,c("name","category")])
-  gen.cat.mapping = data.table(name = as.character(na.omit(inputs$PLEXOS.Gen.Category)), Type = as.character(na.omit(inputs$PLEXOS.Desired.Type)) )  
-  gen.cat.mapping = setNames(gen.cat.mapping$Type, gen.cat.mapping$name)
-  gen.cat.plexos$Type = gen.cat.mapping[gen.cat.plexos$category]
-  gen.type.mapping = setNames(gen.cat.plexos$Type, gen.cat.plexos$name)
+    sql <- "SELECT DISTINCT name, category FROM key WHERE class = 'Generator'"
+    gen.cat.plexos = query_sql(db,sql) 
+    gen.cat.plexos = unique(gen.cat.plexos[,c("name","category")])
+    # If PLEXOS Gen Category mapping defined use that
+    if (length(inputs$PLEXOS.Gen.Category[!is.na(inputs$PLEXOS.Gen.Category)]) > 0) {
+      gen.cat.mapping = data.table(name = as.character(na.omit(inputs$PLEXOS.Gen.Category)), 
+                                   Type = as.character(na.omit(inputs$PLEXOS.Desired.Type)) )  
+      gen.cat.mapping = setNames(gen.cat.mapping$Type, gen.cat.mapping$name)
+      gen.cat.plexos$Type = gen.cat.mapping[gen.cat.plexos$category]
+      gen.type.mapping = setNames(gen.cat.plexos$Type, gen.cat.plexos$name)
+      } else{
+        # If csv not provided and PLEXOS mapping not defined, use PLEXOS categories
+        message("Generator Type mapping not provided. Will use PLEXOS categories")
+        gen.type.mapping = setNames(gen.cat.plexos$category, gen.cat.plexos$name)
+    }
   if (length(gen.type.mapping)==0) { message('\nIf not using generator name to type mapping CSV, you must specify PLEXOS categories and desired generation type.') }
+}
+
+  # Set plot color for each generation type. Use rainbow() if mapping not provided
+if(all(is.na(inputs$Gen.Type)) | all(is.na(inputs$Plot.Color))){
+  types <- unique(gen.type.mapping)
+  gen.color <- setNames(rainbow(length(types)), types)
+} else{
+  Gen.col = data.table(Type = na.omit(inputs$Gen.Type), Color = na.omit(inputs$Plot.Color) )
+  gen.color<-setNames(as.character(Gen.col$Color),Gen.col$Type)
 }
 
 
