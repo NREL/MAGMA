@@ -113,7 +113,7 @@ interval_generation = function(interval.region.load, interval.zone.load, interva
   setnames(load,'property','Type')
   
   # Pull out interval generation data, and add generation type and region and zone according to generator name. Then add load data.
-  int.gen = interval.generation[,.(scenario, name, time, value, category)][gen.type.zone.region]
+  int.gen = gen.type.zone.region[interval.generation[,.(scenario, name, time, value, category)]]
   int.gen = int.gen[,.(value=sum(value,na.rm=TRUE)),by=.(scenario,time,Region,Zone,Type)] 
   setkeyv(int.gen,c('time',spatialcol))
   int.gen = rbindlist(list(int.gen,load),use.names=TRUE)
@@ -124,7 +124,7 @@ interval_generation = function(interval.region.load, interval.zone.load, interva
   int.gen = merge(int.gen[,!dropcol,with=FALSE],rz.unique,all.y=TRUE)
   
   # Pull out interval generation capacity and add generation type, region, and zone based on matching generator names.
-  int.avail = interval.avail.cap[,.(scenario, name, time, value, category)][gen.type.zone.region]
+  int.avail = gen.type.zone.region[interval.avail.cap[,.(scenario, name, time, value, category)]]
   int.avail = int.avail[,.(value=sum(value,na.rm=TRUE)),by=.(scenario,time,Region,Zone,Type)]
  
   if (re.types!='none_specified'){
@@ -240,18 +240,12 @@ interval_reserves = function(interval.reserve.provision) {
 # Total run and interval level interface flow data, for specific interfaces that are specified in the input file. 
 
 annual_interface_flows = function(total.interface.flow) {
-  
   year.flows = total.interface.flow[name %in% interfaces,.(name,time,value)]  
-  year.flows[,Type := 'Annual_Flow']
-
   return(year.flows)
 }
 
 interval_interface_flows = function(interval.interface.flow) {
-  
   int.flows = interval.interface.flow[name %in% interfaces,.(name,time,value)]   
-  int.flows[,Type := 'Interval_Flow']
-  
   return(int.flows)
 }
 
@@ -269,7 +263,7 @@ region_stats = function(total.region.load, total.region.imports, total.region.ex
 }
 
 zone_stats = function(total.region.load, total.region.imports, total.region.exports, total.region.ue, total.zone.load, total.zone.imports, total.zone.exports, total.zone.ue) {
-  if (reassign.zones==TRUE | total.zone.load=='ERROR'){
+  if (reassign.zones==TRUE | typeof(total.zone.load)=='character'){
     z.data = rbindlist(list(total.region.load, total.region.imports, total.region.exports, total.region.ue))
     setnames(z.data,'name','Region')
     setkey(z.data,Region)
@@ -296,7 +290,7 @@ region_load = function(total.region.load) {
 }
 
 zone_load = function(total.region.load, total.zone.load) {
-  if (reassign.zones==TRUE | total.zone.load=='ERROR'){
+  if (reassign.zones==TRUE | typeof(total.zone.load)=='character'){
     setkey(total.region.load,name)
     setkey(rz.unique,Region)
     z.load = rz.unique[total.region.load][, .(value=sum(value)), by=.(scenario, Zone)]
@@ -319,20 +313,20 @@ capacity_factor = function(total.generation, total.installed.cap) {
   
   # Pull out installed capacity and generation and match them to generation type by generator name. 
   mc = total.installed.cap[, Type:=gen.type.mapping[name] ]
-  setnames(mc,'value','MaxCap')
+  setnames(mc,'value', 'MaxCap (GWh)')
   
   gen = total.generation[, Type:=gen.type.mapping[name] ]
-  setnames(gen,'value','Gen')
+  setnames(gen,'value', 'Gen (GWh)')
         
   mc[, Type := factor(Type, levels = rev(c(gen.order)))]
   
   # Calculates generation type total capacity and generation for the full run
-  c.factor = mc[,.(name,MaxCap,Type)][gen[,.(name,Gen)]]
-  c.factor = c.factor[,.(MaxCap=sum(MaxCap),Gen=sum(Gen)),by=.(Type)]
+  c.factor = mc[,.(name,`MaxCap (GWh)`,Type)][gen[,.(name,`Gen (GWh)`)]]
+  c.factor = c.factor[,.(`MaxCap (GWh)`=sum(`MaxCap (GWh)`),`Gen (GWh)`=sum(`Gen (GWh)`)),by=.(Type)]
 
   # Calculate capacity factor for each generation type
-  n.int = length(seq(from = first.day, to = last.day, by = 'day'))*intervals.per.day
-  c.factor[,.(`Capacity Factor (%)` := Gen/(MaxCap/1000*n.int)*100),by=.(Type)]
+  n.hours = length(seq(from = first.day, to = last.day, by = 'hour'))
+  c.factor = c.factor[,.(`Capacity Factor (%)` = `Gen (GWh)`/(`MaxCap (GWh)`/1000*n.hours)*100),by=.(Type, `MaxCap (GWh)`, `Gen (GWh)`)]
   
   return(c.factor)
 }
@@ -354,7 +348,7 @@ cap_committed = function(interval.da.committment) {
   setkey(interval.da.committment,name)
   
   # Query available capacity at the interval level, add generation type and region and zone by matching mapping file with generator names.
-  commit.data = interval.da.committment[,.(scenario,time,name,category,value)][gen.type.zone.region]
+  commit.data = gen.type.zone.region[interval.da.committment[,.(scenario,time,name,category,value)]]
   commit.data = commit.data[,.(committed.cap=sum(value)),by=.(scenario,time,Region,Zone,Type)]
   
   return(commit.data)

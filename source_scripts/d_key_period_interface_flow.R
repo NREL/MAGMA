@@ -12,9 +12,9 @@ if ( typeof(interface.flows)=='character' ) {
 } else {
 
   # From the full set of data, pull out only the data corresponding to the key period specified in the input file. 
-  timediff = interface.flows[,.(timediff=diff(time)),by=.(Region,Type,Zone)][,.(min(timediff))][,V1]
+  timediff = interface.flows[,.(timediff=diff(time))][,.(min(timediff))][,V1]
   for ( i in 1:n.periods ) {
-    key.period.time = seq(start.end.times[i,'start'], start.end.times[i,'end'], by = timediff)
+    key.period.time = seq(start.end.times$start[i], start.end.times$end[i], by = timediff)
     key.period.flow = interface.flows[interface.flows$time %in% key.period.time, ]
     key.period.flow[, Period := period.names[i]]
     
