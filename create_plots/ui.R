@@ -13,7 +13,12 @@ shinyUI(fluidPage(
       selectInput("period", "Period:", unique(plot.data.all$Period)),
       selectInput("type",   "Type:",   unique(plot.data.all$Type)),
       
-      numericInput("obs", "Number of observations to view:", 10)
+      conditionalPanel(condition = "input.conditionedPanels=='plots'",
+                       numericInput("text.size", "Text size for figures:", 12)
+                       ),
+      conditionalPanel(condition = "input.conditionedPanels=='tables'",
+                       numericInput("obs", "Number of observations to view:", 10)
+                       )
     ),
     
     # Show a plot of the generated distribution
@@ -60,12 +65,16 @@ shinyUI(fluidPage(
                                                    'commit.dispatch.zone'=TRUE,
                                                    'commit.dispatch.region'))),
         tabPanel("Plots", 
-                 plotOutput("plot1")
+                 plotOutput("ann.gen.stack"),
+                 plotOutput("ann.reg.gen.stack"),
+                 value = 'plots'
                  ),
         
         tabPanel("Tables",
-                 tableOutput("table")
-                 )
+                 tableOutput("table"),
+                 value = 'tables'
+                 ),
+        id = 'conditionedPanels'
       )
     )
   )
