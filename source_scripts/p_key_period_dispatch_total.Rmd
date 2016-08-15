@@ -22,7 +22,7 @@ if (max(gen.load.total[Period==p.name, value])>max(stack.t$value)){
 }
 
 # This automatically creates the y-axis tick mark separation
-py.t = pretty(stack.t$value/1000, n = 4)
+py.t = pretty(c(0,stack.t$value/1000), n = 4)
 seq.py.t = seq(0, py.t[length(py.t)], 2*(py.t[2]-py.t[1])) # get whole breaks sequence 
 
 # #############################################################################################################

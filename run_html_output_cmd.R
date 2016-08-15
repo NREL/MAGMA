@@ -4,14 +4,15 @@
 # Run run_htmo_output_cmd.R --help for options and more details. 
 # At a minimum, the database folder must be provided.
 
+.libPaths('packages')
 if (!require(optparse)){
-  install.packages(optparse)
+  install.packages("optparse", dependencies = TRUE, repos="http://cran.rstudio.com/")
   library(optparse)
 }else{
   library(optparse)
 }
 if (!require(stringr)){
-  install.packages(stringr)
+  install.packages("stringr", dependencies = TRUE, repos="http://cran.rstudio.com/")
   library(stringr)
 }else{
   library(stringr)
@@ -140,7 +141,7 @@ if(is.na(inputs$Fig.Path)){
 # Sourcing the setup file and required functions
 source(file.path('query_functions.R'))
 source(file.path('setup_plexosAnalysis.R'))
-source(file.path('setup_dataQueries.R'))
+source(file.path('setup_dataQueries.R'), echo=TRUE)
 render(input=file.path('HTML_output.Rmd'), c("html_document"), 
 	   output_file=output.name, output_dir = file.path(output.dir))
 

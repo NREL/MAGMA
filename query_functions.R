@@ -127,7 +127,7 @@ interval_generation = function(interval.region.load, interval.zone.load, interva
   int.avail = gen.type.zone.region[interval.avail.cap[,.(scenario, name, time, value, category)]]
   int.avail = int.avail[,.(value=sum(value,na.rm=TRUE)),by=.(scenario,time,Region,Zone,Type)]
  
-  if (re.types!='none_specified'){
+  if (all(re.types!='none_specified')){
     #  Pull out renewable data for curtilment calculations. 
     re.gen = int.gen[Type %in% re.types, ]
     setkey(re.gen,scenario,time,Region,Zone,Type)

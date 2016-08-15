@@ -31,8 +31,8 @@ if ( typeof(yr.gen.scen)=='character' ) {
   diff.load = diff.load[scenario!=ref.scenario, ]
   
   # This automatically creates the y-axis scaling
-  py = pretty(gen.sum$TWh, n=5, min.n = 5)
-  seq.py = seq(py[1], py[length(py)], (py[2]-py[1]))
+  py = pretty(c(0,gen.sum$TWh), n=5, min.n = 5)
+  seq.py = seq(min(py[1],0), py[length(py)], (py[2]-py[1]))
 
   setorder(dat.pos,Type)
   setorder(dat.neg,Type)
