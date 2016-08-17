@@ -3,7 +3,7 @@
 
 # -----------------------------------------------------------------------
 if (!require(pacman)){
-  install.packages(pacman)
+  install.packages("pacman", dependencies=TRUE, repos = "http://cran.rstudio.com/")
   library(pacman)
 }else{
   library(pacman)
