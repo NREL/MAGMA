@@ -4,6 +4,9 @@
 # Run run_htmo_output_cmd.R --help for options and more details. 
 # At a minimum, the database folder must be provided.
 
+#------------------------------------------------------------------------------|
+# Load initial packages
+#------------------------------------------------------------------------------|
 .libPaths('packages')
 if (!require(optparse)){
   install.packages("optparse", dependencies = TRUE, repos="http://cran.rstudio.com/")
@@ -113,9 +116,6 @@ if(!is.na(inputs$Ignore.Regions)){
 if(!is.na(inputs$Ignore.Zones)){
    inputs$Ignore.Zones = unlist(str_split(inputs$Ignore.Zones,"(,\\s?)"))
 }
-if(is.na(inputs$output.dir)){
-	inputs$output.dir = inputs$Database.Location
-}
 
 # If NA, Gen.Order is set from Gen.Type
 if(is.na(inputs$Gen.Order)){
@@ -130,20 +130,33 @@ if(is.na(inputs$key.period.csv)){
 	inputs$Start.Time = key.periods$Start.Time
 	inputs$End.Time = key.periods$End.Time
 }
-# Assign plot directory if not already
+# Assign plot directory if not already set
 if(is.na(inputs$Fig.Path)){
 	dir.create(file.path(inputs$Database.Location, 'plots'), showWarnings = FALSE)
 	inputs$Fig.Path = file.path(inputs$Database.Location, 'plots')
 }
+# Assign output directory if not set
+if(is.na(inputs$output.dir)){
+	inputs$output.dir = inputs$Database.Location
+}
+
+#------------------------------------------------------------------------------|
+# Set environmental path to point to pandoc
+#------------------------------------------------------------------------------|
+Sys.setenv(
+  PATH = paste( Sys.getenv("PATH"), file.path(getwd(),'packages'), 
+                sep = .Platform$path.sep )
+)
 #------------------------------------------------------------------------------|
 # Run code to create HTML
 #------------------------------------------------------------------------------|
 # Sourcing the setup file and required functions
 source(file.path('query_functions.R'))
+source(file.path('create_plots','plot_functions.R'))
 source(file.path('setup_plexosAnalysis.R'))
 source(file.path('setup_dataQueries.R'), echo=TRUE)
 render(input=file.path('HTML_output.Rmd'), c("html_document"), 
-	   output_file=output.name, output_dir = file.path(output.dir))
+	   output_file=inputs$output.name, output_dir = file.path(inputs$output.dir))
 
 
 
