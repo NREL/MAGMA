@@ -2,7 +2,12 @@
 # Main setup file for general PLEXOS run analysis.
 
 # -----------------------------------------------------------------------
-library(pacman)
+if (!require(pacman)){
+  install.packages("pacman", dependencies=TRUE, repos = "http://cran.rstudio.com/")
+  library(pacman)
+}else{
+  library(pacman)
+}
 p_load(ggplot2, reshape2, plyr, lubridate, scales, RSQLite, grid, knitr, markdown, grid, gridExtra, RColorBrewer, snow,
        doParallel, xtable, data.table, dplyr, extrafont, tidyr, stringr, rplexos, rmarkdown)
 

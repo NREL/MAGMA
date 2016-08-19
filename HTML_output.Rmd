@@ -15,7 +15,8 @@ knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, incl
                       fig.path=fig.path.name, dev='png')
 
 # Set dynamic height for figure in regional generation chunk
-f.height = ( length(zone.names) %/% 2 + length(zone.names) %% 2 ) * 5
+if (exists('zone.names')) { f.height = ( length(zone.names) %/% 2 + length(zone.names) %% 2 ) * 5
+  } else { f.height = 5 }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
