@@ -26,61 +26,61 @@ if (!require(stringr)){
 #------------------------------------------------------------------------------|
 parser <- OptionParser()
 parser <- add_option(parser, c("-d", "--Database.Location"), type='character', 
-	                 help="Location of database to process")
+                     help="Location of database to process")
 parser <- add_option(parser, c("-b", "--DayAhead.Database.Location"), default = NA, type='character',
-	                 help="Location of day ahead database to process")
+                     help="Location of day ahead database to process")
 parser <- add_option(parser, c("-z", "--reassign.zones"), default = TRUE,
-	                 help = "Re-assign zones from regions. If false, uses PLEXOS zones")
+                     help = "Re-assign zones from regions. If false, uses PLEXOS zones")
 parser <- add_option(parser, c("-g", "--Gen.Region.Zone.Mapping.Filename"), default = NA, type='character',
-	                 help = "Filename to create Generator - Region - Zone mapping.
-	                         Default is NA, which will pull that mapping from the database")
+                     help = "Filename to create Generator - Region - Zone mapping.
+                             Default is NA, which will pull that mapping from the database")
 parser <- add_option(parser, c("-f", "--CSV.Gen.Type.File.Location"), default = NA, type='character',
-	                 help = "CSV of generator name to type mapping. 
-	                         If neither CSV.Gen.Type.File.Location nor PLEXOS.Gen.Category
-	                         supplied, will use the categories in PLEXOS")
+                     help = "CSV of generator name to type mapping. 
+                             If neither CSV.Gen.Type.File.Location nor PLEXOS.Gen.Category
+                             supplied, will use the categories in PLEXOS")
 parser <- add_option(parser, c("-c", "--PLEXOS.Gen.Category"), default = NA, type='character',
-	                 help = "Comma separated list of Generator categories to be mapped with
-	                         PLEXOS.Desired.Type. Both must be provided for mapping. 
-	                         If neither CSV.Gen.Type.File.Location nor PLEXOS.Gen.Category
-	                         supplied, will use the categories in PLEXOS")
+                     help = "Comma separated list of Generator categories to be mapped with
+                             PLEXOS.Desired.Type. Both must be provided for mapping. 
+                             If neither CSV.Gen.Type.File.Location nor PLEXOS.Gen.Category
+                             supplied, will use the categories in PLEXOS")
 parser <- add_option(parser, c("-m", "--PLEXOS.Desired.Type"), default = NA, type='character',
-	                 help = "Comma separated list of desired Generator types to be mapped with
-	                         PLEXOS.Gen.Category. Both must be provided for mapping. 
-	                         If neither CSV.Gen.Type.File.Location nor PLEXOS.Gen.Category
-	                         supplied, will use the categories in PLEXOS")
+                     help = "Comma separated list of desired Generator types to be mapped with
+                             PLEXOS.Gen.Category. Both must be provided for mapping. 
+                             If neither CSV.Gen.Type.File.Location nor PLEXOS.Gen.Category
+                             supplied, will use the categories in PLEXOS")
 parser <- add_option(parser, c("-t", "--Gen.Type"), default = NA, type='character',
-	                 help = "Generator Types as list, used with Plot.Color to create
-	                         mapping for generator color types in plots. 
-	                         If Gen.Order not defined, order of this variable will be used.")
+                     help = "Generator Types as list, used with Plot.Color to create
+                             mapping for generator color types in plots. 
+                             If Gen.Order not defined, order of this variable will be used.")
 parser <- add_option(parser, c("-p", "--Plot.Color"), default = NA, type='character',
-	                 help = "Generator Type Colors, used with Gen.Type to create
-	                         mapping for generator color types in plots.")
-parser <- add_option(parser, c("-n", "--Gen.Order"), default = NA, type='character',
-	                 help = "Generator Order for plottting. Default is NA, which if selected
-	                         will use the order of generators from Gen.Type.")
+                     help = "Generator Type Colors, used with Gen.Type to create
+                             mapping for generator color types in plots.")
+parser <- add_option(parser, c("-O", "--Gen.Order"), default = NA, type='character',
+                     help = "Generator Order for plottting. Default is NA, which if selected
+                             will use the order of generators from Gen.Type.")
 parser <- add_option(parser, c("-r", "--Renewable.Types.for.Curtailment"), default = "PV,Wind,CSP,Solar",
-	                 help = "Generator types to use for Curtailment. Should be provided as
-	                         a comma separated list")
+                     help = "Generator types to use for Curtailment. Should be provided as
+                             a comma separated list")
 parser <- add_option(parser, c("-a", "--DA.RT.Plot.Types"), default = "PV, Wind, Coal, Hydro",
-	                 help = "Generator types to make DA RT plots for.")
+                     help = "Generator types to make DA RT plots for.")
 parser <- add_option(parser, c("-k", "--key.period.csv"), default = NA, type='character', 
-	                 help = "CSV with key periods defined. Should have columsn Key.Period, Start.Time and End.Time")
+                     help = "CSV with key periods defined. Should have columsn Key.Period, Start.Time and End.Time")
 parser <- add_option(parser, c("-s", "--Sections.to.Run"), default = "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23",
-	                 help = "Numbers of which plots to run as a comma separated list")
-parser <- add_option(parser, c("-j", "--Fig.Path"), default = NA, type='character', 
-	                 help = "Path to save figures. If NA will save figures in 'plots' directory
-	                         in the DB directory")
-parser <- add_option(parser, c("-e", "--Ignore.Regions"), default = NA, type='character', 
-	                 help = "List of regions to ignore")
-parser <- add_option(parser, c("-q", "--Ignore.Zones"), default = NA, type='character', 
-	                 help = "List of zones to ignore")
+                     help = "Numbers of which plots to run as a comma separated list")
+parser <- add_option(parser, c("-F", "--Fig.Path"), default = NA, type='character', 
+                     help = "Path to save figures. If NA will save figures in 'plots' directory
+                             in the DB directory")
+parser <- add_option(parser, c("-R", "--Ignore.Regions"), default = NA, type='character', 
+                     help = "List of regions to ignore")
+parser <- add_option(parser, c("-Z", "--Ignore.Zones"), default = NA, type='character', 
+                     help = "List of zones to ignore")
 parser <- add_option(parser, c("-i", "--Interfaces.for.Flows"), default = NA, type='character', 
-	                 help = "List of interfaces to report data on")
+                     help = "List of interfaces to report data on")
 
 parser <- add_option(parser, c("-o", "--output.name"), default = "output_plots.html",
-	                 help="Name of output file")
+                     help = "Name of output file")
 parser <- add_option(parser, c("-u", "--output.dir"), default = NA, type='character',
-	                 help="Directory of where to save outputs")
+                     help = "Directory of where to save outputs")
 parser <- add_option(parser, c("-Q", "--query.data"), default = TRUE, type='logical',
                      help = "Query the data from databases or load from existing data")
 parser <- add_option(parser, c("-D", "--load.data"), default = NA, type='character',
@@ -100,7 +100,7 @@ if(!is.na(inputs$PLEXOS.Desired.Type)){
    inputs$PLEXOS.Desired.Type = unlist(str_split(inputs$PLEXOS.Desired.Type,"(,\\s?)"))
 }
 if(all(is.na(inputs$Gen.Type)) | all(is.na(inputs$Plot.Color))){
-	message("No Generator Type to Color mapping provided. Default colors in R will be used.")
+    message("No Generator Type to Color mapping provided. Default colors in R will be used.")
 } else{
    inputs$Gen.Type = unlist(str_split(inputs$Gen.Type,"(,\\s?)"))
    inputs$Plot.Color = unlist(str_split(inputs$Plot.Color,"(,\\s?)"))
@@ -123,25 +123,25 @@ if(!is.na(inputs$Ignore.Zones)){
 
 # If NA, Gen.Order is set from Gen.Type
 if(is.na(inputs$Gen.Order)){
-	inputs$Gen.Order = inputs$Gen.Type
+    inputs$Gen.Order = inputs$Gen.Type
 }
 # Process Key periods
 if(is.na(inputs$key.period.csv)){
-	inputs$Key.Periods = NA
+    inputs$Key.Periods = NA
 } else{
-	key.periods = read.csv(inputs$key.period.csv)
-	inputs$Key.Periods = key.periods$Key.Periods
-	inputs$Start.Time = key.periods$Start.Time
-	inputs$End.Time = key.periods$End.Time
+    key.periods = read.csv(inputs$key.period.csv)
+    inputs$Key.Periods = key.periods$Key.Periods
+    inputs$Start.Time = key.periods$Start.Time
+    inputs$End.Time = key.periods$End.Time
 }
 # Assign plot directory if not already set
 if(is.na(inputs$Fig.Path)){
-	dir.create(file.path(inputs$Database.Location, 'plots'), showWarnings = FALSE)
-	inputs$Fig.Path = file.path(inputs$Database.Location, 'plots')
+    dir.create(file.path(inputs$Database.Location, 'plots'), showWarnings = FALSE)
+    inputs$Fig.Path = file.path(inputs$Database.Location, 'plots')
 }
 # Assign output directory if not set
 if(is.na(inputs$output.dir)){
-	inputs$output.dir = inputs$Database.Location
+    inputs$output.dir = inputs$Database.Location
 }
 
 # Determine if data needs to be queried
@@ -171,7 +171,7 @@ if (inputs$query.data){
 }
 
 render(input=file.path('HTML_output.Rmd'), c("html_document"), 
-	   output_file=inputs$output.name, output_dir = file.path(inputs$output.dir))
+       output_file=inputs$output.name, output_dir = file.path(inputs$output.dir))
 
 
 
