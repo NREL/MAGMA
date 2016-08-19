@@ -81,6 +81,10 @@ parser <- add_option(parser, c("-o", "--output.name"), default = "output_plots.h
 	                 help="Name of output file")
 parser <- add_option(parser, c("-u", "--output.dir"), default = NA, type='character',
 	                 help="Directory of where to save outputs")
+parser <- add_option(parser, c("-Q", "--query.data"), default = TRUE, type='logical',
+                     help = "Query the data from databases or load from existing data")
+parser <- add_option(parser, c("-D", "--load.data"), default = NA, type='character',
+                     help = "Name of data to load. If query.data = FALSE, this must have a filename")
 
 inputs <- parse_args(parser)
 print(inputs)
@@ -140,6 +144,11 @@ if(is.na(inputs$output.dir)){
 	inputs$output.dir = inputs$Database.Location
 }
 
+# Determine if data needs to be queried
+if(!inputs$query.data & is.na(inputs$load.data)){
+    stop("You must either query data or load existing data")
+}
+
 #------------------------------------------------------------------------------|
 # Set environmental path to point to pandoc
 #------------------------------------------------------------------------------|
@@ -154,7 +163,13 @@ Sys.setenv(
 source(file.path('query_functions.R'))
 source(file.path('create_plots','plot_functions.R'))
 source(file.path('setup_plexosAnalysis.R'))
-source(file.path('setup_dataQueries.R'), echo=TRUE)
+# Either query data from database or load existing data
+if (inputs$query.data){
+    source(file.path('setup_dataQueries.R'), echo=TRUE)
+} else{
+    load(inputs$load.data)
+}
+
 render(input=file.path('HTML_output.Rmd'), c("html_document"), 
 	   output_file=inputs$output.name, output_dir = file.path(inputs$output.dir))
 
