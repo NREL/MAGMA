@@ -308,7 +308,7 @@ source('source_scripts/p_price_duration_curve.R')
 ```
 
 ***
-## 21. DA-RT Committment and Dispatch Plots
+## 21-22. DA-RT Committment and Dispatch Plots
 ```{r committment-dispatch, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
@@ -365,8 +365,8 @@ if (commit.dispatch.region | commit.dispatch.zone) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
-## Zones
+### 21. Zones
 `r da.rt.zone`
 
-## Regions
+### 22. Regions
 `r da.rt.region`
