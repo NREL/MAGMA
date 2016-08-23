@@ -15,7 +15,8 @@ knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, incl
                       fig.path=fig.path.name, dev='png')
 
 # Set dynamic height for figure in regional generation chunk
-f.height = ( length(zone.names) %/% 2 + length(zone.names) %% 2 ) * 5
+if (exists('zone.names')) { f.height = ( length(zone.names) %/% 2 + length(zone.names) %% 2 ) * 5
+  } else { f.height = 5 }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -307,7 +308,7 @@ source('source_scripts/p_price_duration_curve.R')
 ```
 
 ***
-## 21. DA-RT Committment and Dispatch Plots
+## 21-22. DA-RT Committment and Dispatch Plots
 ```{r committment-dispatch, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
@@ -364,8 +365,8 @@ if (commit.dispatch.region | commit.dispatch.zone) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
-## Zones
+### 21. Zones
 `r da.rt.zone`
 
-## Regions
+### 22. Regions
 `r da.rt.region`

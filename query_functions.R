@@ -697,3 +697,14 @@ interval_reserve_provision = function(database) {
   interval.reserve.provision = select(query_interval(database, 'Reserve', 'Provision'), property, name, time, value)
   return(interval.reserve.provision)
 }
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Runtime queries
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# Timestep data
+model_timesteps = function(database){
+  timesteps = data.table(query_time(database))
+  timesteps = timesteps[phase=="ST", ]
+  return(timesteps[, .(scenario, phase, start, end, count, timestep)])
+}
