@@ -3,7 +3,7 @@
 
 # -----------------------------------------------------------------------
 if (!require(pacman)){
-  install.packages(pacman)
+  install.packages("pacman", dependencies=TRUE, repos = "http://cran.rstudio.com/")
   library(pacman)
 }else{
   library(pacman)
@@ -123,16 +123,6 @@ n.periods = length(period.names)
 start.end.times = data.table(start = as.POSIXct( strptime( na.omit(inputs$Start.Time), format = '%m/%d/%Y %H:%M'), tz='UTC'), 
                              end = as.POSIXct( strptime( na.omit(inputs$End.Time), format = '%m/%d/%Y %H:%M'), tz='UTC' ) )
 
-# First and last day of simulation
-first.day = as.POSIXct( strptime( na.omit(inputs$Start.Day), format = '%m/%d/%Y %H:%M'), tz='UTC' )
-last.day = as.POSIXct( strptime( na.omit(inputs$End.Day), format = '%m/%d/%Y %H:%M'), tz='UTC' )
-
-# Number of intervals per day
-intervals.per.day = as.numeric(na.omit(inputs$Intervals.Per.Day))
-
-# What sections to execute code chunks for
-run.sections = na.omit(inputs$Sections.to.Run)
-
 # Location for saved figures
 fig.path.name = paste0(as.character(na.omit(inputs$Fig.Path)),'\\')
 
@@ -200,6 +190,29 @@ if ( use.gen.type.mapping.csv ) {
   if (length(gen.type.mapping)==0) { message('\nIf not using generator name to type mapping CSV, you must specify PLEXOS categories and desired generation type.') }
 }
 
+
+# Calculate First and last day of simulation and interval length
+model.timesteps = model_timesteps(db)
+model.intervals = model.timesteps[,.(scenario,timestep)]
+
+# Check to make sure no overlapping periods are created
+if (nrow(model.timesteps[, .(unique(start)), by=.(scenario)]) > nrow(model.timesteps)){
+  message("Warning: You have overlapping solutions")
+}
+model.timesteps = model.timesteps[,.(start=min(start),end=max(end)),by=.(scenario)]
+# Check and make sure all scenarios have same start and end times
+if (!(length(unique(model.timesteps$start))==1 & length(unique(model.timesteps$end))==1)){
+  message("Warning: All specified scenarios do not have the same time horizons")
+}
+first.day = min(model.timesteps$start)
+last.day = max(model.timesteps$end)
+
+# Check to make sure all solutions have the same length
+if (length(unique(model.intervals$timestep))!=1){
+  message("Warning: Your databases do not have the same time intervals")
+}
+# Number of intervals per day
+intervals.per.day = 24 / unique(as.numeric(model.intervals$timestep,units='hours'))
 
 
 
