@@ -54,7 +54,7 @@ if ( capacity.factor.table ) {
 }
 
 if ( region.zone.flow.table | total.gen.stack | region.gen.stacks | zone.gen.stacks |
-     individual.region.stacks.log | commit.dispatch.zone | commit.dispatch.region ) {
+     individual.region.stacks.log | commit.dispatch.zone | commit.dispatch.region | region.zone.gen.table ) {
   # Total region load 
   total.region.load    = tryCatch( total_region_load(db), error = function(cond) { return('ERROR') } ) 
   # Aggregate region load and get unique names
