@@ -54,7 +54,7 @@ if ( capacity.factor.table ) {
 }
 
 if ( region.zone.flow.table | total.gen.stack | region.gen.stacks | zone.gen.stacks |
-     individual.region.stacks.log | commit.dispatch.zone | commit.dispatch.region | region.zone.gen.table ) {
+     individual.region.stacks.log | region.zone.gen.table ) {
   # Total region load 
   total.region.load    = tryCatch( total_region_load(db), error = function(cond) { return('ERROR') } ) 
   # Aggregate region load and get unique names
@@ -135,6 +135,16 @@ if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period
   interval.zone.load    = tryCatch( interval_zone_load(db), error = function(cond) { return('ERROR') } ) 
   if (exists('interval.region.load')) { if (typeof(interval.region.load)=='character') { message('\nMissing interval region load data from solution .db file.')}}
   if (exists('interval.zone.load')) { if (typeof(interval.zone.load)=='character') { message('\nMissing interval zone load data from solution .db file.')}}
+
+  # Aggregate region load and get unique names
+  r.load               = tryCatch( region_load(interval.region.load), error = function(cond) { return('ERROR') } ) 
+  region.names         = unique(r.load$name) # Assign region names based on PLEXOS regions.
+  if( length(unique(rz.unique$Region))!=length(region.names) ) { message('\nWarning: Number of regions in generation to region/zone mapping file different than number of regions from region load query! Check region.names object.') }
+
+  # Aggregate zone load and get unique names
+  z.load             = tryCatch( zone_load(interval.region.load, interval.zone.load), error = function(cond) { return('ERROR') } ) 
+  zone.names         = unique(z.load$name) # Assign zone names based on PLEXOS regions or region to zone mapping file. 
+  if( length(unique(rz.unique$Zone))!=length(zone.names) ) { message('\nWarning: Number of zones in generation to region/zone mapping file different than number of zones from zone load query! Check zone.names object.') }  
 }
 
 if ( interface.flow.plots | key.period.interface.flow.plots ) {
