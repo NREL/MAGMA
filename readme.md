@@ -60,27 +60,21 @@ This package creates figures and an HTML file with all of those figures for plex
 	+ Corresponding start time for each of the periods in 13.
 16. End.Time
 	+ Corresponding end time for each of the periods in 13. 
-17. Start.Day
-	+ Starting day of the PLEXOS run. 
-18. End.Day
-	+ Ending day of the PLEXOS run.
-19. Intervals.Per.Day
-	+ Number of intervals per day.
-20. Sections.to.Run
+17. Sections.to.Run
 	+ Sections (chunks) of the HTML_output.Rmd file to run.
-21. Fig.Path
+18. Fig.Path
 	+ Location to save each figure.
-22. Ignore.Zones
+19. Ignore.Zones
  	+ Zones to exclude from plots
-23. Ignore.Regions
+20. Ignore.Regions
 	+ Regions to exclude from plots
-24. Interfaces.for.Flows
+21. Interfaces.for.Flows
 	+ Specific interfaces to show flow data for
 
 
 ## Required PLEXOS outputs
 
-PLEXOS must report the following data in order for the scripts to work.
+PLEXOS must report the following data in order for all scripts to work. If you try to run a section and are missing the required data you will get an error telling you what PLEXOS output data is missing.
 
 ### Annual
 ##### Generator:
