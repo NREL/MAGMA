@@ -411,7 +411,8 @@ region_load = function(total.region.load) {
 }
 
 zone_load = function(total.region.load, total.zone.load) {
-  if (reassign.zones==TRUE | total.zone.load[,names(total.zone.load)!='time']=='ERROR'){
+  # if (reassign.zones==TRUE | total.zone.load[,names(total.zone.load)!='time']=='ERROR'){
+  if (reassign.zones==TRUE | total.zone.load=='ERROR'){
     z.load = total.region.load %>%
       join(select(region.zone.mapping, name=Region, Zone), by='name', match='first') %>%
       select(name=Zone, value) %>%
