@@ -4,6 +4,7 @@
 This package creates figures and an HTML file with all of those figures for plexos solutions.
 * You must use process_folder() from the rplexos package to create a database file from the PLEXOS solution .zip, before running this code.
 * The Examples folder contains templates and examples of the input data CSV, the generator name, region, and zone mapping CSV, the R script that runs the package, and example HTML reports (within the reports folder).
+* Section_guide.md lists what sections correspond to each number for the sections to run column in the input data CSV file.
 
 ##To Run:
 1. Copy run_html_output.R and input_data.csv from the Examples/ folder into another folder associated with your project specific repository.
