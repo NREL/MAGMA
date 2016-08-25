@@ -4,7 +4,8 @@ if(region.zone.gen.table) {
 # If it doesn't already exist then call the query function.
 if ( !exists('r.z.gen') ) {
   # Query region and zonal generation
-  r.z.gen = tryCatch( select(region_zone_gen(total.generation, total.avail.cap), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR: region_zone_gen function not returning correct results.') } )
+  r.z.gen = tryCatch( region_zone_gen(total.generation, total.avail.cap), 
+                      error = function(cond) { return('ERROR: region_zone_gen function not returning correct results.') } )
 }
   
 if ( typeof(r.z.gen)=='character' ) { 
@@ -28,7 +29,7 @@ if ( typeof(r.z.gen)=='character' ) {
   if (typeof(r.load)=='character' ) {
     r.gen.table = 'ERROR: region_load function not returning correct results.'  
   } else {
-    region.load = r.load[, .(Region = name, Load = value)]
+    region.load = r.load[, .(Region, Load = value)]
     setkey(region.load,Region)
     setkey(r.gen.table,Region)
     r.gen.table = r.gen.table[region.load]
@@ -38,7 +39,7 @@ if ( typeof(r.z.gen)=='character' ) {
   if (typeof(z.load)=='character' ) {
     z.gen.table = 'ERROR: zone_load function not returning correct results.'
   } else {
-    zone.load = z.load[, .(Zone = name, Load = value)]
+    zone.load = z.load[, .(Zone, Load = value)]
     setkey(zone.load,Zone)
     setkey(z.gen.table,Zone)
     z.gen.table = z.gen.table[zone.load]

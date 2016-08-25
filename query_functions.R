@@ -81,6 +81,7 @@ region_zone_gen = function(total.generation, total.avail.cap) {
    
   # Combine generation and curtailment and return.
   gen.data = rbindlist(list(gen.data, curt))
+  setnames(gen.data,'value','GWh')
   
   return(gen.data)
 }
@@ -231,6 +232,9 @@ annual_reserves = function(total.reserve.provision, total.reserve.shortage) {
 
 interval_reserves = function(interval.reserve.provision) {
   provision = interval.reserve.provision[, .(provision = sum(value)), by = .(time)]
+  # Summing reserves types, and adding indexing for interval number and day.
+  provision[,day := as.POSIXlt(time)[[8]]]
+  provision[,interval := 1:intervals.per.day,by=.(day)]
   return(provision)
 }
 
@@ -241,7 +245,7 @@ interval_reserves = function(interval.reserve.provision) {
 
 annual_interface_flows = function(total.interface.flow) {
   year.flows = total.interface.flow[name %in% interfaces,.(name,time,value)]  
-  return(year.flows)
+  return(year.flows[,.(name,GWh=value)])
 }
 
 interval_interface_flows = function(interval.interface.flow) {
@@ -286,6 +290,7 @@ zone_stats = function(total.region.load, total.region.imports, total.region.expo
 
 region_load = function(total.region.load) {
   r.load = total.region.load[,.(value=sum(value)), by=.(scenario,name)]
+  setnames(r.load,'name','Region')
   return(r.load)
 }
 
@@ -294,9 +299,9 @@ zone_load = function(total.region.load, total.zone.load) {
     setkey(total.region.load,name)
     setkey(rz.unique,Region)
     z.load = rz.unique[total.region.load][, .(value=sum(value)), by=.(scenario, Zone)]
-    setnames(z.load,"Zone","name")
   } else {
     z.load = total.zone.load[,.(value=sum(value)), by=.(scenario, name)]
+    setnames(z.load,"name","Zone")
   }
   return(z.load)
 }

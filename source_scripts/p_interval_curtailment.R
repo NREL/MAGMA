@@ -1,6 +1,6 @@
 # Check if this section was selected to run in the input file
 if (interval.curtailment){
-  
+
   # If the data doesn't exist, run the query function. 
   if ( !exists('interval.curt') ) {
     # Query curtailment data
@@ -11,43 +11,16 @@ if (interval.curtailment){
   if ( typeof(interval.curt)=='character' ) { 
     print('ERROR: daily_curtailment function not returning correct results.')
   } else {
-    
-    if (ncol(interval.curt)==1) {
-      interval.curt['time'] = 1:intervals.per.day
-      colnames(interval.curt) = c('Curtailment', 'time')
-      avg.curt = interval.curt
-    } else {
-      # Sum up the curtailment each interval to get average interval curtailment. Assign an interval to each row.
-      avg.curt = interval.curt[,.(Curtailment=sum(Curtailment)),by=.(interval)]
-      setnames(avg.curt, 'interval', 'time')
-    }
-    
-    # this is just for scaling the y-axis (either by load or generation, whichever is bigger)
-    stack = avg.curt[,.(value = sum(Curtailment)), by=.(time)]
-    stack[, Type := "ALL"]
-    
-    # This automatically creates the y-axis scaling
-    py  =pretty(stack$value)
-    seq.py = seq(0, py[length(py)], 2*(py[2]-py[1])) # get whole breaks sequence
-    
-    # Create plot
-    p1 = ggplot(avg.curt)+
-      geom_bar(aes(x=time, y=Curtailment, color="black"), stat='identity', color=NA)+    
-      labs(y="Curtailment (MWh)", x='Interval')+
-      #        scale_x_datetime(breaks = date_breaks(width = "1 month"), labels = date_format("%b"), expand = c(0, 0))+
-      scale_y_continuous(breaks=seq.py, limits=c(0, max(py)), expand=c(0,0))+
-      theme( legend.key =       element_rect(color = "grey80", size = 0.4),
-             legend.key.size =  grid::unit(0.9, "lines"), 
-             legend.text =      element_text(size=text.plot/1.1),
-             strip.text =       element_text(size=rel(0.7)),
-             axis.text =        element_text(size=text.plot/1.2), 
-             axis.title =       element_text(size=text.plot, face=2), 
-             axis.title.x =     element_text(vjust=-0.3),
-             panel.grid.major = element_line(colour = "grey85"),
-             panel.grid.minor = element_line(colour = "grey93"),
-             #             aspect.ratio =     0.5,
-             panel.margin =     unit(1.0, "lines") )
+    # Sum up the curtailment each interval to get average interval curtailment. Assign an interval to each row.
+    avg.curt = interval.curt[,.(Curtailment=mean(Curtailment)/1000),by=.(interval)]
+    avg.curt[, hour := floor((interval-1)*(3600*24/intervals.per.day)/3600)]
+    avg.curt[, minute := floor(((interval-1)*(3600*24/intervals.per.day)/3600-hour)/60)]
+    avg.curt[, second := floor((((interval-1)*(3600*24/intervals.per.day)/3600-hour)/60-minute)/60)]
+    avg.curt[, time := as.POSIXct(strptime(paste(hour,minute,second, sep=":"), "%H:%M:%S"),'UTC')]
+    # Create plots
+    p1 = line_plot(avg.curt, filters='time', x.col='time', y.col='Curtailment', y.lab='Curtailment (GWh)')
+    p1 = p1 + scale_x_datetime(breaks = date_breaks(width = "2 hour"), 
+                               labels = date_format("%H:%M"), expand = c(0, 0))
     print(p1)
   }
-
 } else { print('Section not run according to input file.') }

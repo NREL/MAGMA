@@ -9,73 +9,10 @@ figure.height = 3.5 # Set figure height
 
 ```{r individual-region-stack-{{region.name}}, fig.height=figure.height, include=TRUE}
 # Using plot data generated in previously sourced file, filter out only the current region.
-plot.data = r.z.gen.plot[Region == r.name, .(TWh = sum(TWh)), by=.(Type,Region)]
-plot.data[is.na(plot.data)]=0
 
-# Pull out load for the current region and convert to TWh
-region.load = r.load[r.load$name == r.name, .(value = sum(value)/1000), by=.(name)]
+plot.data = gen_stack_plot(r.z.gen[Region=='{{region.name}}',], r.load[Region=='{{region.name}}',])
+print(plot.data[[1]] + theme(aspect.ratio = 2.5) +
+      scale_y_continuous(breaks=plot.data[[2]], limits=c(min(plot.data[[2]]), max(plot.data[[2]])), 
+                         expand=c(0,0), label=comma))
 
-# gen.sum is just used to set the maximum height on the plot, see pretty() fcn below
-plot.data.sum = plot.data[, .(TWh = sum(TWh))] #change GWh generation to TWh
-
-# Check to see if the load is higher than the generation, and set plot height to that.
-if (region.load$value>plot.data.sum) {
-  plot.data.sum$TWh = region.load$value
-}
-
-# This automatically creates the y-axis scaling
-py=pretty(plot.data.sum$TWh, n = 4)
-seq.py=seq(0, py[length(py)], (py[2]-py[1]))
-
-# Check to see if there is any generation, otherwise generation is plotted.
-if ( sum(plot.data$TWh)>0 ) { 
-
-  setorder(plot.data,Type)
-  # Create plot
-  p = ggplot() +
-     geom_bar(data = plot.data, aes(x = Region, y = TWh, fill=Type, order=as.numeric(Type)), stat="identity", position="stack" ) +
-     geom_errorbar(aes(x=name, y=value, ymin=value, ymax=value, color='load'), data=region.load, linetype='longdash', size=0.45)+
-     scale_fill_manual(values = gen.color, guide = guide_legend(reverse = TRUE))+
-     scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+   
-     labs(y="Generation (TWh)", x=NULL)+
-     scale_y_continuous(breaks=seq.py, limits=c(0, max(py)), expand=c(0,0), label=comma)+
-     guides(color = guide_legend(order=1), fill = guide_legend(order=2, reverse=TRUE))+
-     theme(    legend.key =      element_rect(color="grey80", size = 0.8), 
-               legend.key.size = grid::unit(1.0, "lines"),
-               legend.text =     element_text(size=text.plot), 
-               legend.title =    element_blank(),
-       #                         text = element_text(family="Arial"),
-               axis.text =       element_text(size=text.plot/1.2), 
-               # axis.text.x =   element_text(face=2), 
-               axis.title =      element_text(size=text.plot, face=2), 
-               axis.title.y =    element_text(vjust=1.2), 
-               panel.margin =    unit(1.5, "lines"),
-               aspect.ratio =    2.5 )
-  print(p)
-    
-  # If there is no generation just plot the region load.
-} else {
-  
-    p = ggplot() +
-     # geom_bar(data = plot.data, aes(x = r.name, y = TWh, fill=Type, order=as.numeric(Type)), stat="identity", position="stack" ) +
-     geom_errorbar(aes(x=name, y=value, ymin=value, ymax=value, color='load'), data=region.load, linetype='longdash', size=0.45)+
-     scale_fill_manual(values = gen.color, guide = guide_legend(reverse = TRUE))+
-     scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+   
-     labs(y="Generation (TWh)", x=NULL)+
-     scale_y_continuous(breaks=seq.py, limits=c(0, max(py)), expand=c(0,0), label=comma)+
-     guides(color = guide_legend(order=1), fill = guide_legend(order=2, reverse=TRUE))+
-     theme(    legend.key =      element_rect(color="grey80", size = 0.8), 
-               legend.key.size = grid::unit(1.0, "lines"),
-               legend.text =     element_text(size=text.plot), 
-               legend.title =    element_blank(),
-       #                         text = element_text(family="Arial"),
-               axis.text =       element_text(size=text.plot/1.2), 
-               # axis.text.x =   element_text(face=2), 
-               axis.title =      element_text(size=text.plot, face=2), 
-               axis.title.y =    element_text(vjust=1.2), 
-               panel.margin =    unit(1.5, "lines"),
-               aspect.ratio =    2.5 )
-  print(p)
-  
-}
 ```

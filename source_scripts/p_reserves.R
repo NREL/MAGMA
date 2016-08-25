@@ -7,68 +7,28 @@ r = tryCatch( interval_reserves(interval.reserve.provision), error = function(co
 if ( typeof(r)=='character' ) { 
   print('ERROR: interval_reserves function not returning correct results.')
 } else {
-
-  # Summing reserves types, and adding indexing for interval number and day.
-  r[,day := as.POSIXlt(time)[[8]]]
-  r[,interval := 1:intervals.per.day,by=.(day)]
   
   # Average reserve provision at each interval
-  int.avg = r[, .(Provision = mean(provision)), by = .(interval)]
-  
-  # this is just for scaling the y-axis (either by load or generation, whichever is bigger)
-  stack = int.avg[, .(value=sum(Provision)), by = .(interval)]
-  stack[, Type := "ALL"]
-              
-  # This automatically creates the y-axis scaling
-  py = pretty(stack$value/1000)
-  seq.py = seq(0, py[length(py)], 2*(py[2]-py[1])) # get whole breaks sequence
-  
+  int.avg = r[, .(Provision = mean(provision)/1000), by = .(interval)]
+  int.avg[, hour := floor((interval-1)*(3600*24/intervals.per.day)/3600)]
+  int.avg[, minute := floor(((interval-1)*(3600*24/intervals.per.day)/3600-hour)/60)]
+  int.avg[, second := floor((((interval-1)*(3600*24/intervals.per.day)/3600-hour)/60-minute)/60)]
+  int.avg[, time := as.POSIXct(strptime(paste(hour,minute,second, sep=":"), "%H:%M:%S"),'UTC')]
+
   # Creating interval reserves provisions plot
-  p.1 = ggplot(int.avg)+
-           geom_line(aes(x=interval, y=Provision/1000), size = 2, color = 'black')+    
-           labs(y="Reserve Provisions (GWh)", x='Interval')+
-  #                     scale_x_datetime(breaks = date_breaks(width = "1 month"), labels = date_format("%b"), expand = c(0, 0))+
-           scale_y_continuous(breaks=seq.py, limits=c(0, max(py)), expand=c(0,0))+
-           theme( legend.key =       element_rect(color = "grey80", size = 0.4),
-                  legend.key.size =  grid::unit(0.9, "lines"), 
-                  legend.text =      element_text(size=text.plot/1.1),
-                  strip.text =       element_text(size=rel(0.7)),
-                  axis.text =        element_text(size=text.plot/1.2), 
-                  axis.title =       element_text(size=text.plot, face=2), 
-                  axis.title.x =     element_text(vjust=-0.3),
-                  panel.grid.major = element_line(colour = "grey85"),
-                  panel.grid.minor = element_line(colour = "grey93"),
-  #                 aspect.ratio =     0.5,
-                  panel.margin =     unit(1.0, "lines") )
+  p.1 = line_plot(int.avg, 'interval','time', 'Provision', 'Reserve Provision (GWh)')
+  p.1 = p.1 + scale_x_datetime(breaks = date_breaks(width = "2 hour"), 
+                               labels = date_format("%H:%M"), expand = c(0, 0))
 
   # Calculating the daily hourly average
-  dy.avg = r[, .(Provision = mean(provision)), by = .(day)]
-
-  # this is just for scaling the y-axis (either by load or generation, whichever is bigger)
-  stack = dy.avg[, .(value = sum(Provision)), by = .(day)]
-  stack[, Type := "ALL"]
-                  
-  # This automatically creates the y-axis scaling
-  py = pretty(stack$value/1000)
-  seq.py = seq(0, py[length(py)], 2*(py[2]-py[1])) # get whole breaks sequence
+  dy.avg = r[, .(Provision = mean(provision)/1000), by = .(day)]
+  dy.avg[, time := as.POSIXct(strptime(day,'%j'))]
 
   # Creating average daily reserves provisions plot
-  p.2 = ggplot(dy.avg)+
-           geom_line(aes(x=day, y=Provision/1000), color='black', size = 2)+    
-           labs(y="Reserve Provisions (GWh)", x='Day')+
-  #                     scale_x_datetime(breaks = date_breaks(width = "1 month"), labels = date_format("%b"), expand = c(0, 0))+
-           scale_y_continuous(breaks=seq.py, limits=c(0, max(py)), expand=c(0,0))+
-           theme( legend.key =       element_rect(color = "grey80", size = 0.4),
-                  legend.key.size =  grid::unit(0.9, "lines"), 
-                  legend.text =      element_text(size=text.plot/1.1),
-                  strip.text =       element_text(size=rel(0.7)),
-                  axis.text =        element_text(size=text.plot/1.2), 
-                  axis.title =       element_text(size=text.plot, face=2), 
-                  axis.title.x =     element_text(vjust=-0.3),
-                  panel.grid.major = element_line(colour = "grey85"),
-                  panel.grid.minor = element_line(colour = "grey93"),
-  #                 aspect.ratio =     0.5,
-                  panel.margin =     unit(1.0, "lines") )
+  p.2 = line_plot(dy.avg, 'day','time', 'Provision', 'Reserve Provision (GWh)')
+  p.2 = p.2 + scale_x_datetime(breaks = date_breaks(width = "1 month"), 
+                               labels = date_format("%b %d"), expand = c(0, 0))
+
   print(p.1)
   print(p.2)
 }
