@@ -14,6 +14,9 @@ plot.data = r.z.gen.plot %>%
 
 # Pull out load for the current region and convert to TWh
 region.load = filter(r.load, name == r.name)
+region.load = region.load %>%
+  group_by(name) %>%
+  dplyr::summarise(value = sum(value))
 region.load$value = region.load$value/1000
 
 # gen.sum is just used to set the maximum height on the plot, see pretty() fcn below
