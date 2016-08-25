@@ -22,7 +22,8 @@ ggplot(plot.flows[Period==p.name, ], aes(time, value/1000, group=name, color=nam
                   axis.text=element_text(face=2, size=text.plot/1),
                   axis.title=element_text(size=text.plot, face=2.3),
                   # legend.position=c(0.80, 0.12),
-                  panel.margin = unit(0.35, "lines"))    
+                  panel.margin = unit(0.35, "lines"),
+                  aspect.ratio = 0.5)    
   
 ```
 

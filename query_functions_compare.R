@@ -29,7 +29,7 @@ gen_diff_by_type = function(total.generation, total.avail.cap) {
  # Calculate regional generation differences
 region_gen_diff = function(total.generation, total.avail.cap) {
   
-  r.z.gen = tryCatch( region_zone_gen(total.generation, total.avail.cap)[, .(GWh=sum(value)), by=.(scenario, Region, Type)], 
+  r.z.gen = tryCatch( region_zone_gen(total.generation, total.avail.cap)[, .(GWh=sum(GWh)), by=.(scenario, Region, Type)], 
                       error = function(cond) { return('ERROR') } )
 
   all.combos = data.table(expand.grid(unique(r.z.gen$scenario), unique(r.z.gen$Region), unique(r.z.gen$Type)))
@@ -47,7 +47,7 @@ region_gen_diff = function(total.generation, total.avail.cap) {
  # Calculate zonal generation differences
 zone_gen_diff = function(total.generation, total.avail.cap) {
   
-  r.z.gen = tryCatch( region_zone_gen(total.generation, total.avail.cap)[, .(GWh=sum(value)), by=.(scenario, Zone, Type)], 
+  r.z.gen = tryCatch( region_zone_gen(total.generation, total.avail.cap)[, .(GWh=sum(GWh)), by=.(scenario, Zone, Type)], 
                       error = function(cond) { return('ERROR') } )
 
   all.combos = data.table(expand.grid(unique(r.z.gen$scenario), unique(r.z.gen$Zone), unique(r.z.gen$Type)))

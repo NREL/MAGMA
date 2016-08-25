@@ -8,46 +8,11 @@ figure.height = 6
 ```
 
 ```{r key-period-dispatch-plots-total-{{period.name}}, fig.width=figure.width, fig.height=figure.height, include=TRUE}
-
-# ###############################################################################
-# Total database Data
-# ###############################################################################   
-
-# this is just for scaling the y-axis (either by load or generation, whichever is bigger)
-stack.t = gen.type.total[Period==p.name, .(value=sum(value)), by=.(time)] 
-
-# If load is much higher than generation, reassign y-axis scaling according to load so it won't be cut out of the plot.
-if (max(gen.load.total[Period==p.name, value])>max(stack.t$value)){
-  stack.t = gen.load.total[Period==p.name, .(value=sum(value)), by=.(time)]
-}
-
-# This automatically creates the y-axis tick mark separation
-py.t = pretty(c(0,stack.t$value/1000), n = 4)
-seq.py.t = seq(0, py.t[length(py.t)], 2*(py.t[2]-py.t[1])) # get whole breaks sequence 
-
-# #############################################################################################################
-# Total database plots
-# #############################################################################################################
-ggplot(gen.type.total[Period==p.name, ], aes(time, value/1000, group=Type, fill=Type, order=as.numeric(Type)), color="black")+
-      geom_area(color=NA)+
-      geom_line(position="stack", size=0.3)+
-      labs(y="Generation (GWh)", x=NULL)+
-      geom_line(data=gen.load.total[Period==p.name, ], linetype="longdash", aes(color="load"),size=0.8)+
-      scale_fill_manual("",values = gen.color, limits=rev(gen.order))+
-      scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
-      scale_x_datetime(breaks = date_breaks(width = "1 day"), labels = date_format("%b %d\n%I %p"), expand = c(0, 0))+
-      scale_y_continuous(breaks=seq.py.t, limits=c(0, max(py.t)), expand=c(0,0))+
-      theme(legend.key = element_rect(color = "grey80", size = 0.4),
-            legend.key.size = grid::unit(0.9, "lines"), 
-            legend.text = element_text(size=text.plot/1.1),
-            strip.text=element_text(size=rel(0.7)),
-            axis.text=element_text(size=text.plot/1.2), 
-            axis.title=element_text(size=text.plot, face=2), 
-            axis.title.x=element_text(vjust=-0.3),
-            panel.grid.major = element_line(colour = "grey85"),
-            panel.grid.minor = element_line(colour = "grey93"),
-            aspect.ratio = 0.5)
-#                           panel.margin = unit(1.0, "lines"))+
+# Make plot if data exists for this region
+if (length(gen.type.total[Period==p.name, value])>0 & sum(gen.type.total[Period==p.name, value])>0 ) {
+  p = dispatch_plot(gen.type.total[Period==p.name, ], gen.load.total[Period==p.name, ])
+} else{ p = 'Data does not exist for this period'}
+print(p)
 ```
 
 

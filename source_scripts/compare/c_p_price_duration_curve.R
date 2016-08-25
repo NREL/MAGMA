@@ -7,10 +7,8 @@ if ( typeof(interval.region.price)=='character' ) {
 } else {
   
   # If price duration curve is selected in the input file, int.data.region should be created.
-  region.data = interval.region.price[!name %in% ignore.regions, ]
-  
-  # Pull out price from the regional data query
-  region.data = region.data[property == 'Price', .(scenario,name,time,value) ]
+  region.data = interval.region.price[!name %in% ignore.regions & property == 'Price', 
+                                      .(scenario,name,time,value) ]
   
   # Separate price for each region and create a duration curve for each region. 
   region.data[, interval := rank(-value,ties.method="random"), by=.(scenario,name)]

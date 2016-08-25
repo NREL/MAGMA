@@ -8,62 +8,17 @@ if( !exists('z.gen.scen') ) {
 
 # Check if zonal.gen query worked and create plot of regional gen, else return an error.
 if ( typeof(z.gen.scen)=='character' ) {
-  print('ERROR: region_zone_gen function not returning correct results.')
+  print('ERROR: zone_gen_diff function not returning correct results.')
 } else if ( typeof(r.load) == 'character' ) {
   print('ERROR: region_load function not returning correct results.')
 } else {
-  
-  # reorder the levels of Type to plot them in order
-  z.gen.scen[, Type := factor(Type, levels = gen.order)]
 
-  # Separate out the positive and negative halves for easier plotting
-  # also convert to TWh and filter out ignored zones
-  dat.pos = z.gen.scen[GWh>=0 & scenario!=ref.scenario & !Zone %in% ignore.zones, 
-                        .(TWh = sum(GWh)/1000), by=.(scenario,Zone,Type)]
-  dat.neg = z.gen.scen[GWh<0 & scenario!=ref.scenario & !Zone %in% ignore.zones, 
-                        .(TWh = sum(GWh)/1000), by=.(scenario,Zone,Type)]
-    
-  # z.gen.sum is just used to set the maximum height on the plot, see pretty() fcn below
-  z.gen.sum = rbindlist(list(dat.pos[, .(TWh = sum(TWh))], dat.neg[, .(TWh = sum(TWh))]))  
-  
-  # Calculate difference in load
-  zone.load.scen = z.load[!name %in% ignore.zones, .(value = sum(value)/1000), by=.(scenario,name)]
-  zone.load.scen[, scenario:=as.character(scenario)]
-  diff.load = zone.load.scen[, .(scenario, TWh = value-value[scenario==ref.scenario]), by=.(name)]
-  diff.load = diff.load[scenario!=ref.scenario, ]
-  setnames(diff.load,"name","Zone")
-  
-  # *** Not needed for these plots as y-axis is varying. ***
-  # # This automatically creates the y-axis scaling
-  # py=pretty(z.gen.sum$TWh, n=5, min.n = 5)
-  # seq.py=seq(0, py[length(py)], 10*(py[2]-py[1]))
-  
-  setorder(dat.pos,Type)
-  setorder(dat.neg,Type)
-
-  # Create plot
-  p1 = ggplot() +
-          geom_bar(data = dat.pos, aes(x = scenario, y = TWh, fill=Type), stat="identity", position="stack" ) +
-          geom_bar(data = dat.neg, aes(x = scenario, y = TWh, fill=Type), stat="identity", position="stack" ) +
-          geom_errorbar(data = diff.load, aes(x = scenario, ymin=TWh, ymax=TWh, color='load'), size=0.45, linetype='longdash')+
-          scale_fill_manual(values = gen.color, guide = guide_legend(reverse = TRUE))+
-          scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
-          labs(y="Difference in Generation (TWh)", x=NULL)+
-          # scale_y_continuous(breaks=seq.py, expand=c(0,0), label=comma)+
-          guides(color = guide_legend(order=1), fill = guide_legend(order=2, reverse=TRUE))+
-               theme(    legend.key =      element_rect(color="grey80", size = 0.8), 
-                         legend.key.size = grid::unit(1.0, "lines"),
-                         legend.text =     element_text(size=text.plot), 
-                         legend.title =    element_blank(),
-                 #                         text = element_text(family="Arial"),
-                         axis.text =       element_text(size=text.plot/1.2), 
-                         axis.text.x =     element_text(angle=-20, hjust=0),
-                         axis.title =      element_text(size=text.plot, face=2), 
-                         axis.title.y =    element_text(vjust=1.2), 
-                         panel.margin =    unit(1.5, "lines"),
-                         aspect.ratio =    2.5/length(unique(dat.pos$scenario)) )+
-              facet_wrap(~Zone, scales = 'free', ncol=3)
-  print(p1)
+  # Call function to create plot and print
+  [p1, seq.py] = gen_diff_stack_plot(z.gen.scen[!Zone %in% ignore.zones, ], 
+                                     z.load[!Zone %in% ignore.zones, ],
+                                     filters = 'Zone')
+  print(p1 + facet_wrap(~Zone, scales = 'free', ncol=3))
+}
 }
 
 } else { print('Section not run according to input file.') }

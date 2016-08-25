@@ -2,7 +2,8 @@
 if (zone.gen.stacks) {
 
 # Query region and zonal generation
-r.z.gen = tryCatch( select(region_zone_gen(total.generation, total.avail.cap), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR') } )
+r.z.gen = tryCatch( region_zone_gen(total.generation, total.avail.cap), 
+                    error = function(cond) { return('ERROR') } )
 
 # If the query doesn't work, return an error. Else run code to create plot.
 if ( typeof(r.z.gen)=='character' ) {
@@ -22,7 +23,7 @@ if ( typeof(r.z.gen)=='character' ) {
                          .(TWh = sum(GWh)/1000), by=.(Type,Zone)]
   setorder(r.z.gen.plot,Type)
     
-  zone.load = z.load[!name %in% ignore.zones, ] # Remove load from zones that are being ignored
+  zone.load = z.load[!Zone %in% ignore.zones, ] # Remove load from zones that are being ignored
   zone.load[, value := value/1000]
 
   # ***Not needed for these plots as the y axis scaling changes***
@@ -53,6 +54,8 @@ if ( typeof(r.z.gen)=='character' ) {
                # aspect.ratio =    2.5)
     # facet_wrap(~Zone, scales = 'free_y')
   print(p1)
+
+
 }
 
 } else { print('Section not run according to input file.') }

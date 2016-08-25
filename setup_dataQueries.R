@@ -54,12 +54,12 @@ if ( capacity.factor.table ) {
 }
 
 if ( region.zone.flow.table | total.gen.stack | region.gen.stacks | zone.gen.stacks |
-     individual.region.stacks.log ) {
+     individual.region.stacks.log | region.zone.gen.table ) {
   # Total region load 
   total.region.load    = tryCatch( total_region_load(db), error = function(cond) { return('ERROR') } ) 
   # Aggregate region load and get unique names
   r.load               = tryCatch( region_load(total.region.load), error = function(cond) { return('ERROR') } ) 
-  region.names         = unique(r.load$name) # Assign region names based on PLEXOS regions.
+  region.names         = unique(r.load$Region) # Assign region names based on PLEXOS regions.
   if (typeof(total.region.load)=='character') { message('\nMissing total region load data from solution .db file.')}
   if( length(unique(rz.unique$Region))!=length(region.names) ) { message('\nWarning: Number of regions in generation to region/zone mapping file different than number of regions from region load query! Check region.names object.') }
 }
@@ -79,12 +79,12 @@ if ( region.zone.flow.table ) {
 }
 
 if ( region.zone.flow.table | total.gen.stack | region.gen.stacks | zone.gen.stacks |
-     individual.region.stacks.log ) {
+     individual.region.stacks.log | region.zone.gen.table ) {
   # Total zone load
   total.zone.load    = tryCatch( total_zone_load(db), error = function(cond) { return('ERROR') } ) 
   # Aggregate zone load and get unique names
   z.load             = tryCatch( zone_load(total.region.load, total.zone.load), error = function(cond) { return('ERROR') } ) 
-  zone.names         = unique(z.load$name) # Assign zone names based on PLEXOS regions or region to zone mapping file. 
+  zone.names         = unique(z.load$Zone) # Assign zone names based on PLEXOS regions or region to zone mapping file. 
   if (typeof(total.zone.load)=='character') { message('\nMissing total zone load data from solution .db file. Ok if reassign zones is TRUE and region data is found.')}
   if( length(unique(rz.unique$Zone))!=length(zone.names) ) { message('\nWarning: Number of zones in generation to region/zone mapping file different than number of zones from zone load query! Check zone.names object.') }
 }

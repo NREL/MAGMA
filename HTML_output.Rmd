@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, incl
                       fig.path=fig.path.name, dev='png')
 
 # Set dynamic height for figure in regional generation chunk
-if (exists('zone.names')) { f.height = ( length(zone.names) %/% 2 + length(zone.names) %% 2 ) * 5
+if (exists('zone.names')) { f.height = max(( length(zone.names) %/% 3 + length(zone.names) %% 3 ) * 5,5)
   } else { f.height = 5 }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
@@ -29,62 +29,111 @@ if (exists('zone.names')) { f.height = ( length(zone.names) %/% 2 + length(zone.
 ## 1. Total Generation
 ```{r total-gen-stack}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_total_gen_stack.R')
+# Check if this section was selected run in the input file
+if (total.gen.stack){
+  if ( typeof(total.generation)=='character' ) {
+    print('ERROR: total.generation has errors. Cannot run this section.')
+  } else if ( typeof(total.avail.cap) == 'character' ) { 
+    print('ERROR: total.avail.cap has errors. Cannot run this section.')
+  } else{
+    # Query annual generation by type.
+    yr.gen = tryCatch( gen_by_type(total.generation, total.avail.cap), 
+                       error = function(cond) { return('ERROR: gen_by_type function not returning correct results.') } )
+    # Create plot
+    plot.data = gen_stack_plot(yr.gen, r.load)
+    print(plot.data[[1]] + theme(aspect.ratio = 2.5) +
+          scale_y_continuous(breaks=plot.data[[2]], limits=c(min(plot.data[[2]]), max(plot.data[[2]])), expand=c(0,0), label=comma))
+  }
+} else { print('Section not run according to input file.')}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
 ***
 ## 2. Zonal Generation
-```{r zone-gen-stacks, resize.height=T}
+```{r zone-gen-stacks, fig.height=f.height, fig.width=10}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_zone_gen_stacks.R')
+if (zone.gen.stacks) {
+  if ( typeof(total.generation)=='character' ) {
+    print('ERROR: total.generation has errors. Cannot run this section.')
+  } else if ( typeof(total.avail.cap) == 'character' ) { 
+    print('ERROR: total.avail.cap has errors. Cannot run this section.')
+  } else{ 
+    # Query region and zonal generation
+    r.z.gen = tryCatch( region_zone_gen(total.generation, total.avail.cap), 
+                        error = function(cond) { return('ERROR') } )  
+    # Create plot
+    plot.data = gen_stack_plot(r.z.gen[!Zone %in% ignore.zones, ],
+                               z.load[!Zone %in% ignore.zones, ], 
+                               filters = 'Zone')
+    print(plot.data[[1]] + facet_wrap(~Zone, scales = 'free', ncol=3) +
+          theme(aspect.ratio = 2.5))
+  }
+} else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
 ***
 ## 3. Regional Generation
-```{r region-gen-stacks, resize.height=F, fig.height=f.height}
+```{r region-gen-stacks, resize.height=F, fig.height=f.height, fig.width=10}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_region_gen_stacks.R')
+# Check if this section was selected run in the input file
+if (region.gen.stacks) {
+  if ( typeof(total.generation)=='character' ) {
+    print('ERROR: total.generation has errors. Cannot run this section.')
+  } else if ( typeof(total.avail.cap) == 'character' ) { 
+    print('ERROR: total.avail.cap has errors. Cannot run this section.')
+  } else{ 
+    # Query region and zonal generation
+    r.z.gen = tryCatch( region_zone_gen(total.generation, total.avail.cap), 
+                        error = function(cond) { return('ERROR') } )
+    # Make sure all loads and zones are present
+    setkey(r.load,Region)
+    setkey(rz.unique,Region)
+    region.load = rz.unique[r.load]
+    region.load = region.load[complete.cases(region.load),]
+    # Create and plot data
+    plot.data = gen_stack_plot(r.z.gen[(!Zone %in% ignore.zones && !Region %in% ignore.regions),],
+                        region.load[(!Zone %in% ignore.zones && !Region %in% ignore.regions),],
+                        filters = c('Region','Zone'), x_col = 'Region')
+    print(plot.data[[1]] + facet_wrap(~Zone, scales = 'free', ncol=3))
+  }
+} else { print('Section not run according to input file.') }
+
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
 ***
 ## 4. Individual Regions
-```{r individual-region-stacks, include=FALSE}
+```{r individual-region-stacks, include=FALSE, fig.height=8}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
 if(individual.region.stacks.log) {
-  
-  # Source R script which calls region_zone_gen function and creates data for plots
-  source('source_scripts/d_individual_region_stacks.R')
-  
-  # As long as the file exists (previous source found the R script) this loop runs
-  if ( exists('r.z.gen.plot') ) {
+  if ( typeof(total.generation)=='character' ) {
+    print('ERROR: total.generation has errors. Cannot run this section.')
+  } else if ( typeof(total.avail.cap) == 'character' ) { 
+    print('ERROR: total.avail.cap has errors. Cannot run this section.')
+  } else if ( typeof(r.load) == 'character' ) {
+    print('ERROR: region_load function not returning correct results. Cannot run this section')
+  } else { 
+    # Query region and zonal generation
+    r.z.gen = tryCatch( region_zone_gen(total.generation, total.avail.cap), 
+                        error = function(cond) { return('ERROR') } )
     # If the regional query didn't work, return an error. Else create the plots by calling the markdown file.
-    if ( typeof(r.z.gen.plot)=='character' ) {
+    if ( typeof(r.z.gen)=='character' ) {
       print('ERROR: region_zone_gen function not returning correct results.')
-    # If regional load query from the setup_dataQueries file didn't work, the loop ends here.
-    } else if ( typeof(r.load) == 'character' ) {
-      print('ERROR: region_load function not returning correct results.')
     } else {
-    
-        key.plots = list() # Creates empty list for plot data
-    
-        # Create plot for each region in region.names
-        for ( p in 1:length(region.names) )  {
-          region.name = region.names[p]
-          key.plots[p] = knit_expand(file = 'source_scripts/p_individual_region_stacks.Rmd', region.name=region.name)
-        }
-    
-        # Reconstruct the plot data into a format that will be output into the HTML below
-        individual.region.stacks = knit_child(text = unlist(key.plots))
+      key.plots = lapply(region.names, function(r){
+                         knit_expand(file = 'source_scripts/p_individual_region_stacks.Rmd', region.name=r)
+                         })
+      # Reconstruct the plot data into a format that will be output into the HTML below
+      individual.region.stacks = knit_child(text = unlist(key.plots))
+      }
     }
-  }
 } else { individual.region.stacks = 'Section not run according to input file.' }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 `r individual.region.stacks`
+
 
 ***
 ## 5-7. Specified Period Dispatch Stacks
@@ -104,45 +153,29 @@ if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.di
       key.period.dispatch.zone   = 'ERROR: interval_gen function not returning correct results.'
       key.period.dispatch.region = 'ERROR: interval_gen function not returning correct results.'
     } else {
-  
-      key.plots.total = list() # Creates empty list for plot data
-      key.plots.zone = list() # Creates empty list for plot data
-      key.plots.region = list() # Creates empty list for plot data
-      r.idx = 1
-      z.idx = 1
-      
-      # Create data for each plot for the interesting periods
-      for ( p in 1:n.periods ) {
-        period.name = period.names[p]
+      # Create data if total database info was selected in input file.
+      if (key.period.dispatch.total.log) {
+        key.plots.total = lapply(period.names, function(p){
+          knit_expand(file = 'source_scripts/p_key_period_dispatch_total.Rmd', period.name = p)
+          })
+        key.period.dispatch.total = knit_child(text = unlist(key.plots.total))
+      } else {key.period.dispatch.total  = 'Section not run according to input file.'}
         
-        # Check if total database info was selected in input file.
-        if (key.period.dispatch.total.log) {
-          key.plots.total[[p]] = knit_expand(file = 'source_scripts/p_key_period_dispatch_total.Rmd', period.name = period.name)
-        } else {key.period.dispatch.total  = 'Section not run according to input file.'}
+      # Create data if zonal dispatch stacks were selected in input file.
+      if (key.period.dispatch.zone.log) {
+          key.plots.zone = mapply(function(p,z){knit_expand(file = 'source_scripts/p_key_period_dispatch_zone.Rmd', 
+                                                            period.name = p, zone.name = z)},
+                                  rep(period.names,length(zone.names)), rep(zone.names,each=n.periods))
+        key.period.dispatch.zone = knit_child(text = unlist(key.plots.zone))
+      } else {key.period.dispatch.zone   = 'Section not run according to input file.'}
         
-        # Check if zonal dispatch stacks were selected in input file.
-        if (key.period.dispatch.zone.log) {
-          for ( z in 1:length(zone.names) ) {
-            zone.name = zone.names[z]
-            key.plots.zone[[z.idx]] = knit_expand(file = 'source_scripts/p_key_period_dispatch_zone.Rmd', period.name = period.name, zone.name = zone.name) 
-            z.idx = z.idx + 1
-          } 
-        } else {key.period.dispatch.zone   = 'Section not run according to input file.'}
-        
-        # Check if regional dispatch stacks were selected in input file.
-        if (key.period.dispatch.region.log) {
-          for ( r in 1:length(region.names) ) {
-            region.name = region.names[r]
-            key.plots.region[[r.idx]] = knit_expand(file = 'source_scripts/p_key_period_dispatch_region.Rmd', period.name = period.name, region.name = region.name)
-            r.idx = r.idx + 1
-          }
-        } else {key.period.dispatch.region = 'Section not run according to input file.'}
-      }
-  
-      # Reconstruct the plot data into a format that will be output into the HTML below
-      if (key.period.dispatch.total.log) { key.period.dispatch.total = knit_child(text = unlist(key.plots.total)) }
-      if (key.period.dispatch.zone.log) { key.period.dispatch.zone = knit_child(text = unlist(key.plots.zone)) }
-      if (key.period.dispatch.region.log) { key.period.dispatch.region = knit_child(text = unlist(key.plots.region)) }
+      # Create data if regional dispatch stacks were selected in input file.
+      if (key.period.dispatch.region.log) {
+        key.plots.region = mapply(function(p,r){knit_expand(file = 'source_scripts/p_key_period_dispatch_region.Rmd', 
+                                                            period.name = p, region.name = r)},
+                                  rep(period.names,length(region.names)), rep(region.names,each=n.periods))
+        key.period.dispatch.region = knit_child(text = unlist(key.plots.region))
+      } else {key.period.dispatch.region = 'Section not run according to input file.'}        
     }
   } else {
     key.period.dispatch.total  = 'Problem sourcing or running d_key_period_dispatch.R.'
@@ -172,7 +205,30 @@ if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.di
 ### 8. Average Daily Curtailment
 ```{r yearly-curtailment}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_daily_curtailment.R')
+if (daily.curtailment) {
+  # If the data doesn't exist, run the query function. 
+  if ( !exists('interval.curt') ) {
+    # Query curtailment data
+    interval.curt = tryCatch( total_curtailment(interval.generation, interval.avail.cap), error = function(cond) { return('ERROR')})
+  }
+  # If there is a problem with the query return an error.
+  if ( typeof(interval.curt)=='character' ) { 
+    print('ERROR: daily_curtailment function not returning correct results.')
+  } else {
+    
+    # Calculate average curtailment for each day 
+    daily.curt = interval.curt[,.(Curtailment = mean(Curtailment)),by=.(day, year)] 
+    daily.curt[, timeformat := sprintf("%d %d", day+1, year)]
+    daily.curt[, time := as.POSIXct(strptime(timeformat,'%j %Y'))] # Add time column
+
+    p1 = line_plot(daily.curt, filters='time', x.col='time', y.col='Curtailment', y.lab='Curtailment (MWh)')
+    p1 = p1 + scale_x_datetime(breaks = date_breaks(width = "1 month"), 
+                               labels = date_format("%b"), expand = c(0, 0))
+    print(p1)
+  }
+  
+} else { print('Section not run according to input file.') }
+
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -180,7 +236,29 @@ source('source_scripts/p_daily_curtailment.R')
 ### 9. Average Interval Curtailment
 ```{r daily-curtailment}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_interval_curtailment.R')
+if (interval.curtailment){
+  # If the data doesn't exist, run the query function. 
+  if ( !exists('interval.curt') ) {
+    # Query curtailment data
+    interval.curt = tryCatch( total_curtailment(interval.generation, interval.avail.cap), error = function(cond) { return('ERROR')})
+  }
+  # Check for errors in the querying function.
+  if ( typeof(interval.curt)=='character' ) { 
+    print('ERROR: daily_curtailment function not returning correct results.')
+  } else {
+    # Sum up the curtailment each interval to get average interval curtailment. Assign an interval to each row.
+    avg.curt = interval.curt[,.(Curtailment=mean(Curtailment)/1000),by=.(interval)]
+    avg.curt[, hour := floor((interval-1)*(3600*24/intervals.per.day)/3600)]
+    avg.curt[, minute := floor(((interval-1)*(3600*24/intervals.per.day)/3600-hour)/60)]
+    avg.curt[, second := floor((((interval-1)*(3600*24/intervals.per.day)/3600-hour)/60-minute)/60)]
+    avg.curt[, time := as.POSIXct(strptime(paste(hour,minute,second, sep=":"), "%H:%M:%S"),'UTC')]
+    # Create plots
+    p1 = line_plot(avg.curt, filters='time', x.col='time', y.col='Curtailment', y.lab='Curtailment (GWh)')
+    p1 = p1 + scale_x_datetime(breaks = date_breaks(width = "2 hour"), 
+                               labels = date_format("%H:%M"), expand = c(0, 0))
+    print(p1)
+  }
+} else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -188,8 +266,33 @@ source('source_scripts/p_interval_curtailment.R')
 ## 10. Total Gen
 ```{r annual-generation-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/t_annual_generation.R')
-if(exists('yr.gen')) { kable(yr.gen, format.args = list(big.mark = ','), digits=2) }
+if (annual.generation.table){
+  # If the data doesn't already exist, run the query function.
+  if ( !exists('yr.gen') ) {
+    yr.gen = tryCatch(gen_by_type(total.generation, total.avail.cap), 
+                      error = function(cond) { return('ERROR: gen_by_type function not returning correct results') } ) 
+  }
+  # Set the order level that generatino type will be displayed.
+  yr.gen[, Type := factor(Type, levels = c(gen.order))] 
+  setorder(yr.gen,Type)
+  
+  # Separate out curtailment from generation
+  curt = yr.gen[Type=='Curtailment', ]
+  yr.gen = yr.gen[Type!='Curtailment', ]
+  
+  # Calculate the percent generation of each type, and percent curtailment
+  yr.gen[, Total:=sum(GWh)]
+  yr.gen[, Percent:=GWh/Total*100]
+  yr.gen[, Total:=NULL]
+  curt[, Total:=GWh+yr.gen[Type %in% re.types, sum(GWh)] ]
+  curt[, Percent:=GWh/Total*100]
+  curt[, Total:=NULL]
+  
+  # combine back into one table. 
+  yr.gen = rbindlist(list(yr.gen, curt))
+  row.names(yr.gen) = NULL
+  kable(yr.gen, format.args = list(big.mark = ','), digits=2) 
+  } else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -197,17 +300,48 @@ if(exists('yr.gen')) { kable(yr.gen, format.args = list(big.mark = ','), digits=
 ## 11. Total Costs
 ```{r annual-cost-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/t_annual_cost.R')
-if(exists('cost.table')) { kable(cost.table, format.args = list(big.mark = ',')) }
+# Check if this section was selected to run in the input file
+if (annual.cost.table) {
+  # Run the cost query function
+  cost.table = tryCatch( costs(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom.cost), 
+                         error = function(cond) { return('ERROR: costs function not returning correct results.') })
+  kable(cost.table, format.args = list(big.mark = ','))
+} else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
 ***
 ## 12. Region and Zone Info (GWh)
-``` {r region-zone-flow-tables}
-source('source_scripts/t_region_zone_flow.R')
-if(exists('r.stats')) { kable(r.stats, format.args = list(big.mark = ','), digits=2) }
-if(exists('z.stats')) { kable(z.stats, format.args = list(big.mark = ','), digits=2) }
+``` {r region-flow-tables, results = 'asis'}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (region.zone.flow.table) {
+  # Query region and zone stats.
+  r.stats = tryCatch( region_stats(total.region.load, total.region.imports, total.region.exports, total.region.ue), 
+                      error = function(cond) { return('ERROR: region_stats function not returning correct results.') })
+    # Set names if data exists
+  if ( !typeof(r.stats)=='character' ) { 
+    setnames(r.stats, 'name', 'Region Name')
+  } else{ print("ERROR: region_stats not returning correct results")}
+  # Print data. Will print error message if errors
+  kable(r.stats, format.args = list(big.mark = ','), digits=2)
+  } else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+``` {r zone-flow-tables, results = 'asis'}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (region.zone.flow.table) {
+  # Query region and zone stats.
+  z.stats = tryCatch( zone_stats(total.region.load, total.region.imports, total.region.exports, total.region.ue, 
+                                 total.zone.load, total.zone.imports, total.zone.exports, total.zone.ue), 
+                      error = function(cond) { return('ERROR: zone_stats function not returning correct results.') })
+  # Set names if data exists
+  if ( !typeof(z.stats)=='character' ) { 
+    setnames(z.stats, 'name', 'Zone Name')
+  } else{ print("ERROR: region_stats not returning correct results")}
+  # Print data. Will print error message if errors
+  kable(z.stats, format.args = list(big.mark = ','), digits=2)
+} else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -215,8 +349,14 @@ if(exists('z.stats')) { kable(z.stats, format.args = list(big.mark = ','), digit
 ## 13. Interface Flow Table
 ```{r interface-flow-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/t_interface_flow.R')
-if(exists('annual.flows')) { kable(annual.flows, digits=3) }
+# Check if this section was selected to run in the input file
+if(interface.flow.table) {
+  # Call the query function to get interface flows for the interfaces selected in the input file.
+  interface.flows = tryCatch( annual_interface_flows(total.interface.flow), 
+                              error=function(cond) {return('ERROR: interface_flows query not returning correct results.')})
+  # Print data 
+  kable(interface.flows, digits=3)
+} else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -224,13 +364,40 @@ if(exists('annual.flows')) { kable(annual.flows, digits=3) }
 ## 14. Interface Flow Plots
 ```{r interface-flow-plots, resize.width=T, fig.width=10}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_interface_flow.R')
+if (interface.flow.plots) {
+  if ( typeof(interval.interface.flow) == 'character' ) {
+    print('ERROR: interval.interface.flow not correct. Cannot run this section')
+  } else { 
+    # Call the query function to get interface flows for the interfaces selected in the query function.
+    interface.flows = tryCatch( interval_interface_flows(interval.interface.flow), 
+                                error=function(cond) {return('ERROR: interface_flows query not returning correct results.')})
+      
+    # Check for errors in the query function. If theres an error don't continue.
+    if ( typeof(interface.flows)=='character' ) { 
+    print('ERROR: interface_flows function not returning correct results.')
+    } else {
+      # Get daily plots
+      p1 = interface_plot(interface.flows, x_col = 'time')
+      print(p1 + scale_x_datetime(breaks = date_breaks(width = "1 month"), 
+                   limits=c(first.day, last(seq(first.day, by='month', length.out=12))), 
+                   labels = date_format("%b"), expand = c(0, 0)))
+      # Aggregate interval flow data into daily flow data
+      interface.flows[, day := as.POSIXlt(time)[[8]] ]
+      daily.flows = interface.flows[, .(value=sum(value)), by=.(day,name)]
+      daily.flows[,time:=as.POSIXct(strptime(day+1,"%j"))]
+      p2 = interface_plot(daily.flows, x_col = 'time')
+      print(p2 + scale_x_datetime(breaks=date_breaks(width="1 month"), 
+                   labels = date_format("%b"), expand = c(0, 0)))
+    }
+  }
+} else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
 ***
 ## 15. Specified Period Interface Flow Plot
 ```{r key-period-interface-flow-plots, include=FALSE}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (key.period.interface.flow.plots) {
 
   # Pull out interface flow data for only specified periods in input file
@@ -241,16 +408,11 @@ if (key.period.interface.flow.plots) {
     # Check to see if the right data is ready for plotting.
     if ( typeof(plot.flows)=='character' ) {
       print('ERROR: interval_interface_flows function not returning correct results.')
-    } else {
-    
-      key.plots = list() # Creates empty list for plot data
-      
+    } else {        
       # Create data for each plot for the interesting periods
-      for (p in 1:n.periods) {
-        period.name = period.names[p]
-        key.plots[[p]] = knit_expand(file = 'source_scripts/p_key_period_interface_flow.Rmd', period.name = period.name)
-      }
-    
+      key.plots = lapply(period.names, function(p){
+                         knit_expand(file = 'source_scripts/p_key_period_interface_flow.Rmd', period.name = p)
+                         }) 
       # Reconstruct the plot data into a format that will be output into the HTML below
       key.period.interface.flow = knit_child(text = unlist(key.plots))
    
@@ -258,6 +420,7 @@ if (key.period.interface.flow.plots) {
   } else { key.period.interface.flow = 'Problem sourcing or running d_key_period_interface_flow.R.' }
   
 } else { key.period.interface.flow = 'Section not run according to input file.' }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 `r key.period.interface.flow`
 
@@ -267,14 +430,19 @@ if (key.period.interface.flow.plots) {
 ### 16. Annual Reserve Provisions and Shortage
 ```{r annual-reserves-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/t_annual_reserves.R')
-if(exists('annual.reserves')) { 
-  if(length(unique(annual.reserves$scenario))>1){
-    kable(annual.reserves, format.args = list(big.mark = ',')) 
-  } else{
-    kable(annual.reserves[, .(Type, `Provisions (GWh)`, `Shortage (GWh)`)], format.args = list(big.mark = ',')) 
-  }
-}
+# Check if this section was selected to run in the input file
+if(annual.reserves.table) {
+  # Call the query function to get annual reserve amounts.
+  annual.reserves = tryCatch( annual_reserves(total.reserve.provision, total.reserve.shortage), 
+                              error = function(cond) { return('ERROR: annual_reserves function not returning correct results.') })
+  if(typeof(annual.reserves)!='character') { 
+    if(length(unique(annual.reserves$scenario))>1){
+      kable(annual.reserves, format.args = list(big.mark = ',')) 
+    } else{
+      kable(annual.reserves[, .(Type, `Provisions (GWh)`, `Shortage (GWh)`)], format.args = list(big.mark = ',')) 
+    }
+  } else { print('ERROR: annual_reserves is not returning correct results.')}
+} else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -288,11 +456,60 @@ source('source_scripts/p_reserves.R')
 
 ***
 ## 18. Region and Zone Generation (GWh)
-```{r region-zone-gen-table}
+```{r region-gen-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/t_region_zone_gen.R')
-if(exists('r.gen.table')) { kable(r.gen.table, digits=2, format.args = list(big.mark = ',')) }
-if(exists('z.gen.table')) { kable(z.gen.table, digits=2, format.args = list(big.mark = ',')) }
+if (region.zone.gen.table) {
+  if (typeof(r.load)=='character' ) {
+    print('ERROR: r.load not correct. Cannot run this section.')
+  } else{
+    r.z.gen = tryCatch( region_zone_gen(total.generation, total.avail.cap), 
+                        error = function(cond) { return('ERROR: region_zone_gen function not returning correct results.') } )
+    if ( typeof(r.z.gen)=='character' ) { 
+      r.gen.table = 'ERROR: region_zone_gen function not returning correct results.'
+    } else {
+      r.z.gen[, Type := factor(Type, levels = gen.order)] # Reassign the order which the generation type will be displayed.
+      
+      # Sum regional generation by type
+      r.gen.table = r.z.gen[, .(GWh = sum(GWh)), by=.(Region, Type)] %>%
+        dcast.data.table(Region~Type, value.var = 'GWh')
+      r.gen.table[is.na(r.gen.table)] = 0
+      region.load = r.load[, .(Region, Load = value)]
+      setkey(region.load,Region)
+      setkey(r.gen.table,Region)
+      r.gen.table = r.gen.table[region.load]
+    }
+    # Print results
+    kable(r.gen.table, digits=2, format.args = list(big.mark = ','))
+  }
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+```{r zone-gen-table}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (region.zone.gen.table) {
+  if (typeof(z.load)=='character' ){
+    print('ERROR: z.load not correct. Cannot run this section.')
+  } else{
+    r.z.gen = tryCatch( region_zone_gen(total.generation, total.avail.cap), 
+                        error = function(cond) { return('ERROR: region_zone_gen function not returning correct results.') } )
+    if ( typeof(r.z.gen)=='character' ) { 
+      z.gen.table = 'ERROR: region_zone_gen function not returning correct results.'
+    } else {
+      r.z.gen[, Type := factor(Type, levels = gen.order)] # Reassign the order which the generation type will be displayed.
+      
+      # Sum zonal generation by type
+      z.gen.table = r.z.gen[, .(GWh = sum(GWh)), by=.(Zone, Type)] %>%
+        dcast.data.table(Zone~Type, value.var = 'GWh')
+      z.gen.table[is.na(z.gen.table)] = 0
+      zone.load = z.load[, .(Zone, Load = value)]
+      setkey(zone.load,Zone)
+      setkey(z.gen.table,Zone)
+      z.gen.table = z.gen.table[zone.load]
+    }
+    # Print results
+    kable(z.gen.table, digits=2, format.args = list(big.mark = ','))
+  }
+} else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -300,16 +517,40 @@ if(exists('z.gen.table')) { kable(z.gen.table, digits=2, format.args = list(big.
 ## 19. Capacity Factors
 ```{r capacity-factor-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/t_capacity_factor.R')
-if(exists('cf')) { kable(cf, format.args = list(big.mark = ','), digits=2) }
+if(capacity.factor.table) {
+  if ( typeof(total.generation)=='character' ) {
+    print('ERROR: total.generation has errors. Cannot run this section.')
+  } else if ( typeof(total.installed.cap) == 'character' ) { 
+    print('ERROR: total.installed.cap has errors. Cannot run this section.')
+  } else{
+    # Call the query function to get capacity factor.
+    cf = tryCatch( capacity_factor(total.generation, total.installed.cap), 
+                   error = function(cond) { return('ERROR: capacity_factor function not returning correct results.') })
+    kable(cf, format.args = list(big.mark = ','), digits=2)
+  }
+} else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
 ***
 ## 20. Region Price Duration Curves
-```{r price-duration-curve}
+```{r price-duration-curve, fig.width = 10}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_price_duration_curve.R')
+if(price.duration.curve) {
+  if ( typeof(interval.region.price)=='character' ) { 
+      print('ERROR: interval.region.price not correct. Cannot run this section')
+    } else {
+      # Create plot
+      p1 = price_duration_curve(interval.region.price[!name %in% ignore.regions & property == 'Price', ],
+                                filters = c('property','name'), color='area')
+      # Create plot with slightly different y-axis limit.
+      p2 = p1 + coord_cartesian(ylim=c(0,200))
+           
+      print(p1)
+      print(p2)
+  }
+
+} else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -328,40 +569,21 @@ if (commit.dispatch.region | commit.dispatch.zone) {
     if ( typeof(plot.data.all)=='character' ) {
       print('ERROR: cap_committed function not returning correct results.')
     } else {
-  
-      da.rt.zone = list() # Creates empty list for plot data
-      da.rt.region = list() # Creates empty list for plot data
-      r.idx = 1 # Start the region name index at 1
-      z.idx = 1 # Start the zone name index at 1
-    
-      # Run the loop for each key period requested.
-      for ( p in 1:n.periods ) {
-        period.name = period.names[p]
+      # Check if zonal DA-RT plots were selected in input file. If so create a plot for each zone
+      if (commit.dispatch.zone) {
+        da.rt.zone = mapply(function(p,z){knit_expand(file = 'source_scripts/p_DA_RT_commit_dispatch_zone.Rmd', 
+                                                      period.name = p, zone.name = z)},
+                            rep(period.names,length(zone.names)), rep(zone.names,each=n.periods))
+        da.rt.zone = knit_child(text = unlist(da.rt.zone))
+      } else {da.rt.zone = 'Section not run according to input file.'}
       
-        # Check if zonal DA-RT plots were selected in input file. If so create a plot for each zone
-        if (commit.dispatch.zone) {
-          for ( z in 1:length(zone.names) ) {
-              zone.name = zone.names[z]
-              da.rt.zone[[z.idx]] = knit_expand(file = 'source_scripts/p_DA_RT_commit_dispatch_zone.Rmd', period.name = period.name, zone.name = zone.name) 
-              z.idx = z.idx + 1
-          } 
-        } else {da.rt.zone = 'Section not run according to input file.'}
-        
-        if (commit.dispatch.region) {  
-          # Create a plot for each region.
-          for ( r in 1:length(region.names) ) {
-              region.name = region.names[r]
-              da.rt.region[[r.idx]] = knit_expand(file = 'source_scripts/p_DA_RT_commit_dispatch_region.Rmd', period.name = period.name, region.name = region.name)
-              r.idx = r.idx + 1
-          }
-        } else {da.rt.region = 'Section not run according to input file.'}
-        
-      }
-    
-      # Reconstruct the plot data into a format that will be output into the HTML below
-      if (commit.dispatch.zone)   { da.rt.zone = knit_child(text = unlist(da.rt.zone)) }
-      if (commit.dispatch.region) { da.rt.region = knit_child(text = unlist(da.rt.region)) }
-
+      # Check if regional DA-RT plots were selected in input file. If so create a plot for each region
+      if (commit.dispatch.region) {  
+        da.rt.region = mapply(function(p,r){knit_expand(file = 'source_scripts/p_DA_RT_commit_dispatch_region.Rmd', 
+                                                        period.name = p, region.name = r)},
+                              rep(period.names,length(region.names)), rep(region.names,each=n.periods))
+        da.rt.region = knit_child(text = unlist(da.rt.region))
+      } else {da.rt.region = 'Section not run according to input file.'} 
     }
   } else { da.rt.zone = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'
          da.rt.region = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'}
