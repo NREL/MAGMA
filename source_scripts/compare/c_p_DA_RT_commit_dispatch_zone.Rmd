@@ -3,7 +3,7 @@
 z.name = '{{zone.name}}' # Assign zone name
 p.name = '{{period.name}}' # Assign period name
 cat("### ", p.name, ': ', z.name) # Print period and zone name above the plot
-text.plot=11 # Plot text size.
+text.plot=14 # Plot text size.
 figure.width = 9
 figure.height = 6
 ```

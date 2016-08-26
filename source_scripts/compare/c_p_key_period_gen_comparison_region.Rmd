@@ -2,8 +2,8 @@
 r.name = '{{region.name}}' # Assign region name
 t.name = '{{type.name}}' # Assign generator type name
 cat("### ", t.name, ': ', r.name) # Print period and region name above the plot
-text.plot=11 # Plot text size.
-figure.width = 12
+text.plot=16 # Plot text size.
+figure.width = 15
 figure.height = p.height
 ```
 
