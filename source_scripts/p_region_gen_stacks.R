@@ -20,7 +20,7 @@ if ( typeof(r.z.gen)=='character' ) {
   r.z.gen.sum = r.z.gen[, .(TWh = sum(GWh)/1000)]  #change GWh generation to TWh
   
   # Convert GWh to TWh and remove region and zone data that should be ignored
-  r.z.gen.plot = r.z.gen[(!Zone %in% ignore.zones && !Region %in% ignore.regions), 
+  r.z.gen.plot = r.z.gen[(!Zone %in% ignore.zones & !Region %in% ignore.regions), 
                          .(TWh = sum(GWh)/1000), by=.(Type, Region, Zone)]
     
   region.load = r.load[!name %in% ignore.regions, ] # Remove load data from regions being ignored

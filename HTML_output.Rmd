@@ -71,9 +71,10 @@ if(individual.region.stacks.log) {
     
         key.plots = list() # Creates empty list for plot data
     
+        plot.regions = region.names[!region.names %in% ignore.regions]
         # Create plot for each region in region.names
-        for ( p in 1:length(region.names) )  {
-          region.name = region.names[p]
+        for ( p in 1:length(plot.regions) )  {
+          region.name = plot.regions[p]
           key.plots[p] = knit_expand(file = 'source_scripts/p_individual_region_stacks.Rmd', region.name=region.name)
         }
     

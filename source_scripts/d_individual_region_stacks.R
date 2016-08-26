@@ -15,6 +15,6 @@ if ( typeof(r.z.gen)=='character' ) {
     
   r.z.gen.plot = r.z.gen[, .(TWh = sum(GWh)/1000) , by=.(Type, Region, Zone)]
   # Remove any regions or zones that are ignored according to input file.
-  r.z.gen.plot = r.z.gen.plot[(!Zone %in% ignore.zones && !Region %in% ignore.regions), ] 
+  r.z.gen.plot = r.z.gen.plot[(!Zone %in% ignore.zones & !Region %in% ignore.regions), ] 
 }
   
