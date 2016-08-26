@@ -59,6 +59,7 @@ if ( region.zone.flow.table | total.gen.stack | region.gen.stacks | zone.gen.sta
   total.region.load    = tryCatch( total_region_load(db), error = function(cond) { return('ERROR') } ) 
   # Aggregate region load and get unique names
   r.load               = tryCatch( region_load(total.region.load), error = function(cond) { return('ERROR') } ) 
+  r.load = r.load %>% group_by(name) %>% summarise(value = sum(value))
   region.names         = unique(r.load$name) # Assign region names based on PLEXOS regions.
   if (typeof(total.region.load)=='character') { message('\nMissing total region load data from solution .db file.')}
   if( length(unique(rz.unique$Region))!=length(region.names) ) { message('\nWarning: Number of regions in generation to region/zone mapping file different than number of regions from region load query! Check region.names object.') }
@@ -67,6 +68,7 @@ if ( region.zone.flow.table | total.gen.stack | region.gen.stacks | zone.gen.sta
   total.zone.load    = tryCatch( total_zone_load(db), error = function(cond) { return('ERROR') } ) 
   # Aggregate zone load and get unique names
   z.load             = tryCatch( zone_load(total.region.load, total.zone.load), error = function(cond) { return('ERROR') } ) 
+  z.load = z.load %>% group_by(name) %>% summarise(value = sum(value))
   zone.names         = unique(z.load$name) # Assign zone names based on PLEXOS regions or region to zone mapping file. 
   if (typeof(total.zone.load)=='character') { message('\nMissing total zone load data from solution .db file. Ok if reassign zones is TRUE and region data is found.')}
   if( length(unique(rz.unique$Zone))!=length(zone.names) ) { message('\nWarning: Number of zones in generation to region/zone mapping file different than number of zones from zone load query! Check zone.names object.') }
@@ -138,12 +140,13 @@ if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period
 
   # Aggregate region load and get unique names
   r.load               = tryCatch( region_load(interval.region.load), error = function(cond) { return('ERROR') } ) 
-  r.load = r.load %>% group_by(name) %>% summarise(value = sum(value))
+  r.load = r.load %>% group_by(name) %>% summarise(value = sum(value)/1000)
   region.names         = unique(r.load$name) # Assign region names based on PLEXOS regions.
   if( length(unique(rz.unique$Region))!=length(region.names) ) { message('\nWarning: Number of regions in generation to region/zone mapping file different than number of regions from region load query! Check region.names object.') }
 
   # Aggregate zone load and get unique names
   z.load             = tryCatch( zone_load(interval.region.load, interval.zone.load), error = function(cond) { return('ERROR') } ) 
+  z.load = z.load %>% group_by(name) %>% summarise(value = sum(value)/1000)
   zone.names         = unique(z.load$name) # Assign zone names based on PLEXOS regions or region to zone mapping file. 
   if( length(unique(rz.unique$Zone))!=length(zone.names) ) { message('\nWarning: Number of zones in generation to region/zone mapping file different than number of zones from zone load query! Check zone.names object.') }  
 }
