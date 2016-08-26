@@ -4,6 +4,7 @@
 This package creates figures and an HTML file with all of those figures for plexos solutions.
 * You must use process_folder() from the rplexos package to create a database file from the PLEXOS solution .zip, before running this code.
 * The Examples folder contains templates and examples of the input data CSV, the generator name, region, and zone mapping CSV, the R script that runs the package, and example HTML reports (within the reports folder).
+* Section_guide.md lists what sections correspond to each number for the sections to run column in the input data CSV file.
 
 ##To Run:
 1. Copy run_html_output.R and input_data.csv from the Examples/ folder into another folder associated with your project specific repository.
@@ -60,27 +61,21 @@ This package creates figures and an HTML file with all of those figures for plex
 	+ Corresponding start time for each of the periods in 13.
 16. End.Time
 	+ Corresponding end time for each of the periods in 13. 
-17. Start.Day
-	+ Starting day of the PLEXOS run. 
-18. End.Day
-	+ Ending day of the PLEXOS run.
-19. Intervals.Per.Day
-	+ Number of intervals per day.
-20. Sections.to.Run
+17. Sections.to.Run
 	+ Sections (chunks) of the HTML_output.Rmd file to run.
-21. Fig.Path
+18. Fig.Path
 	+ Location to save each figure.
-22. Ignore.Zones
+19. Ignore.Zones
  	+ Zones to exclude from plots
-23. Ignore.Regions
+20. Ignore.Regions
 	+ Regions to exclude from plots
-24. Interfaces.for.Flows
+21. Interfaces.for.Flows
 	+ Specific interfaces to show flow data for
 
 
 ## Required PLEXOS outputs
 
-PLEXOS must report the following data in order for the scripts to work.
+PLEXOS must report the following data in order for all scripts to work. If you try to run a section and are missing the required data you will get an error telling you what PLEXOS output data is missing.
 
 ### Annual
 ##### Generator:

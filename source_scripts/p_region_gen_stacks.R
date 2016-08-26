@@ -23,15 +23,34 @@ if ( typeof(r.z.gen)=='character' ) {
   r.z.gen.plot = r.z.gen[(!Zone %in% ignore.zones & !Region %in% ignore.regions), 
                          .(TWh = sum(GWh)/1000), by=.(Type, Region, Zone)]
     
-  region.load = r.load[!name %in% ignore.regions, ] # Remove load data from regions being ignored
-  setnames(region.load, 'name', 'Region')
-  region.load[, value := value/1000]
-  
-  setkey(region.load,Region)
-  setkey(rz.unique,Region)
-  region.load = rz.unique[region.load][!Zone %in% ignore.zones, ] # ignored regions removed in line 26 
-  region.load = region.load[complete.cases(region.load),]
-  
+  if (length(unique(r.z.gen.plot$Region))>length(unique(r.z.gen.plot$Zone))) {
+    region.load = r.load[!name %in% ignore.regions, ] # Remove load data from regions being ignored
+    setnames(region.load, 'name', 'Region')
+    region.load[, value := value/1000]
+    
+    setkey(region.load,Region)
+    setkey(rz.unique,Region)
+    region.load = rz.unique[region.load][!Zone %in% ignore.zones, ] # ignored regions removed above
+    region.load = region.load[complete.cases(region.load),]
+    plot.load = region.load
+
+    x.col = 'Region'
+    facet = facet_wrap(~Zone, scales = 'free', ncol=2)
+  } else{
+    zone.load = z.load[!name %in% ignore.zones, ] # Remove load data from regions being ignored
+    setnames(zone.load, 'name', 'Zone')
+    zone.load[, value := value/1000]
+
+    setkey(zone.load,Zone)
+    setkey(rz.unique,Zone)
+    zone.load = rz.unique[zone.load][!Region %in% ignore.regions, ] # ignored zones removed above
+    zone.load = zone.load[complete.cases(zone.load),]
+    plot.load = zone.load
+
+    x.col = 'Zone'
+    facet = facet_wrap(~Region, scales = 'free', ncol=2)
+  }
+
   # *** Not needed for these plots as y-axis is varying. ***
   # # This automatically creates the y-axis scaling
   # py=pretty(r.z.gen.sum$TWh, n=5, min.n = 5)
@@ -40,8 +59,8 @@ if ( typeof(r.z.gen)=='character' ) {
   setorder(r.z.gen.plot,Type)
   # Create plot
   p1 = ggplot() +
-    geom_bar(data = r.z.gen.plot, aes(x = Region, y = TWh, fill=Type, order=as.numeric(Type)), stat='identity', position="stack" ) +
-    geom_errorbar(aes(x=Region, y=value, ymin=value, ymax=value, color='load'), data=region.load, linetype='longdash', size=0.45)+
+    geom_bar(data = r.z.gen.plot, aes_string(x = x.col, y = 'TWh', fill='Type'), stat='identity', position="stack" ) +
+    geom_errorbar(aes_string(x=x.col, y='value', ymin='value', ymax='value'), data=plot.load, linetype='longdash', size=0.45)+
     scale_fill_manual(values = gen.color, guide = guide_legend(reverse = TRUE))+
     scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
     labs(y="Generation (TWh)", x=NULL)+
@@ -56,10 +75,8 @@ if ( typeof(r.z.gen)=='character' ) {
                    axis.text.x =     element_text(angle=-45, hjust=0),
                    axis.title =      element_text(size=text.plot, face=2), 
                    axis.title.y =    element_text(vjust=1.2), 
-                   panel.margin =    unit(1.5, "lines"))+
-        facet_wrap(~Zone, scales = 'free', ncol=2)
-                   # , nrow=length(unique(r.z.gen.plot$Zone)))
-  print(p1)
+                   panel.margin =    unit(1.5, "lines"))
+  print(p1 + facet)
 }
 
 } else { print('Section not run according to input file.') }

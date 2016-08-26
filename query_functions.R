@@ -287,7 +287,7 @@ region_load = function(total.region.load) {
 }
 
 zone_load = function(total.region.load, total.zone.load) {
-  if (reassign.zones==TRUE | typeof(total.zone.load)=='character'){
+  if (reassign.zones==TRUE | as.character(total.zone.load)=='ERROR'){
     setkey(total.region.load,name)
     setkey(rz.unique,Region)
     z.load = rz.unique[total.region.load][, .(value=sum(value)), by=.(Zone)]
@@ -420,28 +420,28 @@ total_installed_cap = function(database) {
 # Full run region load
 total_region_load = function(database) {
   total.region.load = data.table(query_year(database, 'Region', 'Load'))
-  total.region.load[, .(scenario, property, name, value)]
+  total.region.load[, .(value = sum(value)), by=.(scenario, property, name)]
   return(total.region.load)
 }
 
 # Full run region imports
 total_region_imports = function(database) {
   total.region.imports = data.table(query_year(database, 'Region', 'Imports'))
-  total.region.imports[, .(scenario, property, name, value)]
+  total.region.imports[, .(value = sum(value)), by=.(scenario, property, name)]
   return(total.region.imports)
 }
 
 # Full run region exports
 total_region_exports = function(database) {
   total.region.exports = data.table(query_year(database, 'Region', 'Exports'))
-  total.region.exports[, .(scenario, property, name, value)]
+  total.region.exports[, .(value = sum(value)), by=.(scenario, property, name)]
   return(total.region.exports)
 }
 
 # Full run region unserved energy
 total_region_ue = function(database) {
   total.region.ue = data.table(query_year(database, 'Region', 'Unserved Energy'))
-  total.region.ue[, .(scenario, property, name, value)]
+  total.region.ue[, .(value = sum(value)), by=.(scenario, property, name)]
   return(total.region.ue)
 }
 
@@ -452,28 +452,28 @@ total_region_ue = function(database) {
 # Full run zone load
 total_zone_load = function(database) {
   total.zone.load = data.table(query_year(database, 'Zone', 'Load'))
-  total.zone.load[, .(scenario, property, name, value)]
+  total.zone.load[, .(value=sum(value)), by=.(scenario, property, name)]
   return(total.zone.load)
 }
 
 # Full run zone imports
 total_zone_imports = function(database) {
   total.zone.imports = data.table(query_year(database, 'Zone', 'Imports'))
-  total.zone.imports[, .(scenario, property, name, value)]
+  total.zone.imports[, .(value = sum(value)), by=.(scenario, property, name)]
   return(total.zone.imports)
 }
 
 # Full run zone exports
 total_zone_exports = function(database) {
   total.zone.exports = data.table(query_year(database, 'Zone', 'Exports'))
-  total.zone.exports[, .(scenario, property, name, value)]
+  total.zone.exports[, .(value = sum(value)), by=.(scenario, property, name)]
   return(total.zone.exports)
 }
 
 # Full run zone unserved energy
 total_zone_ue = function(database) {
   total.zone.ue = data.table(query_year(database, 'Zone', 'Unserved Energy'))
-  total.zone.ue[, .(scenario, property, name, value)]
+  total.zone.ue[, .(value = sum(value)), by=.(scenario, property, name)]
   return(total.zone.ue)
 }
 
