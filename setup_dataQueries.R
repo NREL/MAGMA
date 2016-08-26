@@ -138,7 +138,7 @@ if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period
 
   # Aggregate region load and get unique names
   r.load               = tryCatch( region_load(interval.region.load), error = function(cond) { return('ERROR') } ) 
-  r.load = r.load %>% group_by(name) %>% summarise(value = sum(value))
+  r.load = r.load %>% group_by(name) %>% summarise(value = sum(value)/1000)
   region.names         = unique(r.load$name) # Assign region names based on PLEXOS regions.
   if( length(unique(rz.unique$Region))!=length(region.names) ) { message('\nWarning: Number of regions in generation to region/zone mapping file different than number of regions from region load query! Check region.names object.') }
 
