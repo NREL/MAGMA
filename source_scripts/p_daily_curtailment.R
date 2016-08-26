@@ -10,7 +10,7 @@ if ( typeof(interval.curt)=='character' ) {
 } else {
 
   daily.curt = data.frame(colMeans(interval.curt) ) # Calculate average curtailment for each day 
-  daily.curt['time'] = seq(first.day, last.day, by = 'day') # Add time column
+  daily.curt['time'] = seq(first.day, last.day, by = 'day')[1:nrow(daily.curt)] # Add time column
   colnames(daily.curt) = c('Curtailment', 'time')
 
   # this is just for scaling the y-axis (either by load or generation, whichever is bigger)
