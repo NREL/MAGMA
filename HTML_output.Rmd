@@ -15,7 +15,9 @@ knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, incl
                       fig.path=fig.path.name, dev='png')
 
 # Set dynamic height for figure in regional generation chunk
-if (exists('zone.names')) { f.height = ( length(zone.names) %/% 2 + length(zone.names) %% 2 ) * 5
+if (exists('zone.names')) { 
+  f.height = ( length(zone.names) %/% 2 + length(zone.names) %% 2 ) * 5
+  # f.height = 5
   } else { f.height = 5 }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
@@ -43,7 +45,7 @@ source('source_scripts/p_zone_gen_stacks.R')
 
 ***
 ## 3. Regional Generation
-```{r region-gen-stacks, resize.height=F, fig.height=f.height}
+```{r region-gen-stacks, resize.height=T, fig.height=f.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/p_region_gen_stacks.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
