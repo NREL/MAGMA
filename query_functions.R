@@ -62,11 +62,11 @@ region_zone_gen = function(total.generation, total.avail.cap) {
   
   # Filter out generation and available capacity data and add generation type by matching generator name.
   # Also add region and zone by matching generator name in the region and zone mapping file. 
-  gen.data = total.generation[property=='Generation', .(scenario,name,category,value)][gen.type.zone.region]
+  gen.data = gen.type.zone.region[total.generation[property=='Generation', .(scenario,name,category,value)]]
   gen.data = gen.data[, .(value=sum(value)), by=.(scenario,Type, Region, Zone)]
   
-  avail.data = total.avail.cap[property == 'Available Energy', 
-                               .(scenario,name,category,value)][gen.type.zone.region]
+  avail.data = gen.type.zone.region[total.avail.cap[property == 'Available Energy', 
+                               .(scenario,name,category,value)]]
   avail.data = avail.data[Type %in% re.types, .(Avail = sum(value)), by=.(scenario,Type, Region, Zone)]
     
 
