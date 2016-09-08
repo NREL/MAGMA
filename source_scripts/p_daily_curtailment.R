@@ -25,7 +25,7 @@ if ( typeof(interval.curt)=='character' ) {
          geom_bar(aes(x=time, y=Curtailment, color="black"), stat='identity', color=NA)+    
          labs(y="Curtailment (MWh)", x='Date')+
          scale_x_datetime(breaks   = date_breaks(width = "1 month"), labels = date_format("%b"), expand = c(0, 0))+
-         scale_y_continuous(breaks = seq.py, limits=c(0, max(py)), expand=c(0,0))+
+         scale_y_continuous(breaks = seq.py, limits=c(0, max(seq.py)), expand=c(0,0))+
          theme( legend.key =       element_rect(color = "grey80", size = 0.4),
                 legend.key.size =  grid::unit(0.9, "lines"), 
                 legend.text =      element_text(size=text.plot/1.1),
