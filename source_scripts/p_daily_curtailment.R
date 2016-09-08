@@ -18,8 +18,7 @@ if ( typeof(interval.curt)=='character' ) {
   stack[, Type := "ALL"]
                   
   # This automatically creates the y-axis scaling
-  py = pretty(stack$value)
-  seq.py = seq(0, py[length(py)], 2*(py[2]-py[1])) # get whole breaks sequence
+  seq.py = pretty(c(0,stack$value), n=5, min.n=3 )
 
   # Create plot
   p1 = ggplot(daily.curt)+
