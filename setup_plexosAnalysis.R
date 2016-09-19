@@ -76,12 +76,6 @@ if (length(reassign.zones)==0) {
   message('\nMust select TRUE or FALSE for if reassigning what regions are in what zones!')
 }
 
-# Read mapping file to map generator names to region and zone (can be same file as gen name to type).
-region.zone.mapping = data.table(read.csv(as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename)), stringsAsFactors=FALSE))
-region.zone.mapping = unique(region.zone.mapping[, .(name, Region, Zone)])
-setkey(region.zone.mapping,name)
-rz.unique = unique(region.zone.mapping[,.(Region,Zone)])
-
 # Set plot color for each generation type
 Gen.col = data.table(Type = na.omit(inputs$Gen.Type), Color = na.omit(inputs$Plot.Color) )
 gen.color<-setNames(as.character(Gen.col$Color),Gen.col$Type)
@@ -170,6 +164,20 @@ attributes(db)$class = c("rplexos","data.frame","tbl_df")
 db.day.ahead = tryCatch(plexos_open(db.day.ahead.loc, basename(db.day.ahead.loc)), error = function(cond) { return(data.frame('ERROR'))})
 # db.day.ahead = db.day.ahead[1,] # This line queries only the first solution .db file if there are multiple in one location. 
 attributes(db.day.ahead)$class = c('rplexos', 'data.frame', 'tbl_df')
+
+
+# Read mapping file to map generator names to region and zone (can be same file as gen name to type).
+if (is.na(inputs$Gen.Region.Zone.Mapping.Filename)){
+  gen.mapping <- query_generator(db)
+  region.zone.mapping = data.table(unique(gen.mapping[,c('name','region','zone')]))
+  setnames(region.zone.mapping, c("region","zone"), c("Region","Zone"))
+} else{
+  region.zone.mapping = data.table(read.csv(as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename)), 
+                        stringsAsFactors=FALSE))
+}
+region.zone.mapping = unique(region.zone.mapping[, .(name, Region, Zone)])
+setkey(region.zone.mapping,name)
+rz.unique = unique(region.zone.mapping[,.(Region,Zone)])
 
 
 # Create generator name to type mapping
