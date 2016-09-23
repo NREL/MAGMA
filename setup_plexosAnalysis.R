@@ -146,7 +146,7 @@ if(length(list.files(pattern = "\\.zip$",path=db.loc))!=0 ) {
     run.rplx=T
   } else {message(paste0('\nFound .db solution file: ', list.files(pattern='\\.db$',path=db.loc), '\n'))}
   if(run.rplx) {
-    if(readline('Do you want to run the rPLEXOS db creation tool now? (y/n):')=='y'){
+    if(readline('Do you want to run the rPLEXOS db creation tool now? (y/n):')=='y' | !interactive()){
       message('Running process_folder')
       process_folder(db.loc)
     } else {message('You need to run rPLEXOS to process your solution or point to the correct solution folder.')}
