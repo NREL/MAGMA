@@ -17,7 +17,7 @@ setwd(magma.dir)
 source(file.path('query_functions.R'))
 source(file.path('setup_plexosAnalysis.R'))
 if (query.data){
-    source(file.path('setup_dataQueries.R'), echo=TRUE)
+    source(file.path('setup_dataQueries.R'))
 } else{
     load(load.data)
 }

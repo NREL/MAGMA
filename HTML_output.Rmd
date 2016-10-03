@@ -45,7 +45,7 @@ source('source_scripts/p_zone_gen_stacks.R')
 
 ***
 ## 3. Regional Generation
-```{r region-gen-stacks, resize.height=T}
+```{r region-gen-stacks, resize.height=T, fig.height=f.height, fig.width=10}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/p_region_gen_stacks.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
