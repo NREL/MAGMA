@@ -9,7 +9,7 @@ if ( typeof(int.gen)=='character' ) {
 } else {
   
   # From the full year of data, pull out only the data corresponding to the key periods specified in the input file. 
-  timediff = int.gen[,.(timediff=diff(time)),by=.(Region,Type,Zone)][,.(min(timediff))][,V1]
+  timediff = int.gen[,.(timediff=diff(time)),by=.(scenario,Region,Type,Zone)][,.(min(timediff))][,V1]
   for ( i in 1:n.periods ) {
     key.period.time = seq(start.end.times[i,start], start.end.times[i,end], 
                           by = timediff)
@@ -41,8 +41,8 @@ if ( typeof(int.gen)=='character' ) {
   # Region Data
   # ###############################################################################  
     
-  gen.type.region = gen.type[,.(value=sum(value,na.rm=TRUE)),by=.(time,Region,Type,Period)]
-  gen.load.region = gen.load[,.(value=sum(value,na.rm=TRUE)),by=.(time,Region,Type,Period)] 
+  gen.type.region = gen.type[,.(value=sum(value,na.rm=TRUE)),by=.(time,scenario,Region,Type,Period)]
+  gen.load.region = gen.load[,.(value=sum(value,na.rm=TRUE)),by=.(time,scenario,Region,Type,Period)] 
   setorder(gen.type.region, Type)
   setorder(gen.load.region, Type)
   
@@ -50,8 +50,8 @@ if ( typeof(int.gen)=='character' ) {
   # Zone Data
   # ###############################################################################   
   
-  gen.type.zone = gen.type[,.(value=sum(value,na.rm=TRUE)),by=.(time,Zone,Type,Period)]
-  gen.load.zone = gen.load[,.(value=sum(value,na.rm=TRUE)),by=.(time,Zone,Type,Period)]  
+  gen.type.zone = gen.type[,.(value=sum(value,na.rm=TRUE)),by=.(time,scenario,Zone,Type,Period)]
+  gen.load.zone = gen.load[,.(value=sum(value,na.rm=TRUE)),by=.(time,scenario,Zone,Type,Period)]  
   setorder(gen.type.zone, Type)
   setorder(gen.load.zone, Type)
   
@@ -59,8 +59,8 @@ if ( typeof(int.gen)=='character' ) {
   # Total database Data
   # ###############################################################################   
   
-  gen.type.total = gen.type[,.(value=sum(value,na.rm=TRUE)),by=.(time,Type,Period)]
-  gen.load.total = gen.load[,.(value=sum(value,na.rm=TRUE)),by=.(time,Type,Period)]
+  gen.type.total = gen.type[,.(value=sum(value,na.rm=TRUE)),by=.(time,scenario,Type,Period)]
+  gen.load.total = gen.load[,.(value=sum(value,na.rm=TRUE)),by=.(time,scenario,Type,Period)]
   setorder(gen.type.total, Type)
   setorder(gen.load.total, Type)
 

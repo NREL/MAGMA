@@ -47,6 +47,12 @@ if ( annual.cost.table ) {
   if (typeof(total.vom.cost)=='character') { message('\nMissing total generator VO&M cost data from solution .db file.')}
 }
 
+if ( reserve.stack ) {
+  # Total reserve provision by generator
+  total.gen.res        = tryCatch( total_gen_reserve_provision(db), error = function(cond) { return('ERROR') } ) 
+  if (typeof(total.gen.res)=='character') { message('\nMissing total generator reserve provision from .db file.')}
+}
+
 if ( capacity.factor.table ) {
   # Total installed capacity
   total.installed.cap  = tryCatch( total_installed_cap(db), error = function(cond) { return('ERROR') } ) 

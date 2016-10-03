@@ -13,22 +13,22 @@ if ( typeof(committed.cap)=='character' | typeof(int.gen)=='character' | typeof(
   print('ERROR: daily_curtailment or cap_committed function not returning correct results.')
 } else {
   
-  # Remove unneccessary data columns and rename the data for plotting. This is interval generation data in the real time.
+  # Remove unneccessary data values and rename the data for plotting. This is interval generation data in the real time.
   da.rt.data = int.gen[!Type%in%c("Curtailment","Load"), ]
   setnames(da.rt.data,"value","RT.gen")
   
   # Prep data for merging
   setnames(avail.cap.rt,'committed.cap','RT.cap')
   setnames(committed.cap,'committed.cap','DA.cap')
-  setkey(avail.cap.rt,time,Region,Zone,Type)
-  setkey(committed.cap,time,Region,Zone,Type)
-  setkey(da.rt.data,time,Region,Zone,Type)
+  setkey(avail.cap.rt,scenario,time,Region,Zone,Type)
+  setkey(committed.cap,scenario,time,Region,Zone,Type)
+  setkey(da.rt.data,scenario,time,Region,Zone,Type)
   
   # Add the day ahead capacity and real time capacity to the real time generation.
-  da.rt.data = da.rt.data[avail.cap.rt][committed.cap] 
+  da.rt.data = merge(merge(da.rt.data,avail.cap.rt,all=TRUE),committed.cap, all=TRUE) 
                 
   # Only pull out data for the time spans that were requested in the input file. 
-  timediff = da.rt.data[,.(timediff=diff(time)),by=.(Region,Type,Zone)][,.(min(timediff))][,V1]
+  timediff = da.rt.data[,.(timediff=diff(time)),by=.(scenario,Region,Type,Zone)][,.(min(timediff))][,V1]
   for ( i in 1:n.periods ) {
     key.period.time = seq(start.end.times[i,start], start.end.times[i,end], 
                           by = timediff)

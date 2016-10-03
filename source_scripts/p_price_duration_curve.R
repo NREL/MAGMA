@@ -2,7 +2,7 @@
 if(price.duration.curve) {
 
 # If price duration curve is selected in the input file, int.data.region should be created.
-region.data = interval.region.price
+region.data = interval.region.price[!name %in% ignore.regions, ]
 
 # If there is a problem with the query return an error, else create the plots.
 if ( typeof(region.data)=='character' ) { 

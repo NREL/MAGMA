@@ -271,7 +271,13 @@ if (key.period.interface.flow.plots) {
 ```{r annual-reserves-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/t_annual_reserves.R')
-if(exists('annual.reserves')) { kable(annual.reserves, format.args = list(big.mark = ',')) }
+if(exists('annual.reserves')) { 
+  if(length(unique(annual.reserves$scenario))>1){
+    kable(annual.reserves, format.args = list(big.mark = ',')) 
+  } else{
+    kable(annual.reserves[, .()], format.args = list(big.mark = ',')) 
+  }
+}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 

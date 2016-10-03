@@ -28,7 +28,7 @@ inputs = read.csv(file.path(input.csv))
 inputs[inputs==""]=NA
 inputs = data.table(inputs)
 
-# Assign a logical to each chunk run selector. 
+# What sections to run code for. Assign a logical to each chunk run selector. 
 run.sections = na.omit(inputs$Sections.to.Run)
 if(1 %in% run.sections)  {total.gen.stack=TRUE}                 else {total.gen.stack=FALSE} 
 if(2 %in% run.sections)  {zone.gen.stacks=TRUE}                 else {zone.gen.stacks=FALSE}
@@ -52,6 +52,7 @@ if(19 %in% run.sections) {capacity.factor.table=TRUE}           else {capacity.f
 if(20 %in% run.sections) {price.duration.curve=TRUE}            else {price.duration.curve=FALSE}
 if(21 %in% run.sections) {commit.dispatch.zone=TRUE}            else {commit.dispatch.zone=FALSE}
 if(22 %in% run.sections) {commit.dispatch.region=TRUE}          else {commit.dispatch.region=FALSE}
+if(23 %in% run.sections) {reserve.stack=TRUE}                   else {reserve.stack=FALSE}
 
 # -----------------------------------------------------------------------
 # Read in the data from the input_data.csv file that was just loaded
