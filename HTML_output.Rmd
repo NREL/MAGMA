@@ -275,7 +275,7 @@ if(exists('annual.reserves')) {
   if(length(unique(annual.reserves$scenario))>1){
     kable(annual.reserves, format.args = list(big.mark = ',')) 
   } else{
-    kable(annual.reserves[, .()], format.args = list(big.mark = ',')) 
+    kable(annual.reserves[, .(Type, `Provisions (GWh)`, `Shortage (GWh)`)], format.args = list(big.mark = ',')) 
   }
 }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

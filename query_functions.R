@@ -173,6 +173,7 @@ total_curtailment = function(interval.generation, interval.avail.cap) {
     setkey(c.gen,scenario,time,Type)
     curt = c.avail[c.gen][,curt := value-i.value]
     curt.tot = curt[,.(Curtailment=sum(curt)),by=.(scenario,time)]
+    curt.tot[,year := 1900+as.POSIXlt(time)[[6]]]
     curt.tot[,day := as.POSIXlt(time)[[8]]]
     curt.tot[,interval := 1:intervals.per.day,by=.(scenario,day)]
   }
