@@ -1,10 +1,10 @@
 # Check if this section was selected to run in the input file
 if (interval.curtailment){
 
-  if ( typeof(interval.generation) == 'character' ) { 
-    print('INPUT ERROR: interval.generation has errors. Cannot run this section.')
-  } else if ( typeof(interval.avail.cap) == 'character' ) { 
-    print('INPUT ERROR: interval.avail.cap has errors. Cannot run this section.')
+  if ( typeof(interval.generation) == 'character' | typeof(interval.avail.cap) == 'character' ) { 
+    print('INPUT ERROR: interval.generation or interval.avail.cap has errors. Cannot run this section.')
+  } else if (length(re.types)==0) { 
+    print('INPUT ERROR: No variable generation types specified for curtailment. Cannot run this section.')
   } else{
     # If the data doesn't exist, run the query function. 
     if ( !exists('interval.curt') ) {

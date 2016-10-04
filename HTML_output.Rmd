@@ -88,49 +88,51 @@ if(individual.region.stacks.log) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
 if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.dispatch.region.log){  
+  if (length(period.names)>0) {
 
-  # Call interval_gen function and proces data for plots
-  source('source_scripts/d_key_period_dispatch.R')
+    # Call interval_gen function and proces data for plots
+    source('source_scripts/d_key_period_dispatch.R')
 
-  # As long as the file exists (previous source found the R script) this loop runs
-  if ( exists('key.period.gen') ) {
-  # Check to see if the right data is ready for plotting.
-    if ( typeof(key.period.gen)=='character' ) {
-      key.period.dispatch.total  = 'ERROR: interval_gen function not returning correct results.'
-      key.period.dispatch.zone   = 'ERROR: interval_gen function not returning correct results.'
-      key.period.dispatch.region = 'ERROR: interval_gen function not returning correct results.'
-    } else {
-      # Create data if total database info was selected in input file.
-      if (key.period.dispatch.total.log) {
-        key.plots.total = lapply(period.names, function(p){
-          knit_expand(file = 'source_scripts/p_key_period_dispatch_total.Rmd', period.name = p)
-          })
-        key.period.dispatch.total = knit_child(text = unlist(key.plots.total))
-      } else {key.period.dispatch.total  = 'Section not run according to input file.'}
-        
-      # Create data if zonal dispatch stacks were selected in input file.
-      if (key.period.dispatch.zone.log) {
-          plot.zones = zone.names[!zone.names %in% ignore.zones]
-          key.plots.zone = mapply(function(p,z){knit_expand(file = 'source_scripts/p_key_period_dispatch_zone.Rmd', 
-                                                            period.name = p, zone.name = z)},
-                                  rep(period.names,length(plot.zones)), rep(plot.zones,each=n.periods))
-        key.period.dispatch.zone = knit_child(text = unlist(key.plots.zone))
-      } else {key.period.dispatch.zone   = 'Section not run according to input file.'}
-        
-      # Create data if regional dispatch stacks were selected in input file.
-      if (key.period.dispatch.region.log) {
-        plot.regions = region.names[!region.names %in% ignore.regions]
-        key.plots.region = mapply(function(p,r){knit_expand(file = 'source_scripts/p_key_period_dispatch_region.Rmd', 
-                                                            period.name = p, region.name = r)},
-                                  rep(period.names,length(plot.regions)), rep(plot.regions,each=n.periods))
-        key.period.dispatch.region = knit_child(text = unlist(key.plots.region))
-      } else {key.period.dispatch.region = 'Section not run according to input file.'}        
-    }
-  } else {
-    key.period.dispatch.total  = 'Problem sourcing or running d_key_period_dispatch.R.'
-    key.period.dispatch.zone   = 'Problem sourcing or running d_key_period_dispatch.R.'
-    key.period.dispatch.region = 'Problem sourcing or running d_key_period_dispatch.R.'
-  }
+    # As long as the file exists (previous source found the R script) this loop runs
+    if ( exists('key.period.gen') ) {
+    # Check to see if the right data is ready for plotting.
+      if ( typeof(key.period.gen)=='character' ) {
+        key.period.dispatch.total  = 'ERROR: interval_gen function not returning correct results.'
+        key.period.dispatch.zone   = 'ERROR: interval_gen function not returning correct results.'
+        key.period.dispatch.region = 'ERROR: interval_gen function not returning correct results.'
+      } else {
+        # Create data if total database info was selected in input file.
+        if (key.period.dispatch.total.log) {
+          key.plots.total = lapply(period.names, function(p){
+            knit_expand(file = 'source_scripts/p_key_period_dispatch_total.Rmd', period.name = p)
+            })
+          key.period.dispatch.total = knit_child(text = unlist(key.plots.total))
+        } else {key.period.dispatch.total  = 'Section not run according to input file.'}
+          
+        # Create data if zonal dispatch stacks were selected in input file.
+        if (key.period.dispatch.zone.log) {
+            plot.zones = zone.names[!zone.names %in% ignore.zones]
+            key.plots.zone = mapply(function(p,z){knit_expand(file = 'source_scripts/p_key_period_dispatch_zone.Rmd', 
+                                                              period.name = p, zone.name = z)},
+                                    rep(period.names,length(plot.zones)), rep(plot.zones,each=n.periods))
+          key.period.dispatch.zone = knit_child(text = unlist(key.plots.zone))
+        } else {key.period.dispatch.zone   = 'Section not run according to input file.'}
+          
+        # Create data if regional dispatch stacks were selected in input file.
+        if (key.period.dispatch.region.log) {
+          plot.regions = region.names[!region.names %in% ignore.regions]
+          key.plots.region = mapply(function(p,r){knit_expand(file = 'source_scripts/p_key_period_dispatch_region.Rmd', 
+                                                              period.name = p, region.name = r)},
+                                    rep(period.names,length(plot.regions)), rep(plot.regions,each=n.periods))
+          key.period.dispatch.region = knit_child(text = unlist(key.plots.region))
+        } else {key.period.dispatch.region = 'Section not run according to input file.'}        
+      }
+    } else { key.period.dispatch.total  = 'Problem sourcing or running d_key_period_dispatch.R.'
+             key.period.dispatch.zone   = 'Problem sourcing or running d_key_period_dispatch.R.'
+             key.period.dispatch.region = 'Problem sourcing or running d_key_period_dispatch.R.' }
+  } else { key.period.dispatch.total  = 'You didnt specify key periods. Cannot run this section.'
+           key.period.dispatch.zone   = 'You didnt specify key periods. Cannot run this section.' 
+           key.period.dispatch.region = 'You didnt specify key periods. Cannot run this section.' }
 } else { key.period.dispatch.total  = 'Section not run according to input file.'
          key.period.dispatch.zone   = 'Section not run according to input file.' 
          key.period.dispatch.region = 'Section not run according to input file.' }
@@ -280,15 +282,17 @@ if (region.zone.flow.table) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
 if(interface.flow.table) {
-  if (typeof(total.interface.flow)=='character'){
-    print('INPUT ERROR: total.interface.flow has errors. Cannot run this section')
-  } else{
-    # Call the query function to get interface flows for the interfaces selected in the input file.
-    interface.flows = tryCatch( annual_interface_flows(total.interface.flow), 
-                                error=function(cond) {return('ERROR: interface_flows query not returning correct results.')})
-    # Print data 
-    kable(interface.flows, digits=3)
-  }
+  if (length(interfaces)>0) {
+    if (typeof(total.interface.flow)=='character'){
+      print('INPUT ERROR: total.interface.flow has errors. Cannot run this section')
+    } else{
+      # Call the query function to get interface flows for the interfaces selected in the input file.
+      interface.flows = tryCatch( annual_interface_flows(total.interface.flow), 
+                                  error=function(cond) {return('ERROR: interface_flows query not returning correct results.')})
+      # Print data 
+      kable(interface.flows, digits=3)
+    }
+  } else { print('No interfaces specified. No interface data will be shown.')}
 } else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
@@ -306,26 +310,29 @@ source('source_scripts/p_interface_flow.R')
 ```{r key-period-interface-flow-plots, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (key.period.interface.flow.plots) {
+  if (length(interfaces)>0) {
+    if (length(period.names)>0) {
 
-  # Pull out interface flow data for only specified periods in input file
-  source('source_scripts/d_key_period_interface_flow.R')
-  
-  # As long as the file exists (previous source found the R script) this loop runs
-  if ( exists('plot.flows') ) {
-    # Check to see if the right data is ready for plotting.
-    if ( typeof(plot.flows)=='character' ) {
-      print('ERROR: interval_interface_flows function not returning correct results.')
-    } else {        
-      # Create data for each plot for the interesting periods
-      key.plots = lapply(period.names, function(p){
-                         knit_expand(file = 'source_scripts/p_key_period_interface_flow.Rmd', period.name = p)
-                         }) 
-      # Reconstruct the plot data into a format that will be output into the HTML below
-      key.period.interface.flow = knit_child(text = unlist(key.plots))
-   
-    }
-  } else { key.period.interface.flow = 'Problem sourcing or running d_key_period_interface_flow.R.' }
-  
+      # Pull out interface flow data for only specified periods in input file
+      source('source_scripts/d_key_period_interface_flow.R')
+      
+      # As long as the file exists (previous source found the R script) this loop runs
+      if ( exists('plot.flows') ) {
+        # Check to see if the right data is ready for plotting.
+        if ( typeof(plot.flows)=='character' ) {
+          print('ERROR: interval_interface_flows function not returning correct results.')
+        } else {        
+          # Create data for each plot for the interesting periods
+          key.plots = lapply(period.names, function(p){
+                             knit_expand(file = 'source_scripts/p_key_period_interface_flow.Rmd', period.name = p)
+                             }) 
+          # Reconstruct the plot data into a format that will be output into the HTML below
+          key.period.interface.flow = knit_child(text = unlist(key.plots))
+       
+        }
+      } else { key.period.interface.flow = 'Problem sourcing or running d_key_period_interface_flow.R.' }
+    } else { key.period.interface.flow = 'You didnt specify key periods. Cannot run this section.'}
+  } else { key.period.interface.flow = 'No interfaces specified. No interface data will be shown.'}
 } else { key.period.interface.flow = 'Section not run according to input file.' }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
@@ -457,37 +464,38 @@ source('source_scripts/p_price_duration_curve.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
 if (commit.dispatch.region | commit.dispatch.zone) {
-  
+  if (length(da.rt.types)>0) {
   source('source_scripts/d_DA_RT_commit_dispatch.R') # Call this R script which created the data needed for plotting.
   
-  # As long as the file exists (previous source found the R script) this loop runs
-  if ( exists('plot.data.all') ) {
-    # Check to see if the right data is ready for plotting.
-    if ( typeof(plot.data.all)=='character' ) {
-      print('ERROR: cap_committed function not returning correct results.')
-    } else {
-      # Check if zonal DA-RT plots were selected in input file. If so create a plot for each zone
-      if (commit.dispatch.zone) {
-        plot.zones = zone.names[!zone.names %in% ignore.zones]
-        da.rt.zone = mapply(function(p,z){knit_expand(file = 'source_scripts/p_DA_RT_commit_dispatch_zone.Rmd', 
-                                                      period.name = p, zone.name = z)},
-                            rep(period.names,length(plot.zones)), rep(plot.zones,each=n.periods))
-        da.rt.zone = knit_child(text = unlist(da.rt.zone))
-      } else {da.rt.zone = 'Section not run according to input file.'}
-      
-      # Check if regional DA-RT plots were selected in input file. If so create a plot for each region
-      if (commit.dispatch.region) {  
-        plot.regions = region.names[!region.names %in% ignore.regions]
-        da.rt.region = mapply(function(p,r){knit_expand(file = 'source_scripts/p_DA_RT_commit_dispatch_region.Rmd', 
-                                                        period.name = p, region.name = r)},
-                              rep(period.names,length(plot.regions)), rep(plot.regions,each=n.periods))
-        da.rt.region = knit_child(text = unlist(da.rt.region))
-      } else {da.rt.region = 'Section not run according to input file.'} 
-    }
-  } else { da.rt.zone = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'
-         da.rt.region = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'}
-  
-} else { da.rt.zone = 'Section not run according to input file.'
+    # As long as the file exists (previous source found the R script) this loop runs
+    if ( exists('plot.data.all') ) {
+      # Check to see if the right data is ready for plotting.
+      if ( typeof(plot.data.all)=='character' ) {
+        print('ERROR: cap_committed function not returning correct results.')
+      } else {
+        # Check if zonal DA-RT plots were selected in input file. If so create a plot for each zone
+        if (commit.dispatch.zone) {
+          plot.zones = zone.names[!zone.names %in% ignore.zones]
+          da.rt.zone = mapply(function(p,z){knit_expand(file = 'source_scripts/p_DA_RT_commit_dispatch_zone.Rmd', 
+                                                        period.name = p, zone.name = z)},
+                              rep(period.names,length(plot.zones)), rep(plot.zones,each=n.periods))
+          da.rt.zone = knit_child(text = unlist(da.rt.zone))
+        } else {da.rt.zone = 'Section not run according to input file.'}
+        
+        # Check if regional DA-RT plots were selected in input file. If so create a plot for each region
+        if (commit.dispatch.region) {  
+          plot.regions = region.names[!region.names %in% ignore.regions]
+          da.rt.region = mapply(function(p,r){knit_expand(file = 'source_scripts/p_DA_RT_commit_dispatch_region.Rmd', 
+                                                          period.name = p, region.name = r)},
+                                rep(period.names,length(plot.regions)), rep(plot.regions,each=n.periods))
+          da.rt.region = knit_child(text = unlist(da.rt.region))
+        } else {da.rt.region = 'Section not run according to input file.'} 
+      }
+    } else {   da.rt.zone = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'
+             da.rt.region = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.' }
+  } else {   da.rt.zone = 'You didnt specify generation types for DA-RT plots. Plots cannot be created.'
+           da.rt.region = 'You didnt specify generation types for DA-RT plots. Plots cannot be created.' }
+} else {   da.rt.zone = 'Section not run according to input file.'
          da.rt.region = 'Section not run according to input file.' }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```

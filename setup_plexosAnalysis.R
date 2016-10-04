@@ -88,8 +88,6 @@ gen.order = rev(as.character(na.omit(inputs$Gen.Order)))
 re.types = as.character(na.omit(inputs$Renewable.Types.for.Curtailment)) 
 if (length(re.types)==0) { 
   message('\nNo variable generation types specified for curtailment.')
-  interval.curtailment = FALSE
-  daily.curtailment = FALSE
   re.types = 'none_specified'
 }
 
@@ -97,18 +95,12 @@ if (length(re.types)==0) {
 da.rt.types = as.character(na.omit(inputs$DA.RT.Plot.Types))
 if (length(da.rt.types)==0) {
   message('\nNo generation types specified for DA-RT plots. Plots will not be created.')
-  commit.dispatch.region=FALSE
-  commit.dispatch.zone=FALSE
 }
 
 # Names of key periods
 period.names = as.character(na.omit(inputs$Key.Periods)) 
 if (length(period.names)==0) {
   message('\nNo key periods specified. No plots will be created for these.')
-  key.period.dispatch.total.log = FALSE
-  key.period.dispatch.zone.log = FALSE
-  key.period.dispatch.region.log = FALSE
-  key.period.interface.flow.plots = FALSE
 }
 
 # Number of key periods
@@ -137,9 +129,6 @@ ignore.regions = as.character(na.omit(inputs$Ignore.Regions))
 interfaces = as.character(na.omit(inputs$Interfaces.for.Flows))
 if (length(interfaces)==0) {
   message('\nNo interfaces specified. No interface data will be shown.')
-  interface.flow.table = FALSE
-  interface.flow.plots = FALSE
-  key.period.interface.flow.plots = FALSE
 }
 
 run.rplx=F
