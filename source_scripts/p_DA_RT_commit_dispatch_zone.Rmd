@@ -5,7 +5,7 @@ p.name = '{{period.name}}' # Assign period name
 cat("### ", p.name, ': ', z.name) # Print period and zone name above the plot
 text.plot=11 # Plot text size.
 figure.width = 9
-figure.height = 6
+figure.height = max(2*plot.data.all[Type %in% da.rt.types & Region==r.name & Period==p.name, length(unique(Type))], 2)
 ```
 
 ```{r DA-RT-plot-zone-{{zone.name}}-{{period.name}}, fig.width=figure.width, fig.height=figure.height, include=TRUE}

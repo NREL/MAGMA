@@ -322,16 +322,20 @@ capacity_factor = function(total.generation, total.installed.cap) {
   
   gen = total.generation[, Type:=gen.type.mapping[name] ]
   setnames(gen,'value', 'Gen (GWh)')
-        
+  
   mc[, Type := factor(Type, levels = rev(c(gen.order)))]
   
   # Calculates generation type total capacity and generation for the full run
   c.factor = mc[,.(name,`MaxCap (GWh)`,Type)][gen[,.(name,`Gen (GWh)`)]]
   c.factor = c.factor[,.(`MaxCap (GWh)`=sum(`MaxCap (GWh)`),`Gen (GWh)`=sum(`Gen (GWh)`)),by=.(Type)]
-
+  
   # Calculate capacity factor for each generation type
   n.hours = length(seq(from = first.day, to = last.day, by = 'hour'))
   c.factor = c.factor[,.(`Capacity Factor (%)` = `Gen (GWh)`/(`MaxCap (GWh)`/1000*n.hours)*100),by=.(Type, `MaxCap (GWh)`, `Gen (GWh)`)]
+  
+  # make sure names of total.generation and total.installed.cap aren't changed
+  try(setnames(total.generation, 'Gen (GWh)', 'value'), silent=TRUE)
+  try(setnames(total.installed.cap, 'MaxCap (GWh)', 'value'), silent=TRUE)
   
   return(c.factor)
 }
@@ -514,10 +518,11 @@ interval_gen = function(database) {
 
 # Interval level generator capacity
 interval_avail_cap = function(database) {
-  interval.avail.cap = data.table(query_interval(database, 'Generator', c('Available Capacity','Units Generating'), columns = c('category', 'name'))) 
-  interval.avail.cap = dcast.data.table(interval.avail.cap, scenario+name+time+category~property, value.var = "value")
-  interval.avail.cap[, value:=(`Available Capacity`*`Units Generating`)]
-  interval.avail.cap[, property:='Available Capacity']
+  interval.avail.cap = data.table(query_interval(database, 'Generator', c('Available Capacity'), columns = c('category', 'name'))) 
+#  interval.avail.cap = data.table(query_interval(database, 'Generator', c('Available Capacity','Units Generating'), columns = c('category', 'name'))) 
+#  interval.avail.cap = dcast.data.table(interval.avail.cap, scenario+name+time+category~property, value.var = "value")
+#  interval.avail.cap[, value:=(`Available Capacity`*`Units Generating`)]
+#  interval.avail.cap[, property:='Available Capacity']
   return(interval.avail.cap[,.(scenario, property, name, value, time, category) ])
 }
 

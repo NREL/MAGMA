@@ -491,6 +491,12 @@ if (commit.dispatch.region | commit.dispatch.zone) {
           da.rt.region = knit_child(text = unlist(da.rt.region))
         } else {da.rt.region = 'Section not run according to input file.'} 
       }
+    } else if ( typeof(interval.da.committment) == 'character' ) { 
+        da.rt.zone = 'INPUT ERROR: interval.da.committment has errors. Cannot run this section.'
+      da.rt.region = 'INPUT ERROR: interval.da.committment has errors. Cannot run this section.'
+    } else if ( typeof(interval.avail.cap) == 'character' ) { 
+        da.rt.zone = 'INPUT ERROR: interval.avail.cap has errors. Cannot run this section.'
+      da.rt.region = 'INPUT ERROR: interval.da.committment has errors. Cannot run this section.'
     } else {   da.rt.zone = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'
              da.rt.region = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.' }
   } else {   da.rt.zone = 'You didnt specify generation types for DA-RT plots. Plots cannot be created.'

@@ -10,8 +10,7 @@ if (zone.gen.stacks) {
     # Create plot
     plot.data = gen_stack_plot(r.z.gen[!Zone %in% ignore.zones, ],
                                z.load[!Zone %in% ignore.zones, ], 
-                               filters = 'Zone')
-    print(plot.data[[1]] + facet_wrap(~Zone, scales = 'free', ncol=3) +
-          theme(aspect.ratio = 2.5))
+                               filters = 'Zone', x_col='Zone')
+    print(plot.data[[1]])
   }
 } else { print('Section not run according to input file.') }

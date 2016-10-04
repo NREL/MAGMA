@@ -129,7 +129,7 @@ ignore.regions = as.character(na.omit(inputs$Ignore.Regions))
 interfaces = as.character(na.omit(inputs$Interfaces.for.Flows))
 if (length(interfaces)==0) {
   message('\nNo interfaces specified. No interface data will be shown.')
-} else if (interfaces == 'ALL'){
+} else if (any(interfaces == 'ALL')){
   interfaces = unique(query_class_member(db,'Interface')$name)
 }
 # Update scen.pal to account for larger number of interfaces. Give warning about large number of entries
