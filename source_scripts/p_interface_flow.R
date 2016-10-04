@@ -1,7 +1,7 @@
 # Check if this section was selected to run in the input file
 if (interface.flow.plots) {
   if ( typeof(interval.interface.flow) == 'character' ) {
-    print('ERROR: interval.interface.flow not correct. Cannot run this section')
+    print('INPUT ERROR: interval.interface.flow not correct. Cannot run this section')
   } else { 
     # Call the query function to get interface flows for the interfaces selected in the query function.
     interface.flows = tryCatch( interval_interface_flows(interval.interface.flow), 
@@ -14,7 +14,7 @@ if (interface.flow.plots) {
       # Get daily plots
       p1 = interface_plot(interface.flows, x_col = 'time')
       print(p1 + scale_x_datetime(breaks = date_breaks(width = "1 month"), 
-                   limits=c(first.day, last(seq(first.day, by='month', length.out=12))), 
+                   limits=c(first.day, last.day), 
                    labels = date_format("%b"), expand = c(0, 0)))
       # Aggregate interval flow data into daily flow data
       interface.flows[, day := as.POSIXlt(time)[[8]] ]

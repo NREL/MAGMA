@@ -4,7 +4,7 @@ if(price.duration.curve) {
   if ( typeof(interval.region.price)=='character' ) { 
       print('ERROR: interval.region.price not correct. Cannot run this section')
     } else {
-      
+
       # Create plot
       p1 = price_duration_curve(interval.region.price[!name %in% ignore.regions & property == 'Price', ],
                                 filters = c('property','name'), color='area')

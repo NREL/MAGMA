@@ -1,9 +1,9 @@
 # Check if this section was selected run in the input file
 if (total.gen.stack){
   if ( typeof(total.generation)=='character' ) {
-    print('ERROR: total.generation has errors. Cannot run this section.')
+    print('INPUT ERROR: total.generation has errors. Cannot run this section.')
   } else if ( typeof(total.avail.cap) == 'character' ) { 
-    print('ERROR: total.avail.cap has errors. Cannot run this section.')
+    print('INPUT ERROR: total.avail.cap has errors. Cannot run this section.')
   } else{
     # Query annual generation by type.
     yr.gen = tryCatch( gen_by_type(total.generation, total.avail.cap), 

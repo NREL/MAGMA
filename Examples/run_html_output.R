@@ -15,6 +15,7 @@ load.data = '<Name of file to load if query.data=FALSE >'
 setwd(magma.dir)
 # Sourcing the setup file and required functions
 source(file.path('query_functions.R'))
+source(file.path('plot_functions.R'))
 source(file.path('setup_plexosAnalysis.R'))
 if (query.data){
     source(file.path('setup_dataQueries.R'))

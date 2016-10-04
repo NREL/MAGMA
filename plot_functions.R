@@ -208,7 +208,7 @@ price_duration_curve <- function(price.data, filters, color=NULL){
 
   # Create Plot
   p.1 = ggplot(price.data)+
-           geom_line(aes(x=interval, y=value, color=color), size=0.8)+  
+           geom_line(aes_string(x='interval', y='value', color=color), size=0.8)+  
            labs(y="Price ($/MWh)", x='Hours of Year')+
            theme( legend.key =       element_rect(color = "grey80", size = 0.4),
                   legend.key.size =  grid::unit(0.9, "lines"), 

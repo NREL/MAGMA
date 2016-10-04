@@ -1,8 +1,8 @@
 if (zone.gen.stacks) {
   if ( typeof(total.generation)=='character' ) {
-    print('ERROR: total.generation has errors. Cannot run this section.')
+    print('INPUT ERROR: total.generation has errors. Cannot run this section.')
   } else if ( typeof(total.avail.cap) == 'character' ) { 
-    print('ERROR: total.avail.cap has errors. Cannot run this section.')
+    print('INPUT ERROR: total.avail.cap has errors. Cannot run this section.')
   } else{ 
     # Query region and zonal generation
     r.z.gen = tryCatch( region_zone_gen(total.generation, total.avail.cap), 

@@ -115,9 +115,15 @@ if (length(period.names)==0) {
 n.periods = length(period.names) 
 
 # Start and end times for key periods
-start.end.times = data.table(start = as.POSIXct( strptime( na.omit(inputs$Start.Time), format = '%m/%d/%Y %H:%M'), tz='UTC'), 
-                             end = as.POSIXct( strptime( na.omit(inputs$End.Time), format = '%m/%d/%Y %H:%M'), tz='UTC' ) )
-
+if(length(na.omit(inputs$Start.Time)) > 0){
+  if(nchar(strsplit(as.character(inputs$Start.Time[1]),'[ ,/]')[[1]][3])==2){
+    start.end.times = data.table(start = as.POSIXct( strptime( na.omit(inputs$Start.Time), format = '%m/%d/%y %H:%M'), tz='UTC'), 
+                                 end = as.POSIXct( strptime( na.omit(inputs$End.Time), format = '%m/%d/%y %H:%M'), tz='UTC' ) )
+  }else if(nchar(strsplit(as.character(inputs$Start.Time[1]),'[ ,/]')[[1]][3])==4){
+    start.end.times = data.table(start = as.POSIXct( strptime( na.omit(inputs$Start.Time), format = '%m/%d/%Y %H:%M'), tz='UTC'), 
+                                 end = as.POSIXct( strptime( na.omit(inputs$End.Time), format = '%m/%d/%Y %H:%M'), tz='UTC' ) )
+  }
+}
 # Location for saved figures
 fig.path.name = paste0(as.character(na.omit(inputs$Fig.Path)),'\\')
 
@@ -168,7 +174,7 @@ attributes(db.day.ahead)$class = c('rplexos', 'data.frame', 'tbl_df')
 
 
 # Read mapping file to map generator names to region and zone (can be same file as gen name to type).
-if (is.na(inputs$Gen.Region.Zone.Mapping.Filename)){
+if (is.na(inputs$Gen.Region.Zone.Mapping.Filename)[1]){
   gen.mapping <- query_generator(db)
   region.zone.mapping = data.table(unique(gen.mapping[,c('name','region','zone')]))
   setnames(region.zone.mapping, c("region","zone"), c("Region","Zone"))
