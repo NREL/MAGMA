@@ -518,11 +518,10 @@ interval_gen = function(database) {
 
 # Interval level generator capacity
 interval_avail_cap = function(database) {
-  interval.avail.cap = data.table(query_interval(database, 'Generator', c('Available Capacity'), columns = c('category', 'name'))) 
-#  interval.avail.cap = data.table(query_interval(database, 'Generator', c('Available Capacity','Units Generating'), columns = c('category', 'name'))) 
-#  interval.avail.cap = dcast.data.table(interval.avail.cap, scenario+name+time+category~property, value.var = "value")
-#  interval.avail.cap[, value:=(`Available Capacity`*`Units Generating`)]
-#  interval.avail.cap[, property:='Available Capacity']
+  interval.avail.cap = data.table(query_interval(database, 'Generator', c('Available Capacity','Units Generating'), columns = c('category', 'name'))) 
+  interval.avail.cap = dcast.data.table(interval.avail.cap, scenario+name+time+category~property, value.var = "value")
+  interval.avail.cap[, value:=`Available Capacity`*(`Units Generating`>0)]
+  interval.avail.cap[, property:='Available Capacity']
   return(interval.avail.cap[,.(scenario, property, name, value, time, category) ])
 }
 
