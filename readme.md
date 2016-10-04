@@ -71,6 +71,7 @@ This package creates figures and an HTML file with all of those figures for plex
 	+ Regions to exclude from plots
 21. Interfaces.for.Flows
 	+ Specific interfaces to show flow data for
+	+ If all interfaces are desired, list 'ALL' as only entry
 
 
 ## Required PLEXOS outputs

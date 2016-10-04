@@ -129,6 +129,13 @@ ignore.regions = as.character(na.omit(inputs$Ignore.Regions))
 interfaces = as.character(na.omit(inputs$Interfaces.for.Flows))
 if (length(interfaces)==0) {
   message('\nNo interfaces specified. No interface data will be shown.')
+} else if (interfaces == 'ALL'){
+  interfaces = unique(query_class_member(db,'Interface')$name)
+}
+# Update scen.pal to account for larger number of interfaces. Give warning about large number of entries
+if (length(interfaces) > length(scen.pal)){
+  message('\nYou have specified a large number of interfaces. Color palette may be hard to differentiate.')
+  scen.pal = rainbow(length(interfaces))
 }
 
 run.rplx=F
