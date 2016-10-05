@@ -50,7 +50,7 @@ if ( annual.cost.table ) {
 if ( reserve.stack ) {
   # Total reserve provision by generator
   total.gen.res        = tryCatch( total_gen_reserve_provision(db), error = function(cond) { return('ERROR') } ) 
-  reserve.names        = unique(total.reserve.provision$name) # Get all reserve types
+  reserve.names        = unique(total.gen.res$parent) # Get all reserve types
   if (typeof(total.gen.res)=='character') { message('\nMissing total generator reserve provision data from solution .db file.')}
 }
 

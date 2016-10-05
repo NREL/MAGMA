@@ -262,7 +262,7 @@ interval_interface_flows = function(interval.interface.flow) {
 region_stats = function(total.region.load, total.region.imports, total.region.exports, total.region.ue) {
   r.data = rbindlist(list(total.region.load, total.region.imports, total.region.exports, total.region.ue))
   r.data = r.data[, .(value=sum(value)), by=.(name,property)]
-  r.stats = dcast(r.data, name~property, value.var = 'value')
+  r.stats = dcast.data.table(r.data, name~property, value.var = 'value')
   return(r.stats)
 }
 

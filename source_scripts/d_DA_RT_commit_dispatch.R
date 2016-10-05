@@ -26,6 +26,10 @@ if ( typeof(committed.cap)=='character' | typeof(int.gen)=='character' | typeof(
   # Add the day ahead capacity and real time capacity to the real time generation.
   da.rt.data = merge(merge(da.rt.data,avail.cap.rt,all=TRUE),committed.cap, all=TRUE) 
   
+  da.rt.data[is.na(RT.gen), RT.gen:=0]
+  da.rt.data[is.na(RT.cap), RT.cap:=0]
+  da.rt.data[is.na(DA.cap), DA.cap:=0]
+  
   # Only pull out data for the time spans that were requested in the input file. 
   timediff = da.rt.data[,.(timediff=diff(time)),by=.(scenario,Region,Type,Zone)][,.(min(timediff))][,V1]
   for ( i in 1:n.periods ) {
