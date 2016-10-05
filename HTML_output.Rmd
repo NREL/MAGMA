@@ -58,7 +58,7 @@ source('source_scripts/p_region_gen_stacks.R')
 if(individual.region.stacks.log) {
   if ( typeof(total.generation)=='character' | typeof(total.avail.cap) == 'character' |
        typeof(r.load) == 'character' ) {
-    print('INPUT ERROR: total.generation, total.avail.cap or r.load has errors. Cannot run this section.')
+    individual.region.stacks = 'INPUT ERROR: total.generation, total.avail.cap or r.load has errors. Cannot run this section.'
   } else { 
     # Query region and zonal generation
     r.z.gen = tryCatch( region_zone_gen(total.generation, total.avail.cap), 

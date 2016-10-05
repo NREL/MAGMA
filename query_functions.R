@@ -384,7 +384,12 @@ total_generation = function(database) {
 
 # Full run available capacity
 total_avail_cap = function(database) {
-  total.avail.cap = data.table(query_year(database, 'Generator', 'Available Energy', columns = c('category', 'name')))
+  if ("Available Energy" %in% properties[is_summary==1 & class=="Generator",property]){
+    total.avail.cap = data.table(query_year(database, 'Generator', 'Available Energy', columns = c('category', 'name')))
+  } else if ("Available Capacity" %in% properties[is_summary==0 & class=="Generator",property]){
+    total.avail.cap = data.table(query_interval(database, 'Generator', 'Available Capacity', columns = c('category', 'name')))
+    total.avail.cap = total.avail.cap[, .(value=sum(value)), by=.(scenario, property, name, category)]
+  }
   return(total.avail.cap[, .(scenario, property, name, category, value)])
 }
 

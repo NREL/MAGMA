@@ -1,8 +1,8 @@
 # Check to make sure relevant data exists
 if ( typeof(interval.region.load)=='character' ) {
     print('INPUT ERROR: interval.region.load has errors. Cannot run this section.')
-  } else if ( typeof(interval.zone.load) == 'character' ) { 
-    print('INPUT ERROR: interval.zone.load has errors. Cannot run this section.')
+#  } else if ( typeof(interval.zone.load) == 'character' ) { 
+#    print('INPUT ERROR: interval.zone.load has errors. Cannot run this section.')
   } else if ( typeof(interval.generation) == 'character' ) { 
     print('INPUT ERROR: interval.generation has errors. Cannot run this section.')
   } else if ( typeof(interval.avail.cap) == 'character' ) { 
