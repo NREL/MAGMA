@@ -168,6 +168,11 @@ db.day.ahead = tryCatch(plexos_open(db.day.ahead.loc, basename(db.day.ahead.loc)
 # db.day.ahead = db.day.ahead[1,] # This line queries only the first solution .db file if there are multiple in one location. 
 attributes(db.day.ahead)$class = c('rplexos', 'data.frame', 'tbl_df')
 
+# get available properties
+properties = data.table(query_property(db))
+if (typeof(db.day.ahead)!='character'){
+  properties.day.ahead = data.table(query_property(db.day.ahead))
+}
 
 # Read mapping file to map generator names to region and zone (can be same file as gen name to type).
 if (is.na(inputs$Gen.Region.Zone.Mapping.Filename)[1]){
