@@ -9,11 +9,11 @@ if (region.zone.flow.table) {
                       error = function(cond) { return('ERROR: zone_stats function not returning correct results.') })
   
   if ( !typeof(r.stats)=='character' ) { 
-    colnames(r.stats)[which(colnames(r.stats)=='name')] = 'Region Name'
+    setnames(r.stats, 'name', 'Region Name')
   }
   
   if ( !typeof(z.stats)=='character' ) { 
-    colnames(z.stats)[which(colnames(z.stats)=='name')] = 'Zone Name'
+    setnames(z.stats, 'name', 'Zone Name')
   }
 
 } else { print('Section not run according to input file.') }

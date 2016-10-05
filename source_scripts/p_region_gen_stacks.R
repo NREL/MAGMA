@@ -1,105 +1,53 @@
 # Check if this section was selected run in the input file
 if (region.gen.stacks) {
+  if ( typeof(total.generation)=='character' ) {
+    print('INPUT ERROR: total.generation has errors. Cannot run this section.')
+  } else if ( typeof(total.avail.cap) == 'character' ) { 
+    print('INPUT ERROR: total.avail.cap has errors. Cannot run this section.')
+  } else{
 
-if( !exists('r.z.gen') ) {
-  # Query region and zonal generation
-  r.z.gen = tryCatch( select(region_zone_gen(total.generation, total.avail.cap), Region, Zone, Type, GWh = value), error = function(cond) { return('ERROR') } )
-}
+    if( !exists('r.z.gen') ) {
+      # Query region and zonal generation
+      r.z.gen = tryCatch( region_zone_gen(total.generation, total.avail.cap), error = function(cond) { return('ERROR') } )
+    }
 
-# Check if zonal.gen query worked and create plot of regional gen, else return an error.
-if ( typeof(r.z.gen)=='character' ) {
-  print('ERROR: region_zone_gen function not returning correct results.')
-} else if ( typeof(r.load) == 'character' ) {
-  print('ERROR: region_load function not returning correct results.')
-} else {
-  
-  # reorder the levels of Type to plot them in order
-  r.z.gen$Type = factor(r.z.gen$Type, levels = gen.order)
-    
-  # r.z.gen.sum is just used to set the maximum height on the plot, see pretty() fcn below
-  r.z.gen.sum = r.z.gen %>% 
-    dplyr::summarise(TWh=sum(GWh)/1000) #change GWh generation to TWh
-  
-  # Convert GWh to TWh and remove region and zone data that should be ignored
-  r.z.gen.plot = r.z.gen %>%
-    group_by(Type, Region, Zone) %>%
-    dplyr::summarise(TWh = sum(GWh)/1000) %>%
-    filter(!Zone %in% ignore.zones) %>%
-    filter(!Region %in% ignore.regions)
-    
-  region.load = filter(r.load, !name %in% ignore.regions) # Remove load data from regions being ignored
-  colnames(region.load)[which(colnames(region.load)=='name')]='Region'
-  region.load$value = region.load$value/1000
-  
-  zone.load = filter(z.load, !name %in% ignore.zones)
-  colnames(zone.load)[which(colnames(zone.load)=='name')]='Zone'
-  zone.load$value = zone.load$value/1000
-  
-  # *** Not needed for these plots as y-axis is varying. ***
-  # # This automatically creates the y-axis scaling
-  # py=pretty(r.z.gen.sum$TWh, n=5, min.n = 5)
-  # seq.py=seq(0, py[length(py)], 10*(py[2]-py[1]))
-  
-  if (length(unique(r.z.gen.plot$Region))>length(unique(r.z.gen.plot$Zone))) {
-    
-    region.load = region.load %>%
-      join(region.zone.mapping[,c('Zone', 'Region')], by = 'Region', type='left', match='first') %>%
-      filter(!Zone %in% ignore.zones) %>%
-      filter(!Region %in% ignore.regions) # This line of code is mostly redundant since the ignored regions are removed a couple lines above. 
-    region.load = region.load[complete.cases(region.load),]
-    
-    # Create plot
-    p1 = ggplot() +
-      geom_bar(data = r.z.gen.plot, aes(x = Region, y = TWh, fill=Type, order=as.numeric(Type)), stat='identity', position="stack" ) +
-      geom_errorbar(aes(x=Region, y=value, ymin=value, ymax=value, color='load'), data=region.load, linetype='longdash', size=0.45)+
-      scale_fill_manual(values = gen.color, guide = guide_legend(reverse = TRUE))+
-      scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
-      labs(y="Generation (TWh)", x=NULL)+
-      # scale_y_continuous(breaks=seq.py, expand=c(0,0), label=comma)+
-      guides(color = guide_legend(order=1), fill = guide_legend(order=2, reverse=TRUE))+
-      theme(    legend.key =      element_rect(color="grey80", size = 0.8), 
-                legend.key.size = grid::unit(1.0, "lines"),
-                legend.text =     element_text(size=text.plot), 
-                legend.title =    element_blank(),
-                #                         text = element_text(family="Arial"),
-                axis.text =       element_text(size=text.plot/1.2), 
-                axis.text.x =     element_text(angle=-45, hjust=0),
-                axis.title =      element_text(size=text.plot, face=2), 
-                axis.title.y =    element_text(vjust=1.2), 
-                panel.margin =    unit(1.5, "lines"))+
-      facet_wrap(~Zone, scales = 'free', ncol=2)
-    # , nrow=length(unique(r.z.gen.plot$Zone)))
-  } else {
-    
-    zone.load = zone.load %>%
-      join(region.zone.mapping[,c('Zone', 'Region')], by = 'Zone', type='left', match='first') %>%
-      filter(!Zone %in% ignore.zones) %>%
-      filter(!Region %in% ignore.regions) # This line of code is mostly redundant since the ignored regions are removed a couple lines above. 
-    zone.load = zone.load[complete.cases(zone.load),]
-    
-    # Create plot
-    p1 = ggplot() +
-      geom_bar(data = r.z.gen.plot, aes(x = Zone, y = TWh, fill=Type, order=as.numeric(Type)), stat='identity', position="stack" ) +
-      geom_errorbar(aes(x=Zone, y=value, ymin=value, ymax=value, color='load'), data=zone.load, linetype='longdash', size=0.45)+
-      scale_fill_manual(values = gen.color, guide = guide_legend(reverse = TRUE))+
-      scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
-      labs(y="Generation (TWh)", x=NULL)+
-      # scale_y_continuous(breaks=seq.py, expand=c(0,0), label=comma)+
-      guides(color = guide_legend(order=1), fill = guide_legend(order=2, reverse=TRUE))+
-      theme(    legend.key =      element_rect(color="grey80", size = 0.8), 
-                legend.key.size = grid::unit(1.0, "lines"),
-                legend.text =     element_text(size=text.plot), 
-                legend.title =    element_blank(),
-                #                         text = element_text(family="Arial"),
-                axis.text =       element_text(size=text.plot/1.2), 
-                axis.text.x =     element_text(angle=-45, hjust=0),
-                axis.title =      element_text(size=text.plot, face=2), 
-                axis.title.y =    element_text(vjust=1.2), 
-                panel.margin =    unit(1.5, "lines"))+
-      facet_wrap(~Region, scales = 'free', ncol=2)
-    # , nrow=length(unique(r.z.gen.plot$Zone)))
+    # Check if zonal.gen query worked and create plot of regional gen, else return an error.
+    if ( typeof(r.z.gen)=='character' ) {
+      print('ERROR: region_zone_gen function not returning correct results.')
+    } else if ( typeof(r.load) == 'character' ) {
+      print('ERROR: region_load function not returning correct results.')
+    } else {
+      if (length(unique(r.z.gen$Region))>length(unique(r.z.gen$Zone))) {
+        region.load = r.load[!Region %in% ignore.regions, ] # Remove load data from regions being ignored
+        region.load[, value := value/1000]
+        
+        setkey(region.load,Region)
+        setkey(rz.unique,Region)
+        region.load = rz.unique[region.load][!Zone %in% ignore.zones, ] # ignored regions removed above
+        region.load = region.load[complete.cases(region.load),]
+        plot.load = region.load
+
+        x.col = 'Region'
+        facet = facet_wrap(~Zone, scales = 'free', ncol=3)
+      } else{
+        zone.load = z.load[!Zone %in% ignore.zones, ] # Remove load data from regions being ignored
+        zone.load[, value := value/1000]
+
+        setkey(zone.load,Zone)
+        setkey(rz.unique,Zone)
+        zone.load = rz.unique[zone.load][!Region %in% ignore.regions, ] # ignored zones removed above
+        zone.load = zone.load[complete.cases(zone.load),]
+        plot.load = zone.load
+
+        x.col = 'Zone'
+        facet = facet_wrap(~Region, scales = 'free', ncol=3)
+      }
+      
+      # Create and plot data
+      p1 <- gen_stack_plot(r.z.gen[(!Zone %in% ignore.zones && !Region %in% ignore.regions),],
+                         plot.load[(!Zone %in% ignore.zones && !Region %in% ignore.regions),],
+                         filters = c('Region','Zone'), x_col = x.col)
+      print(p1[[1]] + facet + theme(axis.text.x = element_text(angle = -30, hjust = 0)))
+    }
   }
-  print(p1)
-}
-
 } else { print('Section not run according to input file.') }

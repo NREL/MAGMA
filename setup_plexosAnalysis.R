@@ -26,8 +26,9 @@ scen.pal = c("goldenrod2", "blue", "darkblue", "firebrick3", "deeppink", "chartr
 # Read CSV file with all inputs
 inputs = read.csv(file.path(input.csv))
 inputs[inputs==""]=NA
+inputs = data.table(inputs)
 
-# Assign a logical to each chunk run selector. 
+# What sections to run code for. Assign a logical to each chunk run selector. 
 run.sections = na.omit(inputs$Sections.to.Run)
 if(1 %in% run.sections)  {total.gen.stack=TRUE}                 else {total.gen.stack=FALSE} 
 if(2 %in% run.sections)  {zone.gen.stacks=TRUE}                 else {zone.gen.stacks=FALSE}
@@ -51,6 +52,7 @@ if(19 %in% run.sections) {capacity.factor.table=TRUE}           else {capacity.f
 if(20 %in% run.sections) {price.duration.curve=TRUE}            else {price.duration.curve=FALSE}
 if(21 %in% run.sections) {commit.dispatch.zone=TRUE}            else {commit.dispatch.zone=FALSE}
 if(22 %in% run.sections) {commit.dispatch.region=TRUE}          else {commit.dispatch.region=FALSE}
+if(23 %in% run.sections) {reserve.stack=TRUE}                   else {reserve.stack=FALSE}
 
 # -----------------------------------------------------------------------
 # Read in the data from the input_data.csv file that was just loaded
@@ -75,25 +77,9 @@ if (length(reassign.zones)==0) {
   message('\nMust select TRUE or FALSE for if reassigning what regions are in what zones!')
 }
 
-if ( use.gen.type.mapping.csv ) {
-  # Read mapping tile to map generator names to generation type
-  gen.type.mapping = read.csv(as.character(na.exclude(inputs$CSV.Gen.Type.File.Location)), stringsAsFactors=FALSE)
-  gen.type.mapping = select(gen.type.mapping, name, Type)
-} else {
-  # Assign generation type according to PLEXOS category
-  category2type = data.frame(category = as.character(na.omit(inputs$PLEXOS.Gen.Category)), Type = as.character(na.omit(inputs$PLEXOS.Desired.Type)) )  
-  if (length(category2type[,1])==0) { message('\nIf not using generator name to type mapping CSV, you must specify PLEXOS categories and desired generation type.') }
-}
-
-# Read mapping file to map generator names to region and zone (can be same file as gen name to type).
-region.zone.mapping = read.csv(as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename)), stringsAsFactors=FALSE)
-region.zone.mapping = select(region.zone.mapping, name, Region, Zone)
-rz.unique = unique(region.zone.mapping[,c('Region','Zone')])
-
 # Set plot color for each generation type
-Gen.col = data.frame(Type = na.omit(inputs$Gen.Type), Color = na.omit(inputs$Plot.Color) )
-gen.color<-as.character(Gen.col$Color)
-names(gen.color)<-Gen.col$Type
+Gen.col = data.table(Type = na.omit(inputs$Gen.Type), Color = na.omit(inputs$Plot.Color) )
+gen.color<-setNames(as.character(Gen.col$Color),Gen.col$Type)
 
 # Generation type order for plots
 gen.order = rev(as.character(na.omit(inputs$Gen.Order))) 
@@ -102,8 +88,6 @@ gen.order = rev(as.character(na.omit(inputs$Gen.Order)))
 re.types = as.character(na.omit(inputs$Renewable.Types.for.Curtailment)) 
 if (length(re.types)==0) { 
   message('\nNo variable generation types specified for curtailment.')
-  interval.curtailment = FALSE
-  daily.curtailment = FALSE
   re.types = 'none_specified'
 }
 
@@ -111,27 +95,27 @@ if (length(re.types)==0) {
 da.rt.types = as.character(na.omit(inputs$DA.RT.Plot.Types))
 if (length(da.rt.types)==0) {
   message('\nNo generation types specified for DA-RT plots. Plots will not be created.')
-  commit.dispatch.region=FALSE
-  commit.dispatch.zone=FALSE
 }
 
 # Names of key periods
 period.names = as.character(na.omit(inputs$Key.Periods)) 
 if (length(period.names)==0) {
   message('\nNo key periods specified. No plots will be created for these.')
-  key.period.dispatch.total.log = FALSE
-  key.period.dispatch.zone.log = FALSE
-  key.period.dispatch.region.log = FALSE
-  key.period.interface.flow.plots = FALSE
 }
 
 # Number of key periods
 n.periods = length(period.names) 
 
 # Start and end times for key periods
-start.end.times = data.frame(start = as.POSIXct( strptime( na.omit(inputs$Start.Time), format = '%m/%d/%Y %H:%M'), tz='UTC'), 
-                             end = as.POSIXct( strptime( na.omit(inputs$End.Time), format = '%m/%d/%Y %H:%M'), tz='UTC' ) )
-
+if(length(na.omit(inputs$Start.Time)) > 0){
+  if(nchar(strsplit(as.character(inputs$Start.Time[1]),'[ ,/]')[[1]][3])==2){
+    start.end.times = data.table(start = as.POSIXct( strptime( na.omit(inputs$Start.Time), format = '%m/%d/%y %H:%M'), tz='UTC'), 
+                                 end = as.POSIXct( strptime( na.omit(inputs$End.Time), format = '%m/%d/%y %H:%M'), tz='UTC' ) )
+  }else if(nchar(strsplit(as.character(inputs$Start.Time[1]),'[ ,/]')[[1]][3])==4){
+    start.end.times = data.table(start = as.POSIXct( strptime( na.omit(inputs$Start.Time), format = '%m/%d/%Y %H:%M'), tz='UTC'), 
+                                 end = as.POSIXct( strptime( na.omit(inputs$End.Time), format = '%m/%d/%Y %H:%M'), tz='UTC' ) )
+  }
+}
 # Location for saved figures
 fig.path.name = paste0(as.character(na.omit(inputs$Fig.Path)),'\\')
 
@@ -145,9 +129,13 @@ ignore.regions = as.character(na.omit(inputs$Ignore.Regions))
 interfaces = as.character(na.omit(inputs$Interfaces.for.Flows))
 if (length(interfaces)==0) {
   message('\nNo interfaces specified. No interface data will be shown.')
-  interface.flow.table = FALSE
-  interface.flow.plots = FALSE
-  key.period.interface.flow.plots = FALSE
+} else if (any(interfaces == 'ALL')){
+  interfaces = unique(query_class_member(db,'Interface')$name)
+}
+# Update scen.pal to account for larger number of interfaces. Give warning about large number of entries
+if (length(interfaces) > length(scen.pal)){
+  message('\nYou have specified a large number of interfaces. Color palette may be hard to differentiate.')
+  scen.pal = rainbow(length(interfaces))
 }
 
 run.rplx=F
@@ -155,13 +143,13 @@ if(length(list.files(pattern = "\\.zip$",path=db.loc))!=0 ) {
   if(length(list.files(pattern = "\\.db$",path=db.loc))==0) {
     message(paste0('The .db file is absent from ',db.loc))
     run.rplx=T
-  } else if(file.info(file.path(db.loc,list.files(pattern = "\\.db$",path=db.loc)))$mtime <
-              file.info(file.path(db.loc,list.files(pattern = "\\.zip$",path=db.loc)))$mtime) {
+  } else if(any(file.info(file.path(db.loc,list.files(pattern = "\\.db$",path=db.loc)))$mtime <
+                file.info(file.path(db.loc,list.files(pattern = "\\.zip$",path=db.loc)))$mtime, na.rm=TRUE)) {
     message(paste0('The db is older than the zip or the .db file in ',db.loc))
     run.rplx=T
   } else {message(paste0('\nFound .db solution file: ', list.files(pattern='\\.db$',path=db.loc), '\n'))}
   if(run.rplx) {
-    if(readline('Do you want to run the rPLEXOS db creation tool now? (y/n):')=='y'){
+    if(readline('Do you want to run the rPLEXOS db creation tool now? (y/n):')=='y' | !interactive()){
       message('Running process_folder')
       process_folder(db.loc)
     } else {message('You need to run rPLEXOS to process your solution or point to the correct solution folder.')}
@@ -171,14 +159,47 @@ if(length(list.files(pattern = "\\.zip$",path=db.loc))!=0 ) {
 } else {message('No .zip or .db file... are you in the right directory?')}
 # -----------------------------------------------------------------------
 # Open the database file ( must already have created this using rplexos ) 
-db = plexos_open(db.loc)
+db = plexos_open(db.loc, basename(db.loc))
 # db = db[1,] # This line queries only the first solution .db file if there are multiple in one location. 
 attributes(db)$class = c("rplexos","data.frame","tbl_df")
 
 # Open the day ahead database file
-db.day.ahead = tryCatch(plexos_open(db.day.ahead.loc), error = function(cond) { return(data.frame('ERROR'))})
+db.day.ahead = tryCatch(plexos_open(db.day.ahead.loc, basename(db.day.ahead.loc)), error = function(cond) { return(data.frame('ERROR'))})
 # db.day.ahead = db.day.ahead[1,] # This line queries only the first solution .db file if there are multiple in one location. 
 attributes(db.day.ahead)$class = c('rplexos', 'data.frame', 'tbl_df')
+
+
+# Read mapping file to map generator names to region and zone (can be same file as gen name to type).
+if (is.na(inputs$Gen.Region.Zone.Mapping.Filename)[1]){
+  gen.mapping <- query_generator(db)
+  region.zone.mapping = data.table(unique(gen.mapping[,c('name','region','zone')]))
+  setnames(region.zone.mapping, c("region","zone"), c("Region","Zone"))
+} else{
+  region.zone.mapping = data.table(read.csv(as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename)), 
+                        stringsAsFactors=FALSE))
+}
+region.zone.mapping = unique(region.zone.mapping[, .(name, Region, Zone)])
+setkey(region.zone.mapping,name)
+rz.unique = unique(region.zone.mapping[,.(Region,Zone)])
+
+
+# Create generator name to type mapping
+if ( use.gen.type.mapping.csv ) {
+  # Read mapping file to map generator names to generation type
+  gen.type.mapping = data.table(read.csv(as.character(na.exclude(inputs$CSV.Gen.Type.File.Location)), stringsAsFactors=FALSE))
+  gen.type.mapping = unique(gen.type.mapping[,.(name, Type)])
+  gen.type.mapping = setNames(gen.type.mapping$Type, gen.type.mapping$name)
+} else {
+  # Assign generation type according to PLEXOS category
+  sql <- "SELECT DISTINCT name, category FROM key WHERE class = 'Generator'"
+  gen.cat.plexos = query_sql(db,sql) 
+  gen.cat.plexos = unique(gen.cat.plexos[,c("name","category")])
+  gen.cat.mapping = data.table(name = as.character(na.omit(inputs$PLEXOS.Gen.Category)), Type = as.character(na.omit(inputs$PLEXOS.Desired.Type)) )  
+  gen.cat.mapping = setNames(gen.cat.mapping$Type, gen.cat.mapping$name)
+  gen.cat.plexos$Type = gen.cat.mapping[gen.cat.plexos$category]
+  gen.type.mapping = setNames(gen.cat.plexos$Type, gen.cat.plexos$name)
+  if (length(gen.type.mapping)==0) { message('\nIf not using generator name to type mapping CSV, you must specify PLEXOS categories and desired generation type.') }
+}
 
 
 # Calculate First and last day of simulation and interval length
