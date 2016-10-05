@@ -273,12 +273,12 @@ zone_stats = function(total.region.load, total.region.imports, total.region.expo
     setkey(z.data,Region)
     setkey(rz.unique,Region)
     z.stats = z.data[rz.unique][, .(value = sum(value)), by = .(Zone,property)] %>%
-      dcast(Zone~property, value.var = 'value') 
+      dcast.data.table(Zone~property, value.var = 'value') 
     setnames(z.stats,'Zone','name')
   } else {
     z.data = rbindlist(list(total.zone.load, total.zone.imports, total.zone.exports, total.zone.ue))
     z.data = z.data[,.(value=sum(value)),by=.(name,property)]
-    z.stats = dcast(z.data, name~property, value.var = 'value')
+    z.stats = dcast.data.table(z.data, name~property, value.var = 'value')
   }
   return(z.stats)
 }
@@ -388,44 +388,74 @@ total_avail_cap = function(database) {
     total.avail.cap = data.table(query_year(database, 'Generator', 'Available Energy', columns = c('category', 'name')))
   } else if ("Available Capacity" %in% properties[is_summary==0 & class=="Generator",property]){
     total.avail.cap = data.table(query_interval(database, 'Generator', 'Available Capacity', columns = c('category', 'name')))
-    total.avail.cap = total.avail.cap[, .(value=sum(value)), by=.(scenario, property, name, category)]
+    total.avail.cap = total.avail.cap[, .(value=sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name, category)]
   }
   return(total.avail.cap[, .(scenario, property, name, category, value)])
 }
 
 # Full run emissions cost
 total_emissions = function(database) {
-  total.emissions.cost = data.table(query_year(database, 'Generator', 'Emissions Cost', columns = c('category', 'name')))
+  if ("Emissions Cost" %in% properties[is_summary==1 & class=="Generator",property]){
+    total.emissions.cost = data.table(query_year(database, 'Generator', 'Emissions Cost', columns = c('category', 'name')))
+  } else if ("Emissions Cost" %in% properties[is_summary==0 & class=="Generator", property]){
+    total.emissions.cost = data.table(query_interval(database, 'Generator', 'Emissions Cost', columns = c('category', 'name')))
+    total.emissions.cost = total.emissions.cost[, .(value=sum(value)/1000), by=.(scenario, property, name, category)]
+  }
   return(total.emissions.cost[, .(scenario, property, name, category, value)])
 }
 
 # Full run fuel cost
 total_fuel = function(database) {
-  total.fuel.cost = data.table(query_year(database, 'Generator', 'Fuel Cost', columns = c('category', 'name')))
+  if ("Fuel Cost" %in% properties[is_summary==1 & class=="Generator",property]){
+    total.fuel.cost = data.table(query_year(database, 'Generator', 'Fuel Cost', columns = c('category', 'name')))
+  } else if ("Fuel Cost" %in% properties[is_summary==0 & class=="Generator", property]){
+    total.fuel.cost = data.table(query_interval(database, 'Generator', 'Fuel Cost', columns = c('category', 'name')))
+    total.fuel.cost = total.fuel.cost[, .(value=sum(value)/1000), by=.(scenario, property, name, category)]
+  }
   return(total.fuel.cost[, .(scenario, property, name, category, value)])
 }
 
 # Full run S&S cost
 total_ss = function(database) {
-  total.ss.cost = data.table(query_year(database, 'Generator', 'Start & Shutdown Cost', columns = c('category', 'name')))
+  if ("Start & Shutdown Cost" %in% properties[is_summary==1 & class=="Generator",property]){
+    total.ss.cost = data.table(query_year(database, 'Generator', 'Start & Shutdown Cost', columns = c('category', 'name')))
+  } else if ("Start & Shutdown Cost" %in% properties[is_summary==0 & class=="Generator", property]){
+    total.ss.cost = data.table(query_interval(database, 'Generator', 'Start & Shutdown Cost', columns = c('category', 'name')))
+    total.ss.cost = total.ss.cost[, .(value=sum(value)/1000), by=.(scenario, property, name, category)]
+  }
   return(total.ss.cost[, .(scenario, property, name, category, value)])
 }
 
 # Full run VO&M cost
 total_vom = function(database) {
-  total.vom.cost = data.table(query_year(database, 'Generator', 'VO&M Cost', columns = c('category', 'name')))
+  if ("VO&M Cost" %in% properties[is_summary==1 & class=="Generator",property]){
+    total.vom.cost = data.table(query_year(database, 'Generator', 'VO&M Cost', columns = c('category', 'name')))
+  } else if ("VO&M Cost" %in% properties[is_summary==0 & class=="Generator", property]){
+    total.vom.cost = data.table(query_interval(database, 'Generator', '', columns = c('category', 'name')))
+    total.vom.cost = total.vom.cost[, .(value=sum(value)/1000), by=.(scenario, property, name, category)]
+  }
   return(total.vom.cost[, .(scenario, property, name, category, value)])
 }
 
 # Full run installed capacity
 total_installed_cap = function(database) {
-  total.installed.cap = data.table(query_year(database, 'Generator', 'Installed Capacity', columns = c('category', 'name')))
+  if ("Installed Capacity" %in% properties[is_summary==1 & class=="Generator",property]){
+    total.installed.cap = data.table(query_year(database, 'Generator', 'Installed Capacity', columns = c('category', 'name')))
+  } else if ("Installed Capacity" %in% properties[is_summary==0 & class=="Generator", property]){
+    total.installed.cap = data.table(query_interval(database, 'Generator', 'Installed Capacity', columns = c('category', 'name')))
+    total.installed.cap = total.installed.cap[, .(value=max(value)), by=.(scenario, property, name, category)]
+  }
   return(total.installed.cap[, .(scenario, property, name, category, value)])
 }
 
 # Full run reserve provision
 total_gen_reserve_provision = function(database) {
-  total.res.provision = data.table(query_year(database, 'Reserve.Generators', 'Provision', columns = c('category', 'name')))
+  if ("Provision" %in% properties[is_summary==1 & class=="Reserve.Generators",property]){
+    total.res.provision = data.table(query_year(database, 'Reserve.Generators', 'Provision', columns = c('category', 'name')))
+  } else if ("Provision" %in% properties[is_summary==0 & class=="Reserve.Generators", property]){
+    total.res.provision = data.table(query_interval(database, 'Reserve.Generators', 'Provision', columns = c('category', 'name')))
+    total.res.provision = total.res.provision[, .(value=sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name, category)]
+  }
   return(total.res.provision[, .(scenario, property, name, parent, category, value)])
 }
 

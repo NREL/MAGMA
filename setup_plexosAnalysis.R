@@ -108,6 +108,7 @@ n.periods = length(period.names)
 
 # Start and end times for key periods
 if(length(na.omit(inputs$Start.Time)) > 0){
+  # Check if year is provided as 4-digit or 2-digit year
   if(nchar(strsplit(as.character(inputs$Start.Time[1]),'[ ,/]')[[1]][3])==2){
     start.end.times = data.table(start = as.POSIXct( strptime( na.omit(inputs$Start.Time), format = '%m/%d/%y %H:%M'), tz='UTC'), 
                                  end = as.POSIXct( strptime( na.omit(inputs$End.Time), format = '%m/%d/%y %H:%M'), tz='UTC' ) )
@@ -115,9 +116,27 @@ if(length(na.omit(inputs$Start.Time)) > 0){
     start.end.times = data.table(start = as.POSIXct( strptime( na.omit(inputs$Start.Time), format = '%m/%d/%Y %H:%M'), tz='UTC'), 
                                  end = as.POSIXct( strptime( na.omit(inputs$End.Time), format = '%m/%d/%Y %H:%M'), tz='UTC' ) )
   }
+  # If is NA, try without hour and minute in date format
+  if (any(is.na(start.end.times))){
+    if(nchar(strsplit(as.character(inputs$Start.Time[1]),'[ ,/]')[[1]][3])==2){
+      start.end.times.temp = data.table(start = as.POSIXct( strptime( na.omit(inputs$Start.Time), format = '%m/%d/%y'), tz='UTC'), 
+                                        end = as.POSIXct( strptime( na.omit(inputs$End.Time), format = '%m/%d/%y'), tz='UTC' ) )
+    }else if(nchar(strsplit(as.character(inputs$Start.Time[1]),'[ ,/]')[[1]][3])==4){
+      start.end.times.temp = data.table(start = as.POSIXct( strptime( na.omit(inputs$Start.Time), format = '%m/%d/%Y'), tz='UTC'), 
+                                        end = as.POSIXct( strptime( na.omit(inputs$End.Time), format = '%m/%d/%Y'), tz='UTC' ) )
+    }
+    start.end.times[is.na(start), start:=start.end.times.temp[is.na(start.end.times$start),start]]
+    start.end.times[is.na(end), end:=start.end.times.temp[is.na(start.end.times$end),end]]
+  }
 }
+
 # Location for saved figures
-fig.path.name = paste0(as.character(na.omit(inputs$Fig.Path)),'\\')
+fig.path.name = file.path(as.character(na.omit(inputs$Fig.Path)))
+# If no figure path provided, assume figures should go in a directory called "plots"
+# in the folder containing the database
+if (length(fig.path.name)==0){
+  fig.path.name = file.path(db.loc,'plots')
+}
 
 # Zones to ignore for plotting
 ignore.zones = as.character(na.omit(inputs$Ignore.Zones))
