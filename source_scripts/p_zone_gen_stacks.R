@@ -9,7 +9,7 @@ if (zone.gen.stacks) {
                         error = function(cond) { return('ERROR') } )  
     # Create plot
     plot.data = gen_stack_plot(r.z.gen[!Zone %in% ignore.zones, ],
-                               z.load[!Zone %in% ignore.zones, ], 
+                               load.data = z.load[!Zone %in% ignore.zones, ], 
                                filters = 'Zone', x_col='Zone')
     print(plot.data[[1]])
   }

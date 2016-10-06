@@ -225,6 +225,17 @@ annual_reserves = function(total.reserve.provision, total.reserve.shortage) {
   return(r.data)
 }
 
+# Calculates total reserve provision by generator type for each reserve product
+annual_reserves_provision = function(total.gen.res) {
+  
+  setkey(total.gen.res, name)
+  yr.gen.res = total.gen.res[property == 'Provision', Type:=gen.type.mapping[name] ]
+  yr.gen.res = yr.gen.res[, .(GWh = sum(value)), by=.(scenario,parent,Type)]
+  setnames(yr.gen.res,"parent","Reserve")
+  
+  return(yr.gen.res)
+}
+
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Interval Reserve Provisions 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

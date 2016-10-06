@@ -29,7 +29,7 @@ pretty_axes <- function(data1, data2=NULL, filters=NULL, col='value'){
 }
 
 
-gen_stack_plot <- function(gen.data, load.data, filters=NULL, x_col='scenario'){
+gen_stack_plot <- function(gen.data, load.data=NULL, filters=NULL, x_col='scenario'){
   # Creates total generation stack plot
   # Assumes data has been processed according to XXXX
   # filters are other things you might want to plot over
@@ -53,16 +53,18 @@ gen_stack_plot <- function(gen.data, load.data, filters=NULL, x_col='scenario'){
   gen.plot = gen.data[, .(TWh = sum(GWh)/1000), by=agg.filters]
   setorder(gen.plot,Type)
   
-  tot.load = load.data[, .(TWh = sum(value)/1000), by=load.filters]
-  tot.load[, variable:='Load']
+  if(!is.null(load.data)){
+    tot.load = load.data[, .(TWh = sum(value)/1000), by=load.filters]
+    tot.load[, variable:='Load']
+    
+    seq.py = pretty_axes(gen.plot[, value:=TWh ], tot.load[, value:=TWh ], filters=load.filters)
+  } else{
+    seq.py = pretty_axes(gen.plot[, value:=TWh ], filters=load.filters)
+  }
   
-  seq.py = pretty_axes(gen.plot[, value:=TWh ], tot.load[, value:=TWh ], filters=load.filters)
-
   # Create plot
   p1 = ggplot() +
     geom_bar(data = gen.plot, aes_string(x = x_col, y = 'TWh', fill='Type'), stat="identity", position="stack" ) +
-    geom_errorbar(data = tot.load, aes_string(x = x_col, y='TWh', ymin='TWh', ymax='TWh', color='variable'), 
-                  size=0.45, linetype='longdash')+
     scale_color_manual(name='', values=c("grey40"), labels=c("Load"))+
     scale_fill_manual('', values = gen.color, limits=rev(gen.order))+     
     labs(y="Generation (TWh)", x=NULL)+
@@ -79,7 +81,11 @@ gen_stack_plot <- function(gen.data, load.data, filters=NULL, x_col='scenario'){
               panel.margin =    unit(1.5, "lines"))
   
   # Add something for if load only ??
-
+  # Add error bar line for load if provided
+  if(!is.null(load.data)){
+    p1 = p1 + geom_errorbar(data = tot.load, aes_string(x = x_col, y='TWh', ymin='TWh', ymax='TWh', color='variable'), 
+                            size=0.45, linetype='longdash')
+  }
   return(list(p1,seq.py))
 }
 

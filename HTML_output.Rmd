@@ -16,8 +16,11 @@ knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, incl
 
 # Set dynamic height for figure in regional generation chunk
 if (exists('zone.names')) { 
-  f.height = max(( length(zone.names) %/% 3 + length(zone.names) %% 3 ) * 5,5)
-  } else { f.height = 5 }
+  f.height = max(( length(zone.names) %/% 3 + length(zone.names) %% 3 ) * 5, 5)
+} else { f.height = 5 }
+if (exists('reserve.names')) { 
+  res.height = max(( length(reserve.names) %/% 3 + length(reserve.names) %% 3 ) * 5, 5)
+} else { res.height = 5 }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -339,7 +342,7 @@ if (key.period.interface.flow.plots) {
 `r key.period.interface.flow`
 
 ***
-## 16-17. Reserves
+## 16-18. Reserves
 ***
 ### 16. Annual Reserve Provisions and Shortage
 ```{r annual-reserves-table}
@@ -373,7 +376,15 @@ source('source_scripts/p_reserves.R')
 ```
 
 ***
-## 18. Region and Zone Generation (GWh)
+### 18. Reserve Provisions by generator type
+```{r reserves-stacks, fig.height=res.height, fig.width=10}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+source("source_scripts/p_reserves_stack.R")
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## 19. Region and Zone Generation (GWh)
 ```{r region-gen-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (region.zone.gen.table) {
@@ -434,7 +445,7 @@ if (region.zone.gen.table) {
 ```
 
 ***
-## 19. Capacity Factors
+## 20. Capacity Factors
 ```{r capacity-factor-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if(capacity.factor.table) {
@@ -451,7 +462,7 @@ if(capacity.factor.table) {
 ```
 
 ***
-## 20. Region Price Duration Curves
+## 21. Region Price Duration Curves
 ```{r price-duration-curve, fig.width = 10}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/p_price_duration_curve.R')
@@ -459,7 +470,7 @@ source('source_scripts/p_price_duration_curve.R')
 ```
 
 ***
-## 21-22. DA-RT Committment and Dispatch Plots
+## 22-23. DA-RT Committment and Dispatch Plots
 ```{r committment-dispatch, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
@@ -506,8 +517,8 @@ if (commit.dispatch.region | commit.dispatch.zone) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
-### 21. Zones
+### 22. Zones
 `r da.rt.zone`
 
-### 22. Regions
+### 23. Regions
 `r da.rt.region`

@@ -17,8 +17,9 @@
 15. Key period interface flow plot
 16. Annual reserves table
 17. Reserves plot
-18. Region and zone generation table
-19. Capacity factor table
-20. Price duration curve
-21. Zonal committment and dispatch plots
-22. Regional committment and dispatch plots
+18. Reserve provision stack, by reserve region
+19. Region and zone generation table
+20. Capacity factor table
+21. Price duration curve
+22. Zonal committment and dispatch plots
+23. Regional committment and dispatch plots

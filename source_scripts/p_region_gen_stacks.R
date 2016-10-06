@@ -43,7 +43,7 @@ if (region.gen.stacks) {
       
       # Create and plot data
       p1 <- gen_stack_plot(r.z.gen[(!Zone %in% ignore.zones & !Region %in% ignore.regions),],
-                           plot.load[(!Zone %in% ignore.zones & !Region %in% ignore.regions),],
+                           load.data = plot.load[(!Zone %in% ignore.zones & !Region %in% ignore.regions),],
                            filters = c('Region','Zone'), x_col = x.col)
       print(p1[[1]] + facet + theme(axis.text.x = element_text(angle = -30, hjust = 0)))
     }
