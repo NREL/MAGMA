@@ -80,9 +80,17 @@ if (length(reassign.zones)==0) {
 # Set plot color for each generation type
 Gen.col = data.table(Type = na.omit(inputs$Gen.Type), Color = na.omit(inputs$Plot.Color) )
 gen.color<-setNames(as.character(Gen.col$Color),Gen.col$Type)
+# Add Curtailment if not included
+if (! 'Curtailment' %in% names(gen.color)){
+  gen.color['Curtailment'] = 'red'
+}
 
 # Generation type order for plots
 gen.order = rev(as.character(na.omit(inputs$Gen.Order))) 
+# Add Curtailment if not included
+if (! 'Curtailment' %in% names(gen.order)){
+  gen.order = c(gen.order,'Curtailment')
+}
 
 # Types of renewables to be considered for curtailment calculations
 re.types = as.character(na.omit(inputs$Renewable.Types.for.Curtailment)) 

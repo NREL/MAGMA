@@ -7,7 +7,7 @@ This package creates figures and an HTML file with all of those figures for plex
 * Section_guide.md lists what sections correspond to each number for the sections to run column in the input data CSV file.
 
 ##To Run:
-1. Copy run_html_output.R and input_data.csv from the Examples/ folder into another folder associated with your project specific repository.
+1. Copy run_html_output.R and input_data_template.csv from the Examples/ folder into another folder associated with your project specific repository.
 2. Edit input_data.csv to point to the required databases, input files, and generator categories for your project. Fill the rest of the columns out according to your model.
 3. If using a CSV to map generator name to type, create this.
 4. If generation type by region or zone is wanted, add region and zone columns to mapping CSV.
@@ -16,7 +16,7 @@ This package creates figures and an HTML file with all of those figures for plex
 
 ### Notes:
 1. If you have trouble with the render function, make sure the "rmarkdown" package is installed. If there are issues locating or sourcing files, make sure the appropriate working directories and paths are setup correctly.
-2. You can choose to run individual chunks or the entire package. This is setup in the input_data.csv file. Running the entire package will take a long time
+2. You can choose to run individual chunks or the entire package. This is setup in the input_data.csv file. Running the entire package could take a long time, particularly for large solution files and if the solution file has to be processed by rplexos (done the first time MAGMA is run).
 3. The name of your database file must start with "Model".
 4. Report any problems or issues to Matt O'Connell at NREL. matthew.oconnell@nrel.gov 
 

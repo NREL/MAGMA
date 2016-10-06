@@ -19,7 +19,6 @@ if (region.gen.stacks) {
     } else {
       if (length(unique(r.z.gen$Region))>length(unique(r.z.gen$Zone))) {
         region.load = r.load[!Region %in% ignore.regions, ] # Remove load data from regions being ignored
-        region.load[, value := value/1000]
         
         setkey(region.load,Region)
         setkey(rz.unique,Region)
@@ -31,7 +30,6 @@ if (region.gen.stacks) {
         facet = facet_wrap(~Zone, scales = 'free', ncol=3)
       } else{
         zone.load = z.load[!Zone %in% ignore.zones, ] # Remove load data from regions being ignored
-        zone.load[, value := value/1000]
 
         setkey(zone.load,Zone)
         setkey(rz.unique,Zone)
@@ -44,9 +42,9 @@ if (region.gen.stacks) {
       }
       
       # Create and plot data
-      p1 <- gen_stack_plot(r.z.gen[(!Zone %in% ignore.zones && !Region %in% ignore.regions),],
-                         plot.load[(!Zone %in% ignore.zones && !Region %in% ignore.regions),],
-                         filters = c('Region','Zone'), x_col = x.col)
+      p1 <- gen_stack_plot(r.z.gen[(!Zone %in% ignore.zones & !Region %in% ignore.regions),],
+                           plot.load[(!Zone %in% ignore.zones & !Region %in% ignore.regions),],
+                           filters = c('Region','Zone'), x_col = x.col)
       print(p1[[1]] + facet + theme(axis.text.x = element_text(angle = -30, hjust = 0)))
     }
   }

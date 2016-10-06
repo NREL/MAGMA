@@ -36,7 +36,7 @@ source('source_scripts/p_total_gen_stack.R')
 
 ***
 ## 2. Zonal Generation
-```{r zone-gen-stacks, fig.height=f.height, fig.width=10}
+```{r zone-gen-stacks, fig.width=10}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/p_zone_gen_stacks.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

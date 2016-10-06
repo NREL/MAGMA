@@ -37,7 +37,10 @@ gen_stack_plot <- function(gen.data, load.data, filters=NULL, x_col='scenario'){
   
   # reorder the levels of Type to plot them in order
   gen.data[, Type := factor(Type, levels = c(gen.order))]
-  if(any(is.na(gen.data$Type))) print("ERROR:gen.order doesn't contain all of the gen types: FIX YOUR INPUT DATA CSV")
+  if(any(is.na(gen.data$Type))) {
+    print("ERROR: gen.order doesn't contain all of the gen types: FIX YOUR INPUT DATA CSV")
+    print(sprintf("Missing types are: %s", gen.data[is.na(Type), category]))
+  }
   
   if(is.null(filters)){
     agg.filters = c("scenario","Type")

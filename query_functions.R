@@ -378,15 +378,20 @@ cap_committed = function(interval.da.committment) {
 
 # Full run generation data
 total_generation = function(database) {
-  total.gen = data.table(query_year(database, 'Generator', 'Generation', columns = c('category', 'name')))
+  if ("Generation" %in% properties[is_summary==1 & collection=="Generator",property]){
+    total.gen = data.table(query_year(database, 'Generator', 'Generation', columns = c('category', 'name')))
+  } else if ("Generation" %in% properties[is_summary==0 & collection=="Generator",property]){
+    total.gen = data.table(query_interval(database, 'Generator', 'Generation', columns = c('category', 'name')))
+    total.gen = total.gen[, .(value=sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name, category)]
+  }
   return(total.gen[, .(scenario, property, name, category, value)])
 }
 
 # Full run available capacity
 total_avail_cap = function(database) {
-  if ("Available Energy" %in% properties[is_summary==1 & class=="Generator",property]){
+  if ("Available Energy" %in% properties[is_summary==1 & collection=="Generator",property]){
     total.avail.cap = data.table(query_year(database, 'Generator', 'Available Energy', columns = c('category', 'name')))
-  } else if ("Available Capacity" %in% properties[is_summary==0 & class=="Generator",property]){
+  } else if ("Available Capacity" %in% properties[is_summary==0 & collection=="Generator",property]){
     total.avail.cap = data.table(query_interval(database, 'Generator', 'Available Capacity', columns = c('category', 'name')))
     total.avail.cap = total.avail.cap[, .(value=sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name, category)]
   }
@@ -395,9 +400,9 @@ total_avail_cap = function(database) {
 
 # Full run emissions cost
 total_emissions = function(database) {
-  if ("Emissions Cost" %in% properties[is_summary==1 & class=="Generator",property]){
+  if ("Emissions Cost" %in% properties[is_summary==1 & collection=="Generator",property]){
     total.emissions.cost = data.table(query_year(database, 'Generator', 'Emissions Cost', columns = c('category', 'name')))
-  } else if ("Emissions Cost" %in% properties[is_summary==0 & class=="Generator", property]){
+  } else if ("Emissions Cost" %in% properties[is_summary==0 & collection=="Generator", property]){
     total.emissions.cost = data.table(query_interval(database, 'Generator', 'Emissions Cost', columns = c('category', 'name')))
     total.emissions.cost = total.emissions.cost[, .(value=sum(value)/1000), by=.(scenario, property, name, category)]
   }
@@ -406,9 +411,9 @@ total_emissions = function(database) {
 
 # Full run fuel cost
 total_fuel = function(database) {
-  if ("Fuel Cost" %in% properties[is_summary==1 & class=="Generator",property]){
+  if ("Fuel Cost" %in% properties[is_summary==1 & collection=="Generator",property]){
     total.fuel.cost = data.table(query_year(database, 'Generator', 'Fuel Cost', columns = c('category', 'name')))
-  } else if ("Fuel Cost" %in% properties[is_summary==0 & class=="Generator", property]){
+  } else if ("Fuel Cost" %in% properties[is_summary==0 & collection=="Generator", property]){
     total.fuel.cost = data.table(query_interval(database, 'Generator', 'Fuel Cost', columns = c('category', 'name')))
     total.fuel.cost = total.fuel.cost[, .(value=sum(value)/1000), by=.(scenario, property, name, category)]
   }
@@ -417,9 +422,9 @@ total_fuel = function(database) {
 
 # Full run S&S cost
 total_ss = function(database) {
-  if ("Start & Shutdown Cost" %in% properties[is_summary==1 & class=="Generator",property]){
+  if ("Start & Shutdown Cost" %in% properties[is_summary==1 & collection=="Generator",property]){
     total.ss.cost = data.table(query_year(database, 'Generator', 'Start & Shutdown Cost', columns = c('category', 'name')))
-  } else if ("Start & Shutdown Cost" %in% properties[is_summary==0 & class=="Generator", property]){
+  } else if ("Start & Shutdown Cost" %in% properties[is_summary==0 & collection=="Generator", property]){
     total.ss.cost = data.table(query_interval(database, 'Generator', 'Start & Shutdown Cost', columns = c('category', 'name')))
     total.ss.cost = total.ss.cost[, .(value=sum(value)/1000), by=.(scenario, property, name, category)]
   }
@@ -428,9 +433,9 @@ total_ss = function(database) {
 
 # Full run VO&M cost
 total_vom = function(database) {
-  if ("VO&M Cost" %in% properties[is_summary==1 & class=="Generator",property]){
+  if ("VO&M Cost" %in% properties[is_summary==1 & collection=="Generator",property]){
     total.vom.cost = data.table(query_year(database, 'Generator', 'VO&M Cost', columns = c('category', 'name')))
-  } else if ("VO&M Cost" %in% properties[is_summary==0 & class=="Generator", property]){
+  } else if ("VO&M Cost" %in% properties[is_summary==0 & collection=="Generator", property]){
     total.vom.cost = data.table(query_interval(database, 'Generator', '', columns = c('category', 'name')))
     total.vom.cost = total.vom.cost[, .(value=sum(value)/1000), by=.(scenario, property, name, category)]
   }
@@ -439,9 +444,9 @@ total_vom = function(database) {
 
 # Full run installed capacity
 total_installed_cap = function(database) {
-  if ("Installed Capacity" %in% properties[is_summary==1 & class=="Generator",property]){
+  if ("Installed Capacity" %in% properties[is_summary==1 & collection=="Generator",property]){
     total.installed.cap = data.table(query_year(database, 'Generator', 'Installed Capacity', columns = c('category', 'name')))
-  } else if ("Installed Capacity" %in% properties[is_summary==0 & class=="Generator", property]){
+  } else if ("Installed Capacity" %in% properties[is_summary==0 & collection=="Generator", property]){
     total.installed.cap = data.table(query_interval(database, 'Generator', 'Installed Capacity', columns = c('category', 'name')))
     total.installed.cap = total.installed.cap[, .(value=max(value)), by=.(scenario, property, name, category)]
   }
@@ -450,9 +455,9 @@ total_installed_cap = function(database) {
 
 # Full run reserve provision
 total_gen_reserve_provision = function(database) {
-  if ("Provision" %in% properties[is_summary==1 & class=="Reserve.Generators",property]){
+  if ("Provision" %in% properties[is_summary==1 & collection=="Reserve.Generators",property]){
     total.res.provision = data.table(query_year(database, 'Reserve.Generators', 'Provision', columns = c('category', 'name')))
-  } else if ("Provision" %in% properties[is_summary==0 & class=="Reserve.Generators", property]){
+  } else if ("Provision" %in% properties[is_summary==0 & collection=="Reserve.Generators", property]){
     total.res.provision = data.table(query_interval(database, 'Reserve.Generators', 'Provision', columns = c('category', 'name')))
     total.res.provision = total.res.provision[, .(value=sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name, category)]
   }
@@ -465,25 +470,45 @@ total_gen_reserve_provision = function(database) {
 
 # Full run region load
 total_region_load = function(database) {
-  total.region.load = data.table(query_year(database, 'Region', 'Load'))
+  if ("Load" %in% properties[is_summary==1 & collection=="Region", property]){
+    total.region.load = data.table(query_year(database, 'Region', 'Load'))
+  } else if ("Load" %in% properties[is_summary==0 & collection=="Region", property]){
+    total.region.load = data.table(query_interval(database, 'Region','Load', columns = c('category','name')))
+    total.region.load = total.region.load[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
+  }
   return(total.region.load[, .(scenario, property, name, value)])
 }
 
 # Full run region imports
 total_region_imports = function(database) {
-  total.region.imports = data.table(query_year(database, 'Region', 'Imports'))
+  if ("Imports" %in% properties[is_summary==1 & collection=="Region", property]){
+    total.region.imports = data.table(query_year(database, 'Region', 'Imports'))
+  } else if ("Imports" %in% properties[is_summary==0 & collection=="Region", property]){
+    total.region.imports = data.table(query_interval(database, 'Region','Imports', columns = c('category','name')))
+    total.region.imports = total.region.imports[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
+  }
   return(total.region.imports[, .(scenario, property, name, value)])
 }
 
 # Full run region exports
 total_region_exports = function(database) {
-  total.region.exports = data.table(query_year(database, 'Region', 'Exports'))
+  if ("Exports" %in% properties[is_summary==1 & collection=="Region", property]){
+    total.region.exports = data.table(query_year(database, 'Region', 'Exports'))
+  } else if ("Exports" %in% properties[is_summary==0 & collection=="Region", property]){
+    total.region.exports = data.table(query_interval(database, 'Region','Exports', columns = c('category','name')))
+    total.region.exports = total.region.exports[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
+  }
   return(total.region.exports[, .(scenario, property, name, value)])
 }
 
 # Full run region unserved energy
 total_region_ue = function(database) {
-  total.region.ue = data.table(query_year(database, 'Region', 'Unserved Energy'))
+  if ("Unserved Energy" %in% properties[is_summary==1 & collection=="Region", property]){
+    total.region.ue = data.table(query_year(database, 'Region', 'Unserved Energy'))
+  } else if ("Unserved Energy" %in% properties[is_summary==0 & collection=="Region", property]){
+    total.region.ue = data.table(query_interval(database, 'Region','Unserved Energy', columns = c('category','name')))
+    total.region.ue = total.region.ue[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
+  }
   return(total.region.ue[, .(scenario, property, name, value)])
 }
 
@@ -493,25 +518,45 @@ total_region_ue = function(database) {
 
 # Full run zone load
 total_zone_load = function(database) {
-  total.zone.load = data.table(query_year(database, 'Zone', 'Load'))
+  if ("Load" %in% properties[is_summary==1 & collection=="Zone", property]){
+    total.zone.load = data.table(query_year(database, 'Zone', 'Load'))
+  } else if ("Load" %in% properties[is_summary==0 & collection=="Zone", property]){
+    total.zone.load = data.table(query_interval(database, 'Zone','Load', columns = c('category','name')))
+    total.zone.load = total.zone.load[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
+  }
   return(total.zone.load[, .(scenario, property, name, value)])
 }
 
 # Full run zone imports
 total_zone_imports = function(database) {
-  total.zone.imports = data.table(query_year(database, 'Zone', 'Imports'))
+  if ("Imports" %in% properties[is_summary==1 & collection=="Zone", property]){
+    total.zone.imports = data.table(query_year(database, 'Zone', 'Imports'))
+  } else if ("Imports" %in% properties[is_summary==0 & collection=="Zone", property]){
+    total.zone.imports = data.table(query_interval(database, 'Zone','Imports', columns = c('category','name')))
+    total.zone.imports = total.zone.imports[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
+  }
   return(total.zone.imports[, .(scenario, property, name, value)])
 }
 
 # Full run zone exports
 total_zone_exports = function(database) {
-  total.zone.exports = data.table(query_year(database, 'Zone', 'Exports'))
+  if ("Exports" %in% properties[is_summary==1 & collection=="Zone", property]){
+    total.zone.exports = data.table(query_year(database, 'Zone', 'Exports'))
+  } else if ("Exports" %in% properties[is_summary==0 & collection=="Zone", property]){
+    total.zone.exports = data.table(query_interval(database, 'Zone','Exports', columns = c('category','name')))
+    total.zone.exports = total.zone.exports[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
+  }
   return(total.zone.exports[, .(scenario, property, name, value)])
 }
 
 # Full run zone unserved energy
 total_zone_ue = function(database) {
-  total.zone.ue = data.table(query_year(database, 'Zone', 'Unserved Energy'))
+  if ("Unserved Energy" %in% properties[is_summary==1 & collection=="Zone", property]){
+    total.zone.ue = data.table(query_year(database, 'Zone', 'Unserved Energy'))
+  } else if ("Unserved Energy" %in% properties[is_summary==0 & collection=="Zone", property]){
+    total.zone.ue = data.table(query_interval(database, 'Zone','Unserved Energy', columns = c('category','name')))
+    total.zone.ue = total.zone.ue[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
+  }
   return(total.zone.ue[, .(scenario, property, name, value)])
 }
 
@@ -521,13 +566,23 @@ total_zone_ue = function(database) {
 
 # Full run reserves provision
 total_reserve_provision = function(database) {
-  total.reserve.provision = data.table(query_year(database, 'Reserve', 'Provision'))
+  if ("Provision" %in% properties[is_summary==1 & collection=="Reserve", property]){
+    total.reserve.provision = data.table(query_year(database, 'Reserve', 'Provision'))
+  } else if ("Provision" %in% properties[is_summary==0 & collection=="Reserve", property]){
+    total.reserve.provision = data.table(query_interval(database, 'Reserve','Provision', columns = c('category','name')))
+    total.reserve.provision = total.reserve.provision[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
+  }
   return(total.reserve.provision[, .(scenario, property, name, value)])
 }
 
 # Full run reserves shortage
 total_reserve_shortage = function(database) {
-  total.reserve.shortage = data.table(query_year(database, 'Reserve', 'Shortage'))
+  if ("Shortage" %in% properties[is_summary==1 & collection=="Reserve", property]){
+    total.reserve.shortage = data.table(query_year(database, 'Reserve', 'Shortage'))
+  } else if ("Shortage" %in% properties[is_summary==0 & collection=="Reserve", property]){
+    total.reserve.shortage = data.table(query_interval(database, 'Reserve','Shortage', columns = c('category','name')))
+    total.reserve.shortage = total.reserve.shortage[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
+  }
   return(total.reserve.shortage[, .(scenario, property, name, value)])
 }
 
@@ -537,7 +592,12 @@ total_reserve_shortage = function(database) {
 
 # Full run interface flows
 total_interface_flow = function(database) {
-  total.interface = data.table(query_year(database, 'Interface', 'Flow'))
+  if ("Flow" %in% properties[is_summary==1 & collection=="Interface", property]){
+    total.interface = data.table(query_year(database, 'Interface', 'Flow'))
+  } else if ("Flow" %in% properties[is_summary==0 & collection=="Interface", property]){
+    total.interface = data.table(query_interval(database, 'Interface','Flow', columns = c('category','name')))
+    total.interface = total.interface[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
+  }
   return(total.interface[, .(scenario, property, name, value, time)])
 }
 
