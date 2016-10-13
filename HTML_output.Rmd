@@ -218,13 +218,41 @@ if (annual.generation.table){
     yr.gen = rbindlist(list(yr.gen, yr.gen[,.(Type='Total',GWh=sum(GWh),Percent=sum(Percent)), by=.(scenario)], curt))
     row.names(yr.gen) = NULL
     kable(yr.gen, format.args = list(big.mark = ','), digits=2) 
-    }
-  } else { print('Section not run according to input file.') }
+  }
+} else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
 ***
-## 13. Total Costs
+## 13. Total Curtailment (GWh)
+```{r annual-curtailment-table}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (annual.curtailment.table){
+  if ( typeof(total.generation)=='character' | typeof(total.avail.cap) == 'character' ) {
+    print('INPUT ERROR: total.generation or total.avail.cap has errors. Cannot run this section.')
+  } else {
+    # Run the query function.
+    yr.curt = tryCatch(curt_by_type(total.generation, total.avail.cap), 
+                        error = function(cond) { return('ERROR: gen_by_type function not returning correct results') } ) 
+    # Set the order level that generatino type will be displayed.
+    yr.curt[, Type := factor(Type, levels = c(gen.order))] 
+    setorder(yr.curt,Type)
+
+    # Calculate the percent curtailed of each type
+    yr.curt[, Percent:=Curtailment/`Available Energy`*100]
+    yr.curt = rbindlist(list(yr.curt, yr.curt[,.(Type='Total',`Available Energy`=sum(`Available Energy`),
+                                                 Generation=sum(Generation), Curtailment=sum(Curtailment),
+                                                 Percent=sum(Curtailment)/sum(`Available Energy`)*100), by=.(scenario)]))
+    row.names(yr.curt) = NULL
+    setnames(yr.curt,'Percent','Percent Curtailed, %')
+    kable(yr.curt, format.args = list(big.mark = ','), digits=2) 
+  }
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## 14. Total Costs
 ```{r annual-cost-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
@@ -244,7 +272,7 @@ if (annual.cost.table) {
 ```
 
 ***
-## 14. Region and Zone Info (GWh)
+## 15. Region and Zone Info (GWh)
 ``` {r region-flow-tables, results = 'asis'}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (region.zone.flow.table) {
@@ -294,7 +322,7 @@ if (region.zone.flow.table) {
 ```
 
 ***
-## 15. Interface Flow Table
+## 16. Interface Flow Table
 ```{r interface-flow-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
@@ -315,7 +343,7 @@ if(interface.flow.table) {
 ```
 
 ***
-## 16. Interface Flow Plots
+## 17. Interface Flow Plots
 ```{r interface-flow-plots, resize.width=T, fig.width=10}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/p_interface_flow.R')
@@ -323,7 +351,7 @@ source('source_scripts/p_interface_flow.R')
 ```
 
 ***
-## 17. Specified Period Interface Flow Plot
+## 18. Specified Period Interface Flow Plot
 ```{r key-period-interface-flow-plots, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (key.period.interface.flow.plots) {
@@ -356,9 +384,9 @@ if (key.period.interface.flow.plots) {
 `r key.period.interface.flow`
 
 ***
-## 18-20. Reserves
+## 19-21. Reserves
 ***
-### 18. Annual Reserve Provisions and Shortage
+### 19. Annual Reserve Provisions and Shortage
 ```{r annual-reserves-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
@@ -382,7 +410,7 @@ if(annual.reserves.table) {
 ```
 
 ***
-### 19. Average Interval and Daily Reserve Provisions
+### 20. Average Interval and Daily Reserve Provisions
 ```{r reserves-plots}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/p_reserves.R')
@@ -390,7 +418,7 @@ source('source_scripts/p_reserves.R')
 ```
 
 ***
-### 20. Reserve Provisions by generator type
+### 21. Reserve Provisions by generator type
 ```{r reserves-stacks, fig.height=res.height, fig.width=10}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source("source_scripts/p_reserves_stack.R")
@@ -398,7 +426,7 @@ source("source_scripts/p_reserves_stack.R")
 ```
 
 ***
-## 21. Region and Zone Generation (GWh)
+## 22. Region and Zone Generation (GWh)
 ```{r region-gen-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (region.zone.gen.table) {
@@ -459,7 +487,7 @@ if (region.zone.gen.table) {
 ```
 
 ***
-## 22. Capacity Factors
+## 23. Capacity Factors
 ```{r capacity-factor-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if(capacity.factor.table) {
@@ -476,7 +504,7 @@ if(capacity.factor.table) {
 ```
 
 ***
-## 23. Region Price Duration Curves
+## 24. Region Price Duration Curves
 ```{r price-duration-curve, fig.width = 10}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/p_price_duration_curve.R')
@@ -484,7 +512,7 @@ source('source_scripts/p_price_duration_curve.R')
 ```
 
 ***
-## 24-25. DA-RT Committment and Dispatch Plots
+## 25-26. DA-RT Committment and Dispatch Plots
 ```{r committment-dispatch, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
@@ -531,8 +559,8 @@ if (commit.dispatch.region | commit.dispatch.zone) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
-### 24. Zones
+### 25. Zones
 `r da.rt.zone`
 
-### 25. Regions
+### 26. Regions
 `r da.rt.region`

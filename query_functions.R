@@ -50,6 +50,36 @@ gen_by_type = function(total.generation, total.avail.cap) {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Curtailment by type
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# This function returns total curtailment by type of generator. Curtailment is calculated according to the renewable types specified in the input file. 
+
+curt_by_type = function(total.generation, total.avail.cap) {
+  
+  setkey(total.generation,'name')
+  setkey(total.avail.cap,'name')
+  
+  # Filter out generation and available capacity data for RE types
+  # and add generation type by matching generator name. 
+  yr.gen = total.generation[property == 'Generation',][, Type:=gen.type.mapping[name] ][,.(scenario,Type,property,value)]
+  re.gen = yr.gen[Type %in% re.types, .(value=sum(value)),by=.(scenario,Type,property)]
+  re.gen[,property:=NULL]
+  setnames(re.gen,'value','Generation')
+  
+  avail = total.avail.cap[property == 'Available Energy',][, Type:=gen.type.mapping[name] ][,.(scenario,Type,property,value)]
+  avail = avail[Type %in% re.types,.(value=sum(value)),by=.(scenario,Type,property)]
+  avail[,property:=NULL]
+  setnames(avail,'value','Available Energy')
+  
+  # Calculate curtailment
+  setkey(avail, Type, scenario)
+  setkey(re.gen, Type, scenario)
+  curt = avail[re.gen][,Curtailment:=`Available Energy`-Generation]
+
+  return(curt)
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Region and Zone Generation by type according to generator name
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # This function returns total generation separated by type but also by region and zone.  
