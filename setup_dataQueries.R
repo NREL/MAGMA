@@ -141,7 +141,8 @@ if ( interface.flow.table ) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period.dispatch.zone.log |
-     daily.curtailment | interval.curtailment | commit.dispatch.zone | commit.dispatch.region ) {
+     daily.curtailment  | daily.curtailment.type | interval.curtailment | interval.curtailment.type | 
+     commit.dispatch.zone | commit.dispatch.region ) {
   # Interval level generation for each generator.
   interval.generation   = tryCatch( interval_gen(db), error = function(cond) { return('ERROR') } ) 
   # Interval level available capacity for each generator.

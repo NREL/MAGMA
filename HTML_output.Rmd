@@ -154,7 +154,7 @@ if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.di
 `r key.period.dispatch.region`
 
 ***
-## 8-9. Curtailment
+## 8-11. Curtailment
 ***
 ### 8. Average Daily Curtailment
 ```{r yearly-curtailment}
@@ -164,7 +164,15 @@ source('source_scripts/p_daily_curtailment.R')
 ```
 
 ***
-### 9. Average Interval Curtailment
+### 9. Average Daily Curtailment by Type
+```{r yearly-curtailment-by-type}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+source('source_scripts/p_daily_curtailment_type.R')
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+### 10. Average Interval Curtailment
 ```{r daily-curtailment}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/p_interval_curtailment.R')
@@ -172,18 +180,24 @@ source('source_scripts/p_interval_curtailment.R')
 ```
 
 ***
-## 10. Total Gen
+### 11. Average Interval Curtailment by Type
+```{r daily-curtailment-by-type}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+source('source_scripts/p_interval_curtailment_type.R')
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## 12. Total Gen
 ```{r annual-generation-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (annual.generation.table){
   if ( typeof(total.generation)=='character' | typeof(total.avail.cap) == 'character' ) {
     print('INPUT ERROR: total.generation or total.avail.cap has errors. Cannot run this section.')
   } else {
-    # If the data doesn't already exist, run the query function.
-    if ( !exists('yr.gen') ) {
-      yr.gen = tryCatch(gen_by_type(total.generation, total.avail.cap), 
+    # Run the query function.
+    yr.gen = tryCatch(gen_by_type(total.generation, total.avail.cap), 
                         error = function(cond) { return('ERROR: gen_by_type function not returning correct results') } ) 
-    }
     # Set the order level that generatino type will be displayed.
     yr.gen[, Type := factor(Type, levels = c(gen.order))] 
     setorder(yr.gen,Type)
@@ -201,7 +215,7 @@ if (annual.generation.table){
     curt[, Total:=NULL]
     
     # combine back into one table. 
-    yr.gen = rbindlist(list(yr.gen, curt))
+    yr.gen = rbindlist(list(yr.gen, yr.gen[,.(Type='Total',GWh=sum(GWh),Percent=sum(Percent)), by=.(scenario)], curt))
     row.names(yr.gen) = NULL
     kable(yr.gen, format.args = list(big.mark = ','), digits=2) 
     }
@@ -210,7 +224,7 @@ if (annual.generation.table){
 ```
 
 ***
-## 11. Total Costs
+## 13. Total Costs
 ```{r annual-cost-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
@@ -230,7 +244,7 @@ if (annual.cost.table) {
 ```
 
 ***
-## 12. Region and Zone Info (GWh)
+## 14. Region and Zone Info (GWh)
 ``` {r region-flow-tables, results = 'asis'}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (region.zone.flow.table) {
@@ -280,7 +294,7 @@ if (region.zone.flow.table) {
 ```
 
 ***
-## 13. Interface Flow Table
+## 15. Interface Flow Table
 ```{r interface-flow-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
@@ -301,7 +315,7 @@ if(interface.flow.table) {
 ```
 
 ***
-## 14. Interface Flow Plots
+## 16. Interface Flow Plots
 ```{r interface-flow-plots, resize.width=T, fig.width=10}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/p_interface_flow.R')
@@ -309,7 +323,7 @@ source('source_scripts/p_interface_flow.R')
 ```
 
 ***
-## 15. Specified Period Interface Flow Plot
+## 17. Specified Period Interface Flow Plot
 ```{r key-period-interface-flow-plots, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (key.period.interface.flow.plots) {
@@ -342,9 +356,9 @@ if (key.period.interface.flow.plots) {
 `r key.period.interface.flow`
 
 ***
-## 16-18. Reserves
+## 18-20. Reserves
 ***
-### 16. Annual Reserve Provisions and Shortage
+### 18. Annual Reserve Provisions and Shortage
 ```{r annual-reserves-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
@@ -368,7 +382,7 @@ if(annual.reserves.table) {
 ```
 
 ***
-### 17. Average Interval and Daily Reserve Provisions
+### 19. Average Interval and Daily Reserve Provisions
 ```{r reserves-plots}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/p_reserves.R')
@@ -376,7 +390,7 @@ source('source_scripts/p_reserves.R')
 ```
 
 ***
-### 18. Reserve Provisions by generator type
+### 20. Reserve Provisions by generator type
 ```{r reserves-stacks, fig.height=res.height, fig.width=10}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source("source_scripts/p_reserves_stack.R")
@@ -384,7 +398,7 @@ source("source_scripts/p_reserves_stack.R")
 ```
 
 ***
-## 19. Region and Zone Generation (GWh)
+## 21. Region and Zone Generation (GWh)
 ```{r region-gen-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (region.zone.gen.table) {
@@ -445,7 +459,7 @@ if (region.zone.gen.table) {
 ```
 
 ***
-## 20. Capacity Factors
+## 22. Capacity Factors
 ```{r capacity-factor-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if(capacity.factor.table) {
@@ -462,7 +476,7 @@ if(capacity.factor.table) {
 ```
 
 ***
-## 21. Region Price Duration Curves
+## 23. Region Price Duration Curves
 ```{r price-duration-curve, fig.width = 10}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/p_price_duration_curve.R')
@@ -470,7 +484,7 @@ source('source_scripts/p_price_duration_curve.R')
 ```
 
 ***
-## 22-23. DA-RT Committment and Dispatch Plots
+## 24-25. DA-RT Committment and Dispatch Plots
 ```{r committment-dispatch, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
@@ -517,8 +531,8 @@ if (commit.dispatch.region | commit.dispatch.zone) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
-### 22. Zones
+### 24. Zones
 `r da.rt.zone`
 
-### 23. Regions
+### 25. Regions
 `r da.rt.region`

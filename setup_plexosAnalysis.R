@@ -38,21 +38,23 @@ if(5 %in% run.sections)  {key.period.dispatch.total.log=TRUE}   else {key.period
 if(6 %in% run.sections)  {key.period.dispatch.zone.log=TRUE}    else {key.period.dispatch.zone.log=FALSE}
 if(7 %in% run.sections)  {key.period.dispatch.region.log=TRUE}  else {key.period.dispatch.region.log=FALSE}
 if(8 %in% run.sections)  {daily.curtailment=TRUE}               else {daily.curtailment=FALSE}
-if(9 %in% run.sections)  {interval.curtailment=TRUE}            else {interval.curtailment=FALSE}
-if(10 %in% run.sections) {annual.generation.table=TRUE}         else {annual.generation.table=FALSE}
-if(11 %in% run.sections) {annual.cost.table=TRUE}               else {annual.cost.table=FALSE}
-if(12 %in% run.sections) {region.zone.flow.table=TRUE}          else {region.zone.flow.table=FALSE}
-if(13 %in% run.sections) {interface.flow.table=TRUE}            else {interface.flow.table=FALSE}
-if(14 %in% run.sections) {interface.flow.plots=TRUE}            else {interface.flow.plots=FALSE}
-if(15 %in% run.sections) {key.period.interface.flow.plots=TRUE} else {key.period.interface.flow.plots=FALSE}
-if(16 %in% run.sections) {annual.reserves.table=TRUE}           else {annual.reserves.table=FALSE}
-if(17 %in% run.sections) {reserves.plots=TRUE}                  else {reserves.plots=FALSE}
-if(18 %in% run.sections) {reserve.stack=TRUE}                   else {reserve.stack=FALSE}
-if(19 %in% run.sections) {region.zone.gen.table=TRUE}           else {region.zone.gen.table=FALSE}
-if(20 %in% run.sections) {capacity.factor.table=TRUE}           else {capacity.factor.table=FALSE}
-if(21 %in% run.sections) {price.duration.curve=TRUE}            else {price.duration.curve=FALSE}
-if(22 %in% run.sections) {commit.dispatch.zone=TRUE}            else {commit.dispatch.zone=FALSE}
-if(23 %in% run.sections) {commit.dispatch.region=TRUE}          else {commit.dispatch.region=FALSE}
+if(9 %in% run.sections)  {daily.curtailment.type=TRUE}          else {daily.curtailment=FALSE}
+if(10 %in% run.sections) {interval.curtailment=TRUE}            else {interval.curtailment=FALSE}
+if(11 %in% run.sections) {interval.curtailment.type=TRUE}       else {interval.curtailment=FALSE}
+if(12 %in% run.sections) {annual.generation.table=TRUE}         else {annual.generation.table=FALSE}
+if(13 %in% run.sections) {annual.cost.table=TRUE}               else {annual.cost.table=FALSE}
+if(14 %in% run.sections) {region.zone.flow.table=TRUE}          else {region.zone.flow.table=FALSE}
+if(15 %in% run.sections) {interface.flow.table=TRUE}            else {interface.flow.table=FALSE}
+if(16 %in% run.sections) {interface.flow.plots=TRUE}            else {interface.flow.plots=FALSE}
+if(17 %in% run.sections) {key.period.interface.flow.plots=TRUE} else {key.period.interface.flow.plots=FALSE}
+if(18 %in% run.sections) {annual.reserves.table=TRUE}           else {annual.reserves.table=FALSE}
+if(19 %in% run.sections) {reserves.plots=TRUE}                  else {reserves.plots=FALSE}
+if(20 %in% run.sections) {reserve.stack=TRUE}                   else {reserve.stack=FALSE}
+if(21 %in% run.sections) {region.zone.gen.table=TRUE}           else {region.zone.gen.table=FALSE}
+if(22 %in% run.sections) {capacity.factor.table=TRUE}           else {capacity.factor.table=FALSE}
+if(23 %in% run.sections) {price.duration.curve=TRUE}            else {price.duration.curve=FALSE}
+if(24 %in% run.sections) {commit.dispatch.zone=TRUE}            else {commit.dispatch.zone=FALSE}
+if(25 %in% run.sections) {commit.dispatch.region=TRUE}          else {commit.dispatch.region=FALSE}
 
 # -----------------------------------------------------------------------
 # Read in the data from the input_data.csv file that was just loaded
@@ -88,7 +90,7 @@ if (! 'Curtailment' %in% names(gen.color)){
 # Generation type order for plots
 gen.order = rev(as.character(na.omit(inputs$Gen.Order))) 
 # Add Curtailment if not included
-if (! 'Curtailment' %in% names(gen.order)){
+if (! 'Curtailment' %in% gen.order){
   gen.order = c(gen.order,'Curtailment')
 }
 
