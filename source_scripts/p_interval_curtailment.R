@@ -19,11 +19,11 @@ if (interval.curtailment){
       # Sum up the curtailment each interval to get average interval curtailment. Assign an interval to each row.
       avg.curt = interval.curt[,.(Curtailment=mean(Curtailment)/1000),by=.(interval)]
       avg.curt[, hour := floor((interval-1)*(3600*24/intervals.per.day)/3600)]
-      avg.curt[, minute := floor(((interval-1)*(3600*24/intervals.per.day)/3600-hour)/60)]
-      avg.curt[, second := floor((((interval-1)*(3600*24/intervals.per.day)/3600-hour)/60-minute)/60)]
+      avg.curt[, minute := floor((interval-1)*(3600*24/intervals.per.day)/60-hour*60)]
+      avg.curt[, second := floor((interval-1)*(3600*24/intervals.per.day)-hour*3600-minute*60)]
       avg.curt[, time := as.POSIXct(strptime(paste(hour,minute,second, sep=":"), "%H:%M:%S"),'UTC')]
       # Create plots
-      p1 = line_plot(avg.curt, filters='time', x.col='time', y.col='Curtailment', y.lab='Curtailment (GWh)')
+      p1 = line_plot(avg.curt, filters='interval', x.col='time', y.col='Curtailment', y.lab='Curtailment (GWh)')
       p1 = p1 + scale_x_datetime(breaks = date_breaks(width = "2 hour"), 
                                  labels = date_format("%H:%M"), expand = c(0, 0))
       print(p1)

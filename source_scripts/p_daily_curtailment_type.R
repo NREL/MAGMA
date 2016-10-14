@@ -24,10 +24,11 @@ if (daily.curtailment.type) {
 
       p1 = line_plot(daily.curt, filters=c('time','Type'), x.col='time', y.col='Curtailment', 
                      y.lab='Curtailment (MWh)', color='Type')
-      p1 = p1 + scale_x_datetime(breaks = date_breaks(width = "1 month"), 
-                                 labels = date_format("%b"), expand = c(0, 0)) +
-           scale_color_manual("",values=gen.color)
-      print(p1)
+      if (nrow(daily.curt) > 30*length(re.types)) {
+        p1 = p1 + scale_x_datetime(breaks = date_breaks(width = "1 month"), 
+                                   labels = date_format("%b"), expand = c(0, 0))
+      }
+      print(p1 + scale_color_manual("",values=gen.color))
     }
   }
 } else { print('Section not run according to input file.') }
