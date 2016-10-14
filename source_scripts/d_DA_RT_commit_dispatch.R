@@ -1,4 +1,3 @@
-
 # Call query functions to get committed capacity (day ahead) and available capacity in the real time.
 committed.cap = tryCatch( cap_committed(interval.da.committment), error = function(cond) { return('ERROR')})
 avail.cap.rt = tryCatch( cap_committed(interval.avail.cap), error = function(cond) { return('ERROR')})
@@ -15,20 +14,21 @@ if ( typeof(committed.cap)=='character' | typeof(int.gen)=='character' | typeof(
   
   # Remove unneccessary data values and rename the data for plotting. This is interval generation data in the real time.
   da.rt.data = int.gen[!Type%in%c("Curtailment","Load"), ]
-  setnames(da.rt.data,"value","RT.gen")
   
   # Prep data for merging
-  setnames(avail.cap.rt,'committed.cap','RT.cap')
-  setnames(committed.cap,'committed.cap','DA.cap')
-  setkey(avail.cap.rt,scenario,time,Region,Zone,Type)
-  setkey(committed.cap,scenario,time,Region,Zone,Type)
-  setkey(da.rt.data,scenario,time,Region,Zone,Type)
+  setnames(avail.cap.rt,'committed.cap','value')
+  setnames(committed.cap,'committed.cap','value')
+  da.rt.data[, data:='RT Generation']
+  avail.cap.rt[, data:='RT Committed Capacity']
+  committed.cap[, data:='DA Committed Capacity or \nForecasted Generation']
   
   # Add the day ahead capacity and real time capacity to the real time generation.
-  da.rt.data = merge(merge(da.rt.data,avail.cap.rt,all=TRUE),committed.cap, all=TRUE) 
-                
+  da.rt.data = rbindlist(list(da.rt.data,avail.cap.rt,committed.cap),use.names=TRUE) 
+  
   # Only pull out data for the time spans that were requested in the input file. 
-  timediff = da.rt.data[,.(timediff=diff(time)),by=.(scenario,Region,Type,Zone)][,.(min(timediff))][,V1]
+  timediff = da.rt.data[data=='RT Generation',
+                        .(timediff=diff(time)),
+                        by=.(scenario,Region,Type,Zone)][,.(min(timediff))][,V1]
   for ( i in 1:n.periods ) {
     key.period.time = seq(start.end.times[i,start], start.end.times[i,end], 
                           by = timediff)
@@ -41,5 +41,5 @@ if ( typeof(committed.cap)=='character' | typeof(int.gen)=='character' | typeof(
       plot.data.all = rbindlist(list(plot.data.all, plot.data))
     }
   }  
-
+  
 }

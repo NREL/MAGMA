@@ -4,9 +4,10 @@
 This package creates figures and an HTML file with all of those figures for plexos solutions.
 * You must use process_folder() from the rplexos package to create a database file from the PLEXOS solution .zip, before running this code.
 * The Examples folder contains templates and examples of the input data CSV, the generator name, region, and zone mapping CSV, the R script that runs the package, and example HTML reports (within the reports folder).
+* Section_guide.md lists what sections correspond to each number for the sections to run column in the input data CSV file.
 
 ##To Run:
-1. Copy run_html_output.R and input_data.csv from the Examples/ folder into another folder associated with your project specific repository.
+1. Copy run_html_output.R and input_data_template.csv from the Examples/ folder into another folder associated with your project specific repository.
 2. Edit input_data.csv to point to the required databases, input files, and generator categories for your project. Fill the rest of the columns out according to your model.
 3. If using a CSV to map generator name to type, create this.
 4. If generation type by region or zone is wanted, add region and zone columns to mapping CSV.
@@ -15,7 +16,7 @@ This package creates figures and an HTML file with all of those figures for plex
 
 ### Notes:
 1. If you have trouble with the render function, make sure the "rmarkdown" package is installed. If there are issues locating or sourcing files, make sure the appropriate working directories and paths are setup correctly.
-2. You can choose to run individual chunks or the entire package. This is setup in the input_data.csv file. Running the entire package will take a long time
+2. You can choose to run individual chunks or the entire package. This is setup in the input_data.csv file. Running the entire package could take a long time, particularly for large solution files and if the solution file has to be processed by rplexos (done the first time MAGMA is run).
 3. The name of your database file must start with "Model".
 4. Report any problems or issues to Matt O'Connell at NREL. matthew.oconnell@nrel.gov 
 
@@ -60,27 +61,22 @@ This package creates figures and an HTML file with all of those figures for plex
 	+ Corresponding start time for each of the periods in 13.
 16. End.Time
 	+ Corresponding end time for each of the periods in 13. 
-17. Start.Day
-	+ Starting day of the PLEXOS run. 
-18. End.Day
-	+ Ending day of the PLEXOS run.
-19. Intervals.Per.Day
-	+ Number of intervals per day.
-20. Sections.to.Run
+17. Sections.to.Run
 	+ Sections (chunks) of the HTML_output.Rmd file to run.
-21. Fig.Path
+18. Fig.Path
 	+ Location to save each figure.
-22. Ignore.Zones
+19. Ignore.Zones
  	+ Zones to exclude from plots
-23. Ignore.Regions
+20. Ignore.Regions
 	+ Regions to exclude from plots
-24. Interfaces.for.Flows
+21. Interfaces.for.Flows
 	+ Specific interfaces to show flow data for
+	+ If all interfaces are desired, list 'ALL' as only entry
 
 
 ## Required PLEXOS outputs
 
-PLEXOS must report the following data in order for the scripts to work.
+PLEXOS must report the following data in order for all scripts to work. If you try to run a section and are missing the required data you will get an error telling you what PLEXOS output data is missing.
 
 ### Annual
 ##### Generator:

@@ -34,21 +34,24 @@ if(5 %in% run.sections)  {key.period.dispatch.total.log=TRUE}   else {key.period
 if(6 %in% run.sections)  {key.period.dispatch.zone.log=TRUE}    else {key.period.dispatch.zone.log=FALSE}
 if(7 %in% run.sections)  {key.period.dispatch.region.log=TRUE}  else {key.period.dispatch.region.log=FALSE}
 if(8 %in% run.sections)  {daily.curtailment=TRUE}               else {daily.curtailment=FALSE}
-if(9 %in% run.sections)  {interval.curtailment=TRUE}            else {interval.curtailment=FALSE}
-if(10 %in% run.sections) {annual.generation.table=TRUE}         else {annual.generation.table=FALSE}
-if(11 %in% run.sections) {annual.cost.table=TRUE}               else {annual.cost.table=FALSE}
-if(12 %in% run.sections) {region.zone.flow.table=TRUE}          else {region.zone.flow.table=FALSE}
-if(13 %in% run.sections) {interface.flow.table=TRUE}            else {interface.flow.table=FALSE}
-if(14 %in% run.sections) {interface.flow.plots=TRUE}            else {interface.flow.plots=FALSE}
-if(15 %in% run.sections) {key.period.interface.flow.plots=TRUE} else {key.period.interface.flow.plots=FALSE}
-if(16 %in% run.sections) {annual.reserves.table=TRUE}           else {annual.reserves.table=FALSE}
-if(17 %in% run.sections) {reserves.plots=TRUE}                  else {reserves.plots=FALSE}
-if(18 %in% run.sections) {region.zone.gen.table=TRUE}           else {region.zone.gen.table=FALSE}
-if(19 %in% run.sections) {capacity.factor.table=TRUE}           else {capacity.factor.table=FALSE}
-if(20 %in% run.sections) {price.duration.curve=TRUE}            else {price.duration.curve=FALSE}
-if(21 %in% run.sections) {commit.dispatch.zone=TRUE}            else {commit.dispatch.zone=FALSE}
-if(22 %in% run.sections) {commit.dispatch.region=TRUE}          else {commit.dispatch.region=FALSE}
-if(23 %in% run.sections) {reserve.stack=TRUE}                   else {reserve.stack=FALSE}
+if(9 %in% run.sections)  {daily.curtailment.type=TRUE}          else {daily.curtailment.type=FALSE}
+if(10 %in% run.sections) {interval.curtailment=TRUE}            else {interval.curtailment=FALSE}
+if(11 %in% run.sections) {interval.curtailment.type=TRUE}       else {interval.curtailment.type=FALSE}
+if(12 %in% run.sections) {annual.generation.table=TRUE}         else {annual.generation.table=FALSE}
+if(13 %in% run.sections) {annual.curtailment.table=TRUE}        else {annual.curtailment.table=FALSE}
+if(14 %in% run.sections) {annual.cost.table=TRUE}               else {annual.cost.table=FALSE}
+if(15 %in% run.sections) {region.zone.flow.table=TRUE}          else {region.zone.flow.table=FALSE}
+if(16 %in% run.sections) {interface.flow.table=TRUE}            else {interface.flow.table=FALSE}
+if(17 %in% run.sections) {interface.flow.plots=TRUE}            else {interface.flow.plots=FALSE}
+if(18 %in% run.sections) {key.period.interface.flow.plots=TRUE} else {key.period.interface.flow.plots=FALSE}
+if(19 %in% run.sections) {annual.reserves.table=TRUE}           else {annual.reserves.table=FALSE}
+if(20 %in% run.sections) {reserves.plots=TRUE}                  else {reserves.plots=FALSE}
+if(21 %in% run.sections) {reserve.stack=TRUE}                   else {reserve.stack=FALSE}
+if(22 %in% run.sections) {region.zone.gen.table=TRUE}           else {region.zone.gen.table=FALSE}
+if(23 %in% run.sections) {capacity.factor.table=TRUE}           else {capacity.factor.table=FALSE}
+if(24 %in% run.sections) {price.duration.curve=TRUE}            else {price.duration.curve=FALSE}
+if(25 %in% run.sections) {commit.dispatch.zone=TRUE}            else {commit.dispatch.zone=FALSE}
+if(26 %in% run.sections) {commit.dispatch.region=TRUE}          else {commit.dispatch.region=FALSE}
 if(24 %in% run.sections) {annual.res.short.table=TRUE}          else {annual.res.short.table=FALSE}
 if(25 %in% run.sections) {curtailment.diff.table=TRUE}          else {curtailment.diff.table=FALSE}
 if(26 %in% run.sections) {price.duration.curve.scen=TRUE}       else {price.duration.curve.scen=FALSE}
@@ -85,13 +88,15 @@ if (length(reassign.zones)==0) {
 
 # Generation type order for plots
 gen.order = rev(as.character(na.omit(inputs$Gen.Order))) 
+# Add Curtailment if not included
+if (! 'Curtailment' %in% gen.order){
+  gen.order = c(gen.order,'Curtailment')
+}
 
 # Types of renewables to be considered for curtailment calculations
 re.types = as.character(na.omit(inputs$Renewable.Types.for.Curtailment)) 
 if (length(re.types)==0) { 
   message('\nNo variable generation types specified for curtailment.')
-  interval.curtailment = FALSE
-  daily.curtailment = FALSE
   re.types = 'none_specified'
 }
 
@@ -99,29 +104,48 @@ if (length(re.types)==0) {
 da.rt.types = as.character(na.omit(inputs$DA.RT.Plot.Types))
 if (length(da.rt.types)==0) {
   message('\nNo generation types specified for DA-RT plots. Plots will not be created.')
-  commit.dispatch.region=FALSE
-  commit.dispatch.zone=FALSE
 }
 
 # Names of key periods
 period.names = as.character(na.omit(inputs$Key.Periods)) 
 if (length(period.names)==0) {
   message('\nNo key periods specified. No plots will be created for these.')
-  key.period.dispatch.total.log = FALSE
-  key.period.dispatch.zone.log = FALSE
-  key.period.dispatch.region.log = FALSE
-  key.period.interface.flow.plots = FALSE
 }
 
 # Number of key periods
 n.periods = length(period.names) 
 
 # Start and end times for key periods
-start.end.times = data.table(start = as.POSIXct( strptime( na.omit(inputs$Start.Time), format = '%m/%d/%Y %H:%M'), tz='UTC'), 
-                             end = as.POSIXct( strptime( na.omit(inputs$End.Time), format = '%m/%d/%Y %H:%M'), tz='UTC' ) )
+if(length(na.omit(inputs$Start.Time)) > 0){
+  # Check if year is provided as 4-digit or 2-digit year
+  if(nchar(strsplit(as.character(inputs$Start.Time[1]),'[ ,/]')[[1]][3])==2){
+    start.end.times = data.table(start = as.POSIXct( strptime( na.omit(inputs$Start.Time), format = '%m/%d/%y %H:%M'), tz='UTC'), 
+                                 end = as.POSIXct( strptime( na.omit(inputs$End.Time), format = '%m/%d/%y %H:%M'), tz='UTC' ) )
+  }else if(nchar(strsplit(as.character(inputs$Start.Time[1]),'[ ,/]')[[1]][3])==4){
+    start.end.times = data.table(start = as.POSIXct( strptime( na.omit(inputs$Start.Time), format = '%m/%d/%Y %H:%M'), tz='UTC'), 
+                                 end = as.POSIXct( strptime( na.omit(inputs$End.Time), format = '%m/%d/%Y %H:%M'), tz='UTC' ) )
+  }
+  # If is NA, try without hour and minute in date format
+  if (any(is.na(start.end.times))){
+    if(nchar(strsplit(as.character(inputs$Start.Time[1]),'[ ,/]')[[1]][3])==2){
+      start.end.times.temp = data.table(start = as.POSIXct( strptime( na.omit(inputs$Start.Time), format = '%m/%d/%y'), tz='UTC'), 
+                                        end = as.POSIXct( strptime( na.omit(inputs$End.Time), format = '%m/%d/%y'), tz='UTC' ) )
+    }else if(nchar(strsplit(as.character(inputs$Start.Time[1]),'[ ,/]')[[1]][3])==4){
+      start.end.times.temp = data.table(start = as.POSIXct( strptime( na.omit(inputs$Start.Time), format = '%m/%d/%Y'), tz='UTC'), 
+                                        end = as.POSIXct( strptime( na.omit(inputs$End.Time), format = '%m/%d/%Y'), tz='UTC' ) )
+    }
+    start.end.times[is.na(start), start:=start.end.times.temp[is.na(start.end.times$start),start]]
+    start.end.times[is.na(end), end:=start.end.times.temp[is.na(start.end.times$end),end]]
+  }
+}
 
 # Location for saved figures
-fig.path.name = paste0(as.character(na.omit(inputs$Fig.Path)),'\\')
+fig.path.name = file.path(as.character(na.omit(inputs$Fig.Path)))
+# If no figure path provided, assume figures should go in a directory called "plots"
+# in the folder containing the database
+if (length(fig.path.name)==0){
+  fig.path.name = file.path(db.loc,'plots')
+}
 
 # Zones to ignore for plotting
 ignore.zones = as.character(na.omit(inputs$Ignore.Zones))
@@ -133,9 +157,13 @@ ignore.regions = as.character(na.omit(inputs$Ignore.Regions))
 interfaces = as.character(na.omit(inputs$Interfaces.for.Flows))
 if (length(interfaces)==0) {
   message('\nNo interfaces specified. No interface data will be shown.')
-  interface.flow.table = FALSE
-  interface.flow.plots = FALSE
-  key.period.interface.flow.plots = FALSE
+} else if (any(interfaces == 'ALL')){
+  interfaces = unique(query_class_member(db,'Interface')$name)
+}
+# Update scen.pal to account for larger number of interfaces. Give warning about large number of entries
+if (length(interfaces) > length(scen.pal)){
+  message('\nYou have specified a large number of interfaces. Color palette may be hard to differentiate.')
+  scen.pal = rainbow(length(interfaces))
 }
 
 run.rplx=F
@@ -149,7 +177,7 @@ if(length(list.files(pattern = "\\.zip$",path=db.loc))!=0 ) {
     run.rplx=T
   } else {message(paste0('\nFound .db solution file: ', list.files(pattern='\\.db$',path=db.loc), '\n'))}
   if(run.rplx) {
-    if(readline('Do you want to run the rPLEXOS db creation tool now? (y/n):')=='y'){
+    if(readline('Do you want to run the rPLEXOS db creation tool now? (y/n):')=='y' | !interactive()){
       message('Running process_folder')
       process_folder(db.loc)
     } else {message('You need to run rPLEXOS to process your solution or point to the correct solution folder.')}
@@ -168,9 +196,14 @@ db.day.ahead = tryCatch(plexos_open(db.day.ahead.loc, basename(db.day.ahead.loc)
 # db.day.ahead = db.day.ahead[1,] # This line queries only the first solution .db file if there are multiple in one location. 
 attributes(db.day.ahead)$class = c('rplexos', 'data.frame', 'tbl_df')
 
+# get available properties
+properties = data.table(query_property(db))
+if (typeof(db.day.ahead)!='character'){
+  properties.day.ahead = data.table(query_property(db.day.ahead))
+}
 
 # Read mapping file to map generator names to region and zone (can be same file as gen name to type).
-if (is.na(inputs$Gen.Region.Zone.Mapping.Filename)){
+if (is.na(inputs$Gen.Region.Zone.Mapping.Filename)[1]){
   gen.mapping <- query_generator(db)
   region.zone.mapping = data.table(unique(gen.mapping[,c('name','region','zone')]))
   setnames(region.zone.mapping, c("region","zone"), c("Region","Zone"))
@@ -218,7 +251,10 @@ if(all(is.na(inputs$Gen.Type)) | all(is.na(inputs$Plot.Color))){
   Gen.col = data.table(Type = na.omit(inputs$Gen.Type), Color = na.omit(inputs$Plot.Color) )
   gen.color<-setNames(as.character(Gen.col$Color),Gen.col$Type)
 }
-
+# Add Curtailment if not included
+if (! 'Curtailment' %in% names(gen.color)){
+  gen.color['Curtailment'] = 'red'
+}
 
 # Calculate First and last day of simulation and interval length
 model.timesteps = model_timesteps(db)
@@ -235,6 +271,13 @@ if (!(length(unique(model.timesteps$start))==1 & length(unique(model.timesteps$e
 }
 first.day = min(model.timesteps$start)
 last.day = max(model.timesteps$end)
+
+# Check to make sure all solutions have the same length
+if (length(unique(model.intervals$timestep))!=1){
+  message("Warning: Your databases do not have the same time intervals")
+}
+# Number of intervals per day
+intervals.per.day = 24 / unique(as.numeric(model.intervals$timestep,units='hours'))
 
 # Check to make sure all solutions have the same length
 if (length(unique(model.intervals$timestep))!=1){

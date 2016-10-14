@@ -21,9 +21,10 @@ inputs = data.table(inputs)
 
 # Sourcing the setup file and required functions
 source(file.path('query_functions.R'))
+source(file.path('plot_functions.R'))
 source(file.path('setup_plexosAnalysis.R'))
 if (query.data){
-    source(file.path('setup_dataQueries.R'), echo=TRUE)
+    source(file.path('setup_dataQueries.R'))
 } else{
     load(load.data)
 }
