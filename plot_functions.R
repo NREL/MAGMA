@@ -258,3 +258,44 @@ line_plot <- function(plot.data, filters, x.col, y.col, y.lab, color=NULL){
   return(p.1)
 }
 
+
+commitment_dispatch_plot <- function(plot.data){
+  # Create DA-RT commitment vs dispatch plots (ie, ERGIS plots)
+  # Assumes data has been 'massaged' by d_DA_RT_commit_dispatch.R
+  
+  # Assign the order which the generation types will appear in the plot.
+  plot.data[, Type := factor(Type, levels=rev(gen.order))]
+  # Make sure plot axes are high enough
+  blank_data = plot.data[, .(ylim=sum(value)/1000*1.06), by=.(time,Type,data)]
+    
+    # Create plot
+  p = ggplot()+
+         geom_area(data=plot.data[data=='RT Generation'], aes(time, value/1000, fill=Type), alpha=0.4)+
+         geom_line(data=plot.data[Type != 'Hydro' & data=='RT Committed Capacity', ], 
+                   aes(time, value/1000, color=Type), size=1)+
+         geom_step(data=plot.data[Type != 'Hydro' & data=='DA Committed Capacity or \nForecasted Generation', ], 
+                   aes(time, value/1000, linetype=data), color="grey50", size=1, alpha=0.5)+
+         geom_blank(data=blank_data, aes(x=time, y=ylim))+
+         expand_limits(y=0)+
+         scale_linetype_manual("",values=c(1,1))+
+         scale_fill_manual("RT Generation", values = gen.color)+
+         scale_x_datetime(breaks = date_breaks(width = "1 day"), labels = date_format("%b %d\n%I %p"), expand = c(0, 0))+
+         scale_y_continuous(label=comma, expand=c(0,0))+
+         scale_color_manual("RT Committed Capacity", values = gen.color)+
+         ylab("Generation or Online Capacity (GW)")+xlab(NULL)+
+         #     guides(color = guide_legend(order=1), fill = guide_legend(order=2, reverse=TRUE))+
+         theme(legend.key = element_rect(color = "grey70", size = 0.8),
+               legend.key.size = grid::unit(1.5, "lines"), 
+               legend.text = element_text(size=text.plot), 
+               text=element_text(size=text.plot), 
+               strip.text=element_text(face=1, 
+                                       size=rel(0.8)), 
+               axis.text.x=element_text(size=text.plot/1.8), 
+               axis.text.y=element_text(size=text.plot/1.2), 
+               axis.title=element_text(size=text.plot, face=2),
+               panel.grid.major = element_line(colour = "grey85"),
+               panel.grid.minor = element_line(colour = "grey93"),
+               panel.margin = unit(0.45, "lines"))
+  return(p)
+}
+
