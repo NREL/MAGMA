@@ -28,9 +28,10 @@ if(reserves.plots) {
     
       # Creating average daily reserves provisions plot
       p.2 = line_plot(dy.avg, 'day','time', 'Provision', 'Reserve Provision (GWh)')
-      p.2 = p.2 + scale_x_datetime(breaks = date_breaks(width = "1 month"), 
-                                   labels = date_format("%b %d"), expand = c(0, 0))
-    
+      if (nrow(dy.avg) > 30) {
+        p.2 = p.2 + scale_x_datetime(breaks = date_breaks(width = "1 month"), 
+                                     labels = date_format("%b %d"), expand = c(0, 0))
+      }
       print(p.1)
       print(p.2)
     }

@@ -12,18 +12,19 @@ if (interface.flow.plots) {
       if ( typeof(interface.flows)=='character' ) { 
         print('ERROR: interface_flows function not returning correct results.')
       } else {
-        # Get daily plots
+        # Get interval plots
         p1 = interface_plot(interface.flows, x_col = 'time')
-        print(p1 + scale_x_datetime(breaks = date_breaks(width = "1 month"), 
-                     limits=c(first.day, last.day), 
-                     labels = date_format("%b"), expand = c(0, 0)))
+        print(p1 + labs(title='Interval Flow'))
         # Aggregate interval flow data into daily flow data
         interface.flows[, day := as.POSIXlt(time)[[8]] ]
         daily.flows = interface.flows[, .(value=sum(value)), by=.(day,name)]
         daily.flows[,time:=as.POSIXct(strptime(day+1,"%j"))]
         p2 = interface_plot(daily.flows, x_col = 'time')
-        print(p2 + scale_x_datetime(breaks=date_breaks(width="1 month"), 
-                     labels = date_format("%b"), expand = c(0, 0)))
+        if (nrow(daily.flows) > 30*length(interfaces)){
+          p2 = p2 + scale_x_datetime(breaks=date_breaks(width="1 month"), 
+                     labels = date_format("%b"), expand = c(0, 0))
+        }
+        print(p2 + labs(title='Daily Flow'))
       }
     }
   } else { print('No interfaces specified. No interface data will be shown.')}

@@ -197,7 +197,7 @@ interface_plot <- function(flow.data, x_col = 'time'){
          geom_line(size=1.2)+
          geom_hline(yintercept=0, color="black", size=0.3)+
          scale_color_manual("", values = scen.pal)+
-         labs(y="Flow (GW)", x = '', title='Interval Flow')+
+         labs(y="Flow (GW)", x = '')+
          theme(legend.key = element_rect(NULL),
                legend.text = element_text(size=text.plot),
                text=element_text(size=text.plot),
