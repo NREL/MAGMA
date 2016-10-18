@@ -1,24 +1,24 @@
 # Check if this section was selected run in the input file
-if (total.gen.stack & length(db.loc)>1){
+if (total.gen.stack){
 
-# Query annual generation by type.
-yr.gen.scen = tryCatch( gen_diff_by_type(total.generation, total.avail.cap), error = function(cond) { return('ERROR') } )
+  if ( typeof(total.generation)=='character' ) {
+    print('INPUT ERROR: total.generation has errors. Cannot run this section.')
+  } else if ( typeof(total.avail.cap) == 'character' ) { 
+    print('INPUT ERROR: total.avail.cap has errors. Cannot run this section.')
+  } else{
+    # Query annual generation by type.
+    yr.gen.scen = tryCatch( gen_by_type(total.generation, total.avail.cap), 
+                       error = function(cond) { return('ERROR: gen_by_type function not returning correct results.') } )
+    # If the query doesn't work, print an error. Else continue.
+    if ( typeof(yr.gen.scen)=='character' ) {
+      print('ERROR: gen_by_type function not returning correct results.')
+    } else {
 
-# If the query doesn't work, print an error. Else continue.
-if ( typeof(yr.gen.scen)=='character' ) {
-  print('ERROR: gen_by_type function not returning correct results.')
-} else {
-
-    
-  py = pretty(c(0,gen.sum$TWh), n=5, min.n = 5)
-  seq.py = seq(min(py[1],0), py[length(py)], (py[2]-py[1]))
-
-  # Call function to create plot and print
-  [p1, seq.py] = gen_diff_stack_plot(yr.gen.scen, r.load)
-  # This automatically creates the y-axis scaling
-  p1 = p1 + scale_y_continuous(breaks=seq.py, limits=c(min(py), max(py)), expand=c(0,0), label=comma)
-  print(p1)
-
-}
+      # Create plot
+      plot.data = gen_diff_stack_plot(yr.gen.scen, load.data = r.load)
+      print(plot.data[[1]] + theme(aspect.ratio = 2.5) +
+            scale_y_continuous(breaks=plot.data[[2]], limits=c(min(plot.data[[2]]), max(plot.data[[2]])), expand=c(0,0), label=comma))
+    }
+  }
 
 } else { print('Section not run according to input file.')}

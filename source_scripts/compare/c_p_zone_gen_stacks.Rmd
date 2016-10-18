@@ -1,24 +1,30 @@
 
-if (zone.gen.stacks & length(db.loc)>1) {
+# Check if this section was selected run in the input file
+if (zone.gen.stacks){
 
-if( !exists('z.gen.scen') ) {
-  # Query region and zonal generation
-  z.gen.scen = tryCatch( zone_gen_diff(total.generation, total.avail.cap), error = function(cond) { return('ERROR') } )
-}
+  if ( typeof(total.generation)=='character' ) {
+    print('INPUT ERROR: total.generation has errors. Cannot run this section.')
+  } else if ( typeof(total.avail.cap) == 'character' ) { 
+    print('INPUT ERROR: total.avail.cap has errors. Cannot run this section.')
+  } else if ( typeof(z.load) == 'character' ) { 
+    print('INPUT ERROR: z.load has errors. Cannot run this section.')
+  } else{
+    # Query annual generation by type.
+    z.gen.scen = tryCatch( zone_gen_diff(total.generation, total.avail.cap), 
+                       error = function(cond) { return('ERROR: zone_gen_diff function not returning correct results.') } )
+    # If the query doesn't work, print an error. Else continue.
+    if ( typeof(z.gen.scen)=='character' ) {
+      print('ERROR: zone_gen_diff function not returning correct results.')
+    } else {
 
-# Check if zonal.gen query worked and create plot of regional gen, else return an error.
-if ( typeof(z.gen.scen)=='character' ) {
-  print('ERROR: zone_gen_diff function not returning correct results.')
-} else if ( typeof(r.load) == 'character' ) {
-  print('ERROR: region_load function not returning correct results.')
-} else {
+      # Create plot
+      plot.data = gen_diff_stack_plot(z.gen.scen[!Zone %in% ignore.zones, ], 
+                                      z.load[!Zone %in% ignore.zones, ],
+                                      filters = 'Zone')
+      print(plot.data[[1]] + theme(aspect.ratio = 2.5) + 
+      	    facet_wrap(~Zone, scales = 'free', ncol=3) +
+            scale_y_continuous(breaks=plot.data[[2]], limits=c(min(plot.data[[2]]), max(plot.data[[2]])), expand=c(0,0), label=comma))
+    }
+  }
 
-  # Call function to create plot and print
-  [p1, seq.py] = gen_diff_stack_plot(z.gen.scen[!Zone %in% ignore.zones, ], 
-                                     z.load[!Zone %in% ignore.zones, ],
-                                     filters = 'Zone')
-  print(p1 + facet_wrap(~Zone, scales = 'free', ncol=3))
-}
-}
-
-} else { print('Section not run according to input file.') }
+} else { print('Section not run according to input file.')}

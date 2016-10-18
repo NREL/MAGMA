@@ -1,6 +1,7 @@
 # Check if this section was selected to run in the input file
 if (interval.curtailment){
 
+  # Check inputs
   if ( typeof(interval.generation) == 'character' | typeof(interval.avail.cap) == 'character' ) { 
     print('INPUT ERROR: interval.generation or interval.avail.cap has errors. Cannot run this section.')
   } else if (length(re.types)==0) { 

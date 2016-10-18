@@ -35,29 +35,7 @@ p.height = ( length(period.names) %/% 2 + length(period.names) %% 2 ) * 5
 ## 1. Generation Differences
 ```{r gen-diff-stack}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Check if this section was selected run in the input file
-if (total.gen.stack & length(db.loc)>1){
-  if ( typeof(total.generation)=='character' ) {
-    print('ERROR: total.generation has errors. Cannot run this section.')
-  } else if ( typeof(total.avail.cap) == 'character' ) { 
-    print('ERROR: total.avail.cap has errors. Cannot run this section.')
-  } else{
-    # Query annual generation by type.
-    yr.gen.scen = tryCatch( gen_diff_by_type(total.generation, total.avail.cap), 
-                            error = function(cond) { return('ERROR') } )
-    # If the query doesn't work, print an error. Else continue.
-    if ( typeof(yr.gen.scen)=='character' ) {
-      print('ERROR: gen_by_type function not returning correct results.')
-    } else {
-      # Call function to create plot and print
-      plot.data = gen_diff_stack_plot(yr.gen.scen, r.load)
-      # This automatically creates the y-axis scaling
-      p1 = plot.data[[1]] + scale_y_continuous(breaks=plot.data[[2]], 
-            limits=c(min(plot.data[[2]]), max(plot.data[[2]])), expand=c(0,0), label=comma)
-      print(p1)
-    }
-  }
-} else { print('Section not run according to input file.')}
+source('source_scripts/compare/c_p_diff_gen_stack.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -65,29 +43,7 @@ if (total.gen.stack & length(db.loc)>1){
 ## 2. Zonal Generation
 ```{r zone-gen-diff-stacks, fig.height=z.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (zone.gen.stacks & length(db.loc)>1) {
-  if ( typeof(total.generation)=='character' ) {
-    print('ERROR: total.generation has errors. Cannot run this section.')
-  } else if ( typeof(total.avail.cap) == 'character' ) { 
-    print('ERROR: total.avail.cap has errors. Cannot run this section.')
-  } else{
-    z.gen.scen = tryCatch( zone_gen_diff(total.generation, total.avail.cap), error = function(cond) { return('ERROR') } )
-  
-    # Check if zonal.gen query worked and create plot of regional gen, else return an error.
-    if ( typeof(z.gen.scen)=='character' ) {
-      print('ERROR: zone_gen_diff function not returning correct results.')
-    } else if ( typeof(r.load) == 'character' ) {
-      print('ERROR: r.load not correct. Cannot run this section')
-    } else {
-      # Call function to create plot and print
-      plot.data = gen_diff_stack_plot(z.gen.scen[!Zone %in% ignore.zones, ], 
-                                      z.load[!Zone %in% ignore.zones, ],
-                                      filters = 'Zone')
-      print(plot.data[[1]] + facet_wrap(~Zone, scales = 'free', ncol=3))
-    }
-  }
-} else { print('Section not run according to input file.') }
-
+source('source_scripts/compare/c_p_zone_gen_stacks.Rmd')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -95,29 +51,7 @@ if (zone.gen.stacks & length(db.loc)>1) {
 ## 3. Regional Generation
 ```{r region-gen-diff-stacks, fig.height=r.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (region.gen.stacks & length(db.loc)>1) {
-  if ( typeof(total.generation)=='character' ) {
-    print('ERROR: total.generation has errors. Cannot run this section.')
-  } else if ( typeof(total.avail.cap) == 'character' ) { 
-    print('ERROR: total.avail.cap has errors. Cannot run this section.')
-  } else{
-    # Query region and zonal generation
-    r.gen.scen = tryCatch( region_gen_diff(total.generation, total.avail.cap), error = function(cond) { return('ERROR') } )
-  
-    # Check if zonal.gen query worked and create plot of regional gen, else return an error.
-    if ( typeof(r.gen.scen)=='character' ) {
-      print('ERROR: region_gen_diff function not returning correct results.')
-    } else if ( typeof(r.load) == 'character' ) {
-      print('ERROR: region_load function not returning correct results.')
-    } else {
-      # Call function to create plot and print
-      plot.data = gen_diff_stack_plot(r.gen.scen[!Region %in% ignore.regions, ], 
-                                      r.load[!Region %in% ignore.regions, ],
-                                      filters = 'Region')
-      print(plot.data[[1]] + facet_wrap(~Region, scales = 'free', ncol=3))
-    }
-  }
-} else { print('Section not run according to input file.') }
+source('source_scripts/compare/c_p_region_gen_stacks.Rmd')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -127,50 +61,54 @@ if (region.gen.stacks & length(db.loc)>1) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
 if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.dispatch.region.log){  
+  if (length(period.names)>0) {
 
-  # Call interval_gen function and proces data for plots
-  source('source_scripts/d_key_period_dispatch.R')
+    # Call interval_gen function and proces data for plots
+    source('source_scripts/d_key_period_dispatch.R')
 
-  # As long as the file exists (previous source found the R script) this loop runs
-  if ( exists('key.period.gen') ) {
-  # Check to see if the right data is ready for plotting.
-    if ( typeof(key.period.gen)=='character' ) {
-      key.period.dispatch.total  = 'ERROR: interval_gen function not returning correct results.'
-      key.period.dispatch.zone   = 'ERROR: interval_gen function not returning correct results.'
-      key.period.dispatch.region = 'ERROR: interval_gen function not returning correct results.'
-    } else {
-      # Check if total database info was selected in input file.
-      if (key.period.dispatch.total.log) {
-        key.plots.total = lapply(period.names, function(p){
-                                 knit_expand(file = 'source_scripts/compare/c_p_key_period_dispatch_total.Rmd', 
-                                             period.name = period.name)
-                                 })
-        key.period.dispatch.total = knit_child(text = unlist(key.plots.total))
-      } else {key.period.dispatch.total  = 'Section not run according to input file.'}
-      
-      # Check if zonal dispatch stacks were selected in input file.
-      if (key.period.dispatch.zone.log) {
-        key.plots.zone = mapply(function(k,z){
-                                knit_expand(file = 'source_scripts/compare/c_p_key_period_dispatch_zone.Rmd', 
-                                            period.name = p, zone.name = z)}, 
-                                rep(period.names,length(zone.names)), rep(zone.names,each=n.periods))
-        key.period.dispatch.zone = knit_child(text = unlist(key.plots.zone))
-      } else {key.period.dispatch.zone   = 'Section not run according to input file.'}
-      
-      # Check if regional dispatch stacks were selected in input file.
-      if (key.period.dispatch.region.log) {
-        key.plots.region = mapply(function(k,r){
-                                knit_expand(file = 'source_scripts/compare/c_p_key_period_dispatch_region.Rmd', 
-                                            period.name = p, region.name = r)}, 
-                                rep(period.names,length(region.names)), rep(region.names,each=n.periods))
-        key.period.dispatch.region = knit_child(text = unlist(key.plots.region))
-      } else {key.period.dispatch.region = 'Section not run according to input file.'}
-    }
-  } else {
-    key.period.dispatch.total  = 'Problem sourcing or running d_key_period_dispatch.R.'
-    key.period.dispatch.zone   = 'Problem sourcing or running d_key_period_dispatch.R.'
-    key.period.dispatch.region = 'Problem sourcing or running d_key_period_dispatch.R.'
-  }
+    # As long as the file exists (previous source found the R script) this loop runs
+    if ( exists('key.period.gen') ) {
+    # Check to see if the right data is ready for plotting.
+      if ( typeof(key.period.gen)=='character' ) {
+        key.period.dispatch.total  = 'ERROR: interval_gen function not returning correct results.'
+        key.period.dispatch.zone   = 'ERROR: interval_gen function not returning correct results.'
+        key.period.dispatch.region = 'ERROR: interval_gen function not returning correct results.'
+      } else {
+        # Check if total database info was selected in input file.
+        if (key.period.dispatch.total.log) {
+          key.plots.total = lapply(period.names, function(p){
+                                   knit_expand(file = 'source_scripts/compare/c_p_key_period_dispatch_total.Rmd',  
+                                               period.name = period.name)
+                                   })
+          key.period.dispatch.total = knit_child(text = unlist(key.plots.total))
+        } else {key.period.dispatch.total  = 'Section not run according to input file.'}
+        
+        # Check if zonal dispatch stacks were selected in input file.
+        if (key.period.dispatch.zone.log) {
+          plot.zones = zone.names[!zone.names %in% ignore.zones]
+          key.plots.zone = mapply(function(k,z){ 
+                                  knit_expand(file = 'source_scripts/compare/c_p_key_period_dispatch_zone.Rmd', 
+                                              period.name = p, zone.name = z)}, 
+                                  rep(period.names,length(plot.zones)), rep(plot.zones,each=n.periods))
+          key.period.dispatch.zone = knit_child(text = unlist(key.plots.zone))
+        } else {key.period.dispatch.zone   = 'Section not run according to input file.'}
+        
+        # Check if regional dispatch stacks were selected in input file.
+        if (key.period.dispatch.region.log) {
+          plot.regions = region.names[!region.names %in% ignore.regions]
+          key.plots.region = mapply(function(k,r){
+                                    knit_expand(file = 'source_scripts/compare/c_p_key_period_dispatch_region.Rmd', 
+                                                period.name = p, region.name = r)}, 
+                                    rep(period.names,length(plot.regions)), rep(plot.regions,each=n.periods))
+          key.period.dispatch.region = knit_child(text = unlist(key.plots.region))
+        } else {key.period.dispatch.region = 'Section not run according to input file.'}
+      }
+    } else { key.period.dispatch.total  = 'Problem sourcing or running d_key_period_dispatch.R.'
+             key.period.dispatch.zone   = 'Problem sourcing or running d_key_period_dispatch.R.'
+             key.period.dispatch.region = 'Problem sourcing or running d_key_period_dispatch.R.' }
+  } else { key.period.dispatch.total  = 'You didnt specify key periods. Cannot run this section.'
+           key.period.dispatch.zone   = 'You didnt specify key periods. Cannot run this section.' 
+           key.period.dispatch.region = 'You didnt specify key periods. Cannot run this section.' }
 } else { key.period.dispatch.total  = 'Section not run according to input file.'
          key.period.dispatch.zone   = 'Section not run according to input file.' 
          key.period.dispatch.region = 'Section not run according to input file.' }
@@ -214,40 +152,7 @@ if (curtailment.diff.table) {
 ### 8. Daily Curtailment Difference
 ```{r daily-curtailment-diff}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (daily.curtailment) {
-  # If the data doesn't exist, run the query function. 
-  if ( !exists('interval.curt') ) {
-    # Query curtailment data
-    interval.curt = tryCatch( total_curtailment(interval.generation, interval.avail.cap), error = function(cond) { return('ERROR')})
-  }
-  # If there is a problem with the query return an error.
-  if ( typeof(interval.curt)=='character' ) { 
-    print('ERROR: daily_curtailment function not returning correct results.')
-  } else {
-    
-    # Calculate average curtailment for each day 
-    daily.curt = interval.curt[,.(Curtailment = mean(Curtailment)),by=.(scenario,day,year)] 
-    daily.curt[, timeformat := sprintf("%d %d", day+1, year)]
-    daily.curt[, time := as.POSIXct(strptime(timeformat,'%j %Y'))] # Add time column
-    
-    p1 = line_plot(daily.curt, filters=c('scenario','time'), x.col='time', 
-                   y.col='Curtailment', y.lab='Curtailment (MWh)', color='scenario')
-    p1 = p1 + scale_x_datetime(breaks = date_breaks(width = "1 month"), 
-                               labels = date_format("%b %d"), expand = c(0, 0))
-    print(p1)
-    
-    # Calculate diffs
-    daily.curt[, scenario:=as.character(scenario)]
-    diff.daily.curt = daily.curt[, .(scenario, Curtailment = Curtailment - Curtailment[scenario==ref.scenario]), by=.(time)]
-    
-    p2 = line_plot(diff.daily.curt, filters=c('scenario','time'), x.col='time',
-                   y.col='Curtailment', y.lab='Difference in Curtailment (MWh)', color='scenario')
-    p2 = p2 + scale_x_datetime(breaks = date_breaks(width = "1 month"), 
-                               labels = date_format("%b %d"), expand = c(0, 0))
-    print(p2)
-  }
-  
-} else { print('Section not run according to input file.') }
+source('source_scripts/compare/c_p_daily_curtailment.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -255,41 +160,7 @@ if (daily.curtailment) {
 ### 9. Interval Curtailment Difference
 ```{r interval-curtailment-diff}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (interval.curtailment){
-  # If the data doesn't exist, run the query function. 
-  if ( !exists('interval.curt') ) {
-    # Query curtailment data
-    interval.curt = tryCatch( total_curtailment(interval.generation, interval.avail.cap), error = function(cond) { return('ERROR')})
-  }
-  # Check for errors in the querying function.
-  if ( typeof(interval.curt)=='character' ) { 
-    print('ERROR: daily_curtailment function not returning correct results.')
-  } else {
-    # Sum up the curtailment each interval to get average interval curtailment. Assign an interval to each row.
-    avg.curt = interval.curt[,.(Curtailment_GWh=sum(Curtailment)/1000),by=.(scenario,interval)]
-    avg.curt[, hour := floor((interval-1)*(3600*24/intervals.per.day)/3600)]
-    avg.curt[, minute := floor(((interval-1)*(3600*24/intervals.per.day)/3600-hour)/60)]
-    avg.curt[, second := floor((((interval-1)*(3600*24/intervals.per.day)/3600-hour)/60-minute)/60)]
-    avg.curt[, time := as.POSIXct(strptime(paste(hour,minute,second, sep=":"), "%H:%M:%S"),'UTC')]
-    
-    p1 = line_plot(avg.curt, filters=c('scenario','time'), x.col='time', y.col='Curtailment_GWh',
-                   y.lab='Curtailment (GWh)', color='scenario')
-    p1 = p1 + scale_color_brewer(palette='Set1') +
-         scale_x_datetime(breaks = date_breaks(width = "2 hour"), labels = date_format("%H:%M"), expand = c(0, 0))
-    print(p1)
-    
-    # Calculate diffs
-    avg.curt[, scenario:=as.character(scenario)]
-    diff.curt = avg.curt[, .(scenario, Curtailment_GWh = Curtailment_GWh - Curtailment_GWh[scenario==ref.scenario]), by=.(time)]
-    
-    p2 = line_plot(diff.curt, filters=c('scenario','time'), x.col='time', y.col='Curtailment_GWh',
-                   y.lab='Difference in Curtailment (GWh)', color='scenario')
-    p2 = p2 + scale_color_brewer(palette='Set1') +
-         scale_x_datetime(breaks = date_breaks(width = "2 hour"), labels = date_format("%H:%M"), expand = c(0, 0))
-    print(p1)
-    print(p2)
-  }
-} else { print('Section not run according to input file.') }
+source('source_scripts/compare/c_p_interval_curtailment.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -359,25 +230,7 @@ source("source_scripts/compare/c_p_reserves_stack.R")
 ## 20. Region Price Duration Curves
 ```{r price-duration-curve-scen, fig.height=r.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if(price.duration.curve) {
-  # If there is a problem with the query return an error, else create the plots.
-  if ( typeof(interval.region.price)=='character' ) { 
-    print('ERROR: interval.region.price not correct. Cannot run this section')
-  } else {
-    
-    # If price duration curve is selected in the input file, int.data.region should be created.
-    region.data = interval.region.price[!name %in% ignore.regions & property == 'Price', 
-                                        .(scenario,name,time,value) ]
-    # Create plot
-    p.1 = price_duration_curve(region.data, filters = c('scenario','name'))
-    p.1 = p.1 + facet_wrap(~area, ncol=3) + scale_color_brewer(palette="Set1")
-    # Create plot with slightly different y-axis limit.
-    p.2 = p.1 + coord_cartesian(ylim=c(0,200))
-
-    print(p.1)
-    print(p.2)
-  }
-} else { print('Section not run according to input file.') }
+source("source_scripts/compare/c_p_price_duration_curve.R")
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -387,35 +240,44 @@ if(price.duration.curve) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
 if (commit.dispatch.region | commit.dispatch.zone) {
-  
-  source('source_scripts/d_DA_RT_commit_dispatch.R') # Call this R script which created the data needed for plotting.
-  
-  # As long as the file exists (previous source found the R script) this loop runs
-  if ( exists('plot.data.all') ) {
-    # Check to see if the right data is ready for plotting.
-    if ( typeof(plot.data.all)=='character' ) {
-      print('ERROR: cap_committed function not returning correct results.')
-    } else {
-      # Check if zonal DA-RT plots were selected in input file. If so create a plot for each zone
-      if (commit.dispatch.zone) {
-        da.rt.zone = mapply(function(p,z){knit_expand(file = 'source_scripts/compare/c_p_DA_RT_commit_dispatch_zone.Rmd', 
-                                                      period.name = p, zone.name = z)},
-                            rep(period.names,length(zone.names)), rep(zone.names,each=n.periods))
-        da.rt.zone = knit_child(text = unlist(da.rt.zone))
-      } else {da.rt.zone = 'Section not run according to input file.'}
-      
-      # Create a plot for each region if selected.
-      if (commit.dispatch.region) {  
-        da.rt.region = mapply(function(p,r){knit_expand(file = 'source_scripts/compare/c_p_DA_RT_commit_dispatch_region.Rmd', 
-                                                        period.name = p, region.name = r)},
-                              rep(period.names,length(region.names)), rep(region.names,each=n.periods))
-        da.rt.region = knit_child(text = unlist(da.rt.region))
-      } else {da.rt.region = 'Section not run according to input file.'}
-    }
-  } else { da.rt.zone = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'
-         da.rt.region = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'}
-  
-} else { da.rt.zone = 'Section not run according to input file.'
+  if (length(da.rt.types)>0) {
+    source('source_scripts/d_DA_RT_commit_dispatch.R') # Call this R script which created the data needed for plotting.
+    
+    # As long as the file exists (previous source found the R script) this loop runs
+    if ( exists('plot.data.all') ) {
+      # Check to see if the right data is ready for plotting.
+      if ( typeof(plot.data.all)=='character' ) {
+        print('ERROR: cap_committed function not returning correct results.')
+      } else {
+        # Check if zonal DA-RT plots were selected in input file. If so create a plot for each zone
+        if (commit.dispatch.zone) {
+          plot.zones = zone.names[!zone.names %in% ignore.zones]
+          da.rt.zone = mapply(function(p,z){knit_expand(file = 'source_scripts/compare/c_p_DA_RT_commit_dispatch_zone.Rmd', 
+                                                        period.name = p, zone.name = z)},
+                              rep(period.names,length(plot.zones)), rep(plot.zones,each=n.periods))
+          da.rt.zone = knit_child(text = unlist(da.rt.zone))
+        } else {da.rt.zone = 'Section not run according to input file.'}
+        
+        # Create a plot for each region if selected.
+        if (commit.dispatch.region) {  
+          plot.regions = region.names[!region.names %in% ignore.regions]
+          da.rt.region = mapply(function(p,r){knit_expand(file = 'source_scripts/compare/c_p_DA_RT_commit_dispatch_region.Rmd', 
+                                                          period.name = p, region.name = r)},
+                                rep(period.names,length(plot.regions)), rep(plot.regions,each=n.periods))
+          da.rt.region = knit_child(text = unlist(da.rt.region))
+        } else {da.rt.region = 'Section not run according to input file.'} 
+      }
+    } else if ( typeof(interval.da.committment) == 'character' ) { 
+        da.rt.zone = 'INPUT ERROR: interval.da.committment has errors. Cannot run this section.'
+      da.rt.region = 'INPUT ERROR: interval.da.committment has errors. Cannot run this section.'
+    } else if ( typeof(interval.avail.cap) == 'character' ) { 
+        da.rt.zone = 'INPUT ERROR: interval.avail.cap has errors. Cannot run this section.'
+      da.rt.region = 'INPUT ERROR: interval.da.committment has errors. Cannot run this section.'
+    } else {   da.rt.zone = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'
+             da.rt.region = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.' }
+  } else {   da.rt.zone = 'You didnt specify generation types for DA-RT plots. Plots cannot be created.'
+           da.rt.region = 'You didnt specify generation types for DA-RT plots. Plots cannot be created.' }
+} else {   da.rt.zone = 'Section not run according to input file.'
          da.rt.region = 'Section not run according to input file.' }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
