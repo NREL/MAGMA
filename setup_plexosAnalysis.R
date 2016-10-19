@@ -140,7 +140,7 @@ if(length(na.omit(inputs$Start.Time)) > 0){
 }
 
 # Location for saved figures
-fig.path.name = file.path(as.character(na.omit(inputs$Fig.Path)))
+fig.path.name = as.character(na.omit(inputs$Fig.Path))
 # If no figure path provided, assume figures should go in a directory called "plots"
 # in the folder containing the database
 if (length(fig.path.name)==0){
