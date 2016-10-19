@@ -160,6 +160,8 @@ dispatch_plot <- function(gen.data, load.data){
   gen.data[, value:=value/1000]
   load.data[, value:=value/1000]
   seq.py.t = pretty_axes(gen.data, load.data, filters = 'time')
+  
+  setorder(gen.data,Type)
 
   # Plot
   p1 = ggplot(gen.data, aes(time, value, group=Type, fill=Type, order=as.numeric(Type)), color="black")+

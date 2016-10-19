@@ -9,14 +9,8 @@ if ( typeof(yr.gen.scen)=='character' ) {
   print('ERROR: gen_by_type function not returning correct results.')
 } else {
 
-    
-  py = pretty(c(0,gen.sum$TWh), n=5, min.n = 5)
-  seq.py = seq(min(py[1],0), py[length(py)], (py[2]-py[1]))
-
   # Call function to create plot and print
-  [p1, seq.py] = gen_diff_stack_plot(yr.gen.scen, r.load)
-  # This automatically creates the y-axis scaling
-  p1 = p1 + scale_y_continuous(breaks=seq.py, limits=c(min(py), max(py)), expand=c(0,0), label=comma)
+  p1 = gen_diff_stack_plot(yr.gen.scen, r.load)
   print(p1)
 
 }

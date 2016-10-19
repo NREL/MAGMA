@@ -15,12 +15,12 @@ knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, incl
                       fig.path=fig.path.name, dev='png', fig.width=12)
 
 # Set dynamic height for figure in regional generation chunk
-if (exists('zone.names') { z.height = ( length(zone.names) %/% 3 + length(zone.names) %% 3 ) * 5
+if (exists('zone.names')) { z.height = ( length(zone.names) %/% 3 + length(zone.names) %% 3 ) * 5
   } else { z.height = 5 }
-if (exists('region.names') { r.height = ( length(region.names) %/% 3 + length(region.names) %% 3 ) * 5
+if (exists('region.names')) { r.height = ( length(region.names) %/% 3 + length(region.names) %% 3 ) * 5
   } else {r.height = 5 }
-if (exists('reserve.names') { res.height = ( length(reserve.names) %/% 2 + length(reserve.names) %% 2 ) * 5
-  } else { res.height = 5 })
+if (exists('reserve.names')) { res.height = ( length(reserve.names) %/% 2 + length(reserve.names) %% 2 ) * 5
+  } else { res.height = 5 }
 s.height = ( length(db.loc) ) * 6
 p.height = ( length(period.names) %/% 2 + length(period.names) %% 2 ) * 5
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -143,14 +143,14 @@ if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.di
       if (key.period.dispatch.total.log) {
         key.plots.total = lapply(period.names, function(p){
                                  knit_expand(file = 'source_scripts/compare/c_p_key_period_dispatch_total.Rmd', 
-                                             period.name = period.name)
+                                             period.name = p)
                                  })
         key.period.dispatch.total = knit_child(text = unlist(key.plots.total))
       } else {key.period.dispatch.total  = 'Section not run according to input file.'}
       
       # Check if zonal dispatch stacks were selected in input file.
       if (key.period.dispatch.zone.log) {
-        key.plots.zone = mapply(function(k,z){
+        key.plots.zone = mapply(function(p,z){
                                 knit_expand(file = 'source_scripts/compare/c_p_key_period_dispatch_zone.Rmd', 
                                             period.name = p, zone.name = z)}, 
                                 rep(period.names,length(zone.names)), rep(zone.names,each=n.periods))
@@ -159,7 +159,7 @@ if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.di
       
       # Check if regional dispatch stacks were selected in input file.
       if (key.period.dispatch.region.log) {
-        key.plots.region = mapply(function(k,r){
+        key.plots.region = mapply(function(p,r){
                                 knit_expand(file = 'source_scripts/compare/c_p_key_period_dispatch_region.Rmd', 
                                             period.name = p, region.name = r)}, 
                                 rep(period.names,length(region.names)), rep(region.names,each=n.periods))
