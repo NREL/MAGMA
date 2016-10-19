@@ -10,29 +10,12 @@ figure.height = s.height
 
 ```{r key-period-dispatch-scen-plots-zone-{{period.name}}-{{zone.name}}, fig.width=figure.width, fig.height=figure.height, include=TRUE}
 
-# ###############################################################################
-# Zone Data
-# ###############################################################################   
-
-# this is just for scaling the y-axis (either by load or generation, whichever is bigger)
-stack.z = gen.type.zone[Period==p.name & Zone==z.name, .(value=sum(value)), by=.(scenario,time)]
-
-# Check to make sure there is actually generation data for this zone If not, no plot is crated.
-if ( length(stack.z$value)>0 & sum(stack.z$value)>0 ) {
-  
-  # If load is larger than generation, reassign y-axis height so load isn't cut off 
-  if (max(gen.load.zone[Period==p.name & Zone==z.name, value])>max(stack.z$value)){
-    stack.z = gen.load.zone[Period==p.name & Zone==z.name, .(value=sum(value)), by=.(scenario,time)]
-  }
-  
-  # #############################################################################################################
-  # Zone database plots
-  # #############################################################################################################
+if (length(gen.type.total[Period==p.name, value])>0 & sum(gen.type.total[Period==p.name, value])>0 ) {
   p = dispatch_plot(gen.type.zone[Period==p.name & Zone==z.name, ], 
-                    gen.load.zone[Period==p.name & Zone==z.name, ])
-  print(p + facet_wrap(~scenario, ncol = 1))
+                    gen.load.zone[Period==p.name & Zone==z.name, ], filters = 'scenario')
+  print( p + facet_wrap(~scenario, ncol=1) )
+} else{ print('No generation found for this period and zone.') }
   
-} else { print('No generation found for this period and zone.')}
 
 ```
 

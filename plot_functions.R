@@ -153,15 +153,20 @@ gen_diff_stack_plot <- function(gen.data, load.data, filters=NULL){
 }
 
 
-dispatch_plot <- function(gen.data, load.data){
+dispatch_plot <- function(gen.data, load.data, filters=NULL){
   # Make dispatch plot
 
   # Get axis limits
   gen.data[, value:=value/1000]
   load.data[, value:=value/1000]
-  seq.py.t = pretty_axes(gen.data, load.data, filters = 'time')
-  
-  setorder(gen.data,Type)
+
+  # Create list of filters to separate data by
+  if(is.null(filters)){
+    agg.filters = "time"
+  }else{
+    agg.filters = c("time",filters)
+  }
+  seq.py.t = pretty_axes(gen.data, load.data, filters = agg.filters)
 
   # Plot
   p1 = ggplot(gen.data, aes(time, value, group=Type, fill=Type, order=as.numeric(Type)), color="black")+

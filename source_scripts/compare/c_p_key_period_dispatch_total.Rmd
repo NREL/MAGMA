@@ -9,17 +9,13 @@ figure.height = s.height
 
 ```{r key-period-dispatch-scen-plots-total-{{period.name}}, fig.width=figure.width, fig.height=figure.height, include=TRUE}
 
-# #############################################################################################################
-# Total database plots
-# #############################################################################################################
-p = dispatch_plot(gen.type.total[Period==p.name, ],gen.load.total[Period ==p.name,])
-
-print(p + facet_wrap(~scenario, ncol = 1))
-
+# Make plot if data exists for this region
+if (length(gen.type.total[Period==p.name, value])>0 & sum(gen.type.total[Period==p.name, value])>0 ) {
+  p = dispatch_plot(gen.type.total[Period==p.name, ], gen.load.total[Period==p.name, ], filters = 'scenario')
+  p = p + facet_wrap(~scenario, ncol=1)
+} else{ p = 'Data does not exist for this period'}
+print(p)
 
 ```
 
 
-
-  
-  

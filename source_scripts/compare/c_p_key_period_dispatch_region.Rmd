@@ -10,26 +10,12 @@ figure.height = s.height
 
 ```{r key-period-dispatch-scen-plots-region-{{period.name}}-{{region.name}}, fig.width=figure.width, fig.height=figure.height, include=TRUE}
 
-# ###############################################################################
-# Region plot height
-# ###############################################################################  
+if (length(gen.type.total[Period==p.name, value])>0 & sum(gen.type.total[Period==p.name, value])>0 ) {
+  p = dispatch_plot(gen.type.region[Period==p.name & Region==r.name, ], 
+                    gen.load.region[Period==p.name & Region==r.name, ], filters = 'scenario')
+  print( p + facet_wrap(~scenario, ncol=1) )
 
-# Check to make sure there is actually generation data for this region. If not, no plot is crated.
-stack.r = gen.type.region[Period==p.name & Region==r.name, .(value=sum(value)),by=.(scenario,time)]
-
-if ( length(stack.r$value)>0 & sum(stack.r$value)>0 ) {
-  
-  # If load is larger than generation, reassign the y-axis height so load isn't cut off.
-  if (max(gen.load[Period==p.name & Region==r.name, value])>max(stack.r$value)){
-    stack.r = gen.load[Period==p.name & Region==r.name, .(value=sum(value)), by=.(scenario,time)]
-  }
-  
-p = dispatch_plot(gen.type.region[Period==p.name & Region==r.name,],
-                  gen.load.region[Period==p.name & Region==r.name,])
-
-print(p + facet_wrap(~scenario, ncol = 1))
-  
-} else { print('No generation found for this period and region.')}
+} else{ print('No generation found for this period and region.')}
 ```
 
 

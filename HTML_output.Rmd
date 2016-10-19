@@ -518,7 +518,7 @@ source('source_scripts/p_price_duration_curve.R')
 # Check if this section was selected to run in the input file
 if (commit.dispatch.region | commit.dispatch.zone) {
   if (length(da.rt.types)>0) {
-  source('source_scripts/d_DA_RT_commit_dispatch.R') # Call this R script which created the data needed for plotting.
+    source('source_scripts/d_DA_RT_commit_dispatch.R') # Call this R script which created the data needed for plotting.
   
     # As long as the file exists (previous source found the R script) this loop runs
     if ( exists('plot.data.all') ) {
