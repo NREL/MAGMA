@@ -118,7 +118,8 @@ gen_diff_stack_plot <- function(gen.data, load.data, filters=NULL){
 
   # gen.sum is just used to set the maximum height on the plot, see pretty() fcn below
   gen.sum = rbindlist(list(dat.pos[, .(TWh = sum(TWh)), by=load.filters], 
-                           dat.neg[, .(TWh = sum(TWh)), by=load.filters]))  
+                           dat.neg[, .(TWh = sum(TWh)), by=load.filters]))
+  gen.sum[,value := TWh]
   seq.py = pretty_axes(gen.sum)
 
   # Calculate difference in load

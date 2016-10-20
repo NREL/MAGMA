@@ -51,7 +51,7 @@ source('source_scripts/compare/c_p_zone_gen_stacks.Rmd')
 ## 3. Regional Generation
 ```{r region-gen-diff-stacks, fig.height=r.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/compare/c_p_region_gen_stacks.Rmd')
+source('source_scripts/compare/c_p_region_gen_stacks.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 

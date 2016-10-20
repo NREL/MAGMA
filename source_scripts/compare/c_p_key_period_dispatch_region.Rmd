@@ -10,7 +10,7 @@ figure.height = s.height
 
 ```{r key-period-dispatch-scen-plots-region-{{period.name}}-{{region.name}}, fig.width=figure.width, fig.height=figure.height, include=TRUE}
 
-if (length(gen.type.total[Period==p.name, value])>0 & sum(gen.type.total[Period==p.name, value])>0 ) {
+if (nrow(gen.type.region[Period==p.name & Region==r.name,])>0 ) {
   p = dispatch_plot(gen.type.region[Period==p.name & Region==r.name, ], 
                     gen.load.region[Period==p.name & Region==r.name, ], filters = 'scenario')
   print( p + facet_wrap(~scenario, ncol=1) )
