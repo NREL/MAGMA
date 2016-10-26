@@ -77,7 +77,8 @@ if ( region.zone.flow.table | total.gen.stack | region.gen.stacks | zone.gen.sta
 }
 
 if ( region.zone.flow.table | total.gen.stack | region.gen.stacks | zone.gen.stacks |
-     individual.region.stacks.log | region.zone.gen.table ) {
+     individual.region.stacks.log | region.zone.gen.table | key.period.dispatch.total.log | key.period.dispatch.region.log | 
+     key.period.dispatch.zone.log | commit.dispatch.zone | commit.dispatch.region) {
   # Total zone load
   total.zone.load    = tryCatch( total_zone_load(db), error = function(cond) { return('ERROR') } ) 
   # Aggregate zone load and get unique names
