@@ -142,12 +142,27 @@ if(length(na.omit(inputs$Start.Time)) > 0){
 }
 
 # Location for saved figures
-fig.path.name = file.path(as.character(na.omit(inputs$Fig.Path)))
-# If no figure path provided, assume figures should go in a directory called "plots"
-# in the folder containing the database
-if (length(fig.path.name)==0){
-  fig.path.name = file.path(db.loc,'plots')
-}
+tryCatch({
+  dir.create(fig.path.name)
+  fig.path.name
+}, warning = function(w){
+  if(!dir.exists(fig.path.name)){
+    print("Cannot create that figure directory, putting figures in subdirectory 'plots' in database location")
+    # If figure path does not exist, assume figures should go in a directory 
+    # called "plots" in the folder containing the database
+    file.path(db.loc,'plots')
+  } else{
+    fig.path.name
+  }
+},
+error = function(e){
+  print("Cannot create that figure directory, putting figures in subdirectory 'plots' in database location")
+  # If figure path does not exist, assume figures should go in a directory 
+  # called "plots" in the folder containing the database
+  file.path(db.loc,'plots')
+})
+# Ensure path has a / at the end
+fig.path.name = file.path(fig.path.name,'')
 
 # Zones to ignore for plotting
 ignore.zones = as.character(na.omit(inputs$Ignore.Zones))

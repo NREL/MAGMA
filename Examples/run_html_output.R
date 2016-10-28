@@ -2,11 +2,13 @@
 #------------------------------------------------------------------------------|
 # USER INPUT: set input parameters ----
 #------------------------------------------------------------------------------|
-magma.dir = 'C:/Users/moconnel/documents/MAGMA'
-input.csv = '//plexossql/data/moconnel/MAGMA/input_data_example_EI.csv'
-output.dir = '//plexossql/data/moconnel/MAGMA/reports'
-output.name = 'HTML_output_EI_bloom.html'
-query.data = TRUE
+magma.dir = '<Main directory where MAGMA files are located>'
+input.csv = '<This should point to your input data CSV file>'
+output.dir = '<Directory where HTML reports should be saved>'
+fig.path.name = '<Path to save figures>'
+output.name = '<Desired output file name. Include .html at end.>'
+query.data = '<TRUE if you want to create new queries or 
+               FALSE if you want to load existing data>'
 load.data = '<Name of file to load if query.data=FALSE >'
 #------------------------------------------------------------------------------|
 # Run code to create HTML
