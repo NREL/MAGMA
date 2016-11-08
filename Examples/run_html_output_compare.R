@@ -29,7 +29,6 @@ inputs[inputs==""]=NA
 inputs = data.table(inputs)
 
 # Either query data from database or load existing data
-source(file.path('query_functions.R'))
 source(file.path('setup_plexosAnalysis.R'))
 if (query.data){
     source(file.path('setup_dataQueries.R'), echo=TRUE)
