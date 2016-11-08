@@ -120,7 +120,7 @@ gen_diff_stack_plot <- function(gen.data, load.data, filters=NULL){
   gen.sum = rbindlist(list(dat.pos[, .(TWh = sum(TWh)), by=load.filters], 
                            dat.neg[, .(TWh = sum(TWh)), by=load.filters]))
   gen.sum[,value := TWh]
-  seq.py = pretty_axes(gen.sum)
+  seq.py = pretty_axes(gen.sum,filters = filters)
 
   # Calculate difference in load
   load.scen = load.data[, .(value = sum(value)/1000), by=load.filters]

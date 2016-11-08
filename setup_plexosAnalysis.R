@@ -70,7 +70,7 @@ if (length(db.day.ahead.loc)==0) { db.day.ahead.loc = db.loc }
 has.multiple.scenarios = (length(db.loc)>1)
 
 # reference scenario, used if comparing scenarios
-ref.scenario = inputs$ref.scenario[!is.na(inputs$ref.scenario)]
+ref.scenario = as.character(inputs$ref.scenario[!is.na(inputs$ref.scenario)])
 if (length(ref.scenario)>1){
   message('\nYou have more than one reference scenario. This is likely to cause problems with comparison calculations')
 } else{
@@ -210,8 +210,15 @@ if (is.na(inputs$Gen.Region.Zone.Mapping.Filename)[1]){
   region.zone.mapping = data.table(unique(gen.mapping[,c('name','region','zone')]))
   setnames(region.zone.mapping, c("region","zone"), c("Region","Zone"))
 } else{
-  region.zone.mapping = data.table(read.csv(as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename)), 
-                        stringsAsFactors=FALSE))
+  region.zone.mapping = data.table(read.csv(as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename)[1]), 
+                                            stringsAsFactors=FALSE))
+  if(length(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename))>1){
+    warning("More than one Gen.Region.Zone.Mapping.Filename found... I'll create a unique combination for you.")
+    for (i in 2:length(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename))){
+      region.zone.mapping = rbind(region.zone.mapping,data.table(read.csv(as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename)[i]), 
+                                                                          stringsAsFactors=FALSE)))
+    }
+  }
 }
 region.zone.mapping = unique(region.zone.mapping[, .(name, Region, Zone)])
 setkey(region.zone.mapping,name)
