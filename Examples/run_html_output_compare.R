@@ -15,6 +15,8 @@ save.data.name = '<Name of file to save data. Will save in output.dir>'
 #------------------------------------------------------------------------------|
 # Run code to create HTML
 #------------------------------------------------------------------------------|
+pacman::p_load(data.table)
+
 setwd(magma.dir)
 # Sourcing the setup file and required functions
 source(file.path('query_functions.R'))
@@ -27,7 +29,6 @@ inputs[inputs==""]=NA
 inputs = data.table(inputs)
 
 # Either query data from database or load existing data
-source(file.path('query_functions.R'))
 source(file.path('setup_plexosAnalysis.R'))
 if (query.data){
     source(file.path('setup_dataQueries.R'), echo=TRUE)
