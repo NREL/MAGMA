@@ -167,24 +167,26 @@ if (length(interfaces) > length(scen.pal)){
 }
 
 run.rplx=F
-if(length(list.files(pattern = "\\.zip$",path=db.loc))!=0 ) {
-  if(length(list.files(pattern = "\\.db$",path=db.loc))==0) {
-    message(paste0('The .db file is absent from ',db.loc))
-    run.rplx=T
-  } else if(any(file.info(file.path(db.loc,list.files(pattern = "\\.db$",path=db.loc)))$mtime <
-                file.info(file.path(db.loc,list.files(pattern = "\\.zip$",path=db.loc)))$mtime, na.rm=TRUE)) {
-    message(paste0('The db is older than the zip or the .db file in ',db.loc))
-    run.rplx=T
-  } else {message(paste0('\nFound .db solution file: ', list.files(pattern='\\.db$',path=db.loc), '\n'))}
-  if(run.rplx) {
-    if(readline('Do you want to run the rPLEXOS db creation tool now? (y/n):')=='y' | !interactive()){
-      message('Running process_folder')
-      process_folder(db.loc)
-    } else {message('You need to run rPLEXOS to process your solution or point to the correct solution folder.')}
-  } 
-} else if (length(list.files(pattern = '\\.db$', path=db.loc))!=0 ) {
-  message(paste0('\nFound .db solution file: ', list.files(pattern='\\.db$',path=db.loc), '\n'))
-} else {message('No .zip or .db file... are you in the right directory?')}
+for (i in 1:length(db.loc)) { 
+  if(length(list.files(pattern = "\\.zip$",path=db.loc[i]))!=0 ) {
+    if(length(list.files(pattern = "\\.db$",path=db.loc[i]))==0) {
+      message(paste0('The .db file is absent from ',db.loc[i]))
+      run.rplx=T
+    } else if(any(file.info(file.path(db.loc[i],list.files(pattern = "\\.db$",path=db.loc[i])))$mtime <
+                  file.info(file.path(db.loc[i],list.files(pattern = "\\.zip$",path=db.loc[i])))$mtime, na.rm=TRUE)) {
+      message(paste0('The db is older than the zip or the .db file in ',db.loc[i]))
+      run.rplx=T
+    } else {message(paste0('\nFound .db solution file: ', list.files(pattern='\\.db$',path=db.loc[i]), '\n'))}
+    if(run.rplx) {
+      if(readline('Do you want to run the rPLEXOS db creation tool now? (y/n):')=='y' | !interactive()){
+        message('Running process_folder')
+        process_folder(db.loc[i])
+      } else {message('You need to run rPLEXOS to process your solution or point to the correct solution folder.')}
+    } 
+  } else if (length(list.files(pattern = '\\.db$', path=db.loc[i]))!=0 ) {
+    message(paste0('\nFound .db solution file: ', list.files(pattern='\\.db$',path=db.loc[i]), '\n'))
+  } else {message('No .zip or .db file... are you in the right directory?')}
+}
 # -----------------------------------------------------------------------
 # Open the database file ( must already have created this using rplexos ) 
 db = plexos_open(db.loc, basename(db.loc))
