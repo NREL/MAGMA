@@ -15,6 +15,8 @@ save.data.name = '<Name of file to save data. Will save in output.dir>'
 #------------------------------------------------------------------------------|
 # Run code to create HTML
 #------------------------------------------------------------------------------|
+pacman::p_load(data.table)
+
 setwd(magma.dir)
 # Sourcing the setup file and required functions
 source(file.path('query_functions.R'))
