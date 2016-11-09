@@ -111,6 +111,7 @@ PLEXOS must report the following data in order for all scripts to work. If you t
 ##### Generator:
  + Generation
  + Available Capacity
+ + Units Generating
 
 ##### Region:
  + Load

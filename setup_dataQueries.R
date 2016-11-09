@@ -27,21 +27,12 @@ if ( annual.cost.table ) {
   # Total emissions cost
   total.emissions.cost = tryCatch( total_emissions(db), error = function(cond) { return('ERROR') } ) 
   if (typeof(total.emissions.cost)=='character') { message('\nMissing total generator emissions cost data from solution .db file.')}
-}
-
-if ( annual.cost.table ) {
   # Total fuel cost
   total.fuel.cost      = tryCatch( total_fuel(db), error = function(cond) { return('ERROR') } ) 
   if (typeof(total.fuel.cost)=='character') { message('\nMissing total generator fuel cost data from solution .db file.')}
-}
-
-if ( annual.cost.table ) {
   # Total start and shutdown cost
   total.ss.cost        = tryCatch( total_ss(db), error = function(cond) { return('ERROR') } ) 
   if (typeof(total.ss.cost)=='character') { message('\nMissing total generator start and shutdown cost data from solution .db file.')}
-}
-
-if ( annual.cost.table ) {
   # Total VO&M cost
   total.vom.cost       = tryCatch( total_vom(db), error = function(cond) { return('ERROR') } ) 
   if (typeof(total.vom.cost)=='character') { message('\nMissing total generator VO&M cost data from solution .db file.')}
@@ -77,7 +68,8 @@ if ( region.zone.flow.table | total.gen.stack | region.gen.stacks | zone.gen.sta
 }
 
 if ( region.zone.flow.table | total.gen.stack | region.gen.stacks | zone.gen.stacks |
-     individual.region.stacks.log | region.zone.gen.table ) {
+     individual.region.stacks.log | region.zone.gen.table | key.period.dispatch.total.log | key.period.dispatch.region.log | 
+     key.period.dispatch.zone.log | commit.dispatch.zone | commit.dispatch.region) {
   # Total zone load
   total.zone.load    = tryCatch( total_zone_load(db), error = function(cond) { return('ERROR') } ) 
   # Aggregate zone load and get unique names
@@ -154,7 +146,7 @@ if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period
     }
   if (exists('interval.avail.cap')) { 
     if (typeof(interval.avail.cap)=='character') { 
-      message('\nMissing interval generator available capacity data from solution .db file.')
+      message('\nMissing interval generator available capacity or units generating data from solution .db file.')
       }
     }
 }

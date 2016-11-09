@@ -13,8 +13,8 @@ if ( typeof(interval.region.load)=='character' ) {
 
     # If the query doesn't work, return an error. 
     if ( typeof(int.gen)=='character' ) { 
-      key.period.gen = 'ERROR: interval_gen function not returning correct results.'
-      print('ERROR: interval_gen function not returning correct results.')
+      key.period.gen = 'ERROR: interval_generation function not returning correct results.'
+      print('ERROR: interval_generation function not returning correct results.')
     } else {
       
       # From the full year of data, pull out only the data corresponding to the key periods specified in the input file. 

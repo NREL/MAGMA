@@ -77,6 +77,13 @@ if (length(ref.scenario)>1){
   if (length(ref.scenario)==0 & has.multiple.scenarios){
     message('\nYou have not provided a reference scenario. Comparison plots will not work.')
   }
+
+
+# Using CSV file to map generator types to names?
+use.gen.type.mapping.csv = as.logical(na.exclude(inputs$Using.Gen.Type.Mapping.CSV))
+if (length(use.gen.type.mapping.csv)==0) { 
+  use.gen.type.mapping.csv = FALSE
+  message('\nMust select TRUE or FALSE for if using generator generation type mapping file!') 
 }
 
 # Reassign zones based on region to zone mapping file?
@@ -140,12 +147,27 @@ if(length(na.omit(inputs$Start.Time)) > 0){
 }
 
 # Location for saved figures
-fig.path.name = as.character(na.omit(inputs$Fig.Path))
-# If no figure path provided, assume figures should go in a directory called "plots"
-# in the folder containing the database
-if (length(fig.path.name)==0){
-  fig.path.name = file.path(db.loc,'plots')
-}
+tryCatch({
+  dir.create(fig.path.name)
+  fig.path.name
+}, warning = function(w){
+  if(!dir.exists(fig.path.name)){
+    print("Cannot create that figure directory, putting figures in subdirectory 'plots' in database location")
+    # If figure path does not exist, assume figures should go in a directory 
+    # called "plots" in the folder containing the database
+    file.path(db.loc,'plots')
+  } else{
+    fig.path.name
+  }
+},
+error = function(e){
+  print("Cannot create that figure directory, putting figures in subdirectory 'plots' in database location")
+  # If figure path does not exist, assume figures should go in a directory 
+  # called "plots" in the folder containing the database
+  file.path(db.loc,'plots')
+})
+# Ensure path has a / at the end
+fig.path.name = file.path(fig.path.name,'')
 
 # Zones to ignore for plotting
 ignore.zones = as.character(na.omit(inputs$Ignore.Zones))

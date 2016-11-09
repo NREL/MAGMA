@@ -5,6 +5,7 @@
 magma.dir = '<Main directory where MAGMA files are located>'
 input.csv = '<This should point to your input data CSV file>'
 output.dir = '<Directory where HTML reports should be saved>'
+fig.path.name = '<Path to save figures>'
 output.name = '<Desired output file name. Include .html at end.>'
 query.data = '<TRUE if you want to create new queries or 
                FALSE if you want to load existing data>'
