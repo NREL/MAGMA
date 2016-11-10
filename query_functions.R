@@ -285,12 +285,12 @@ interval_reserves = function(interval.reserve.provision) {
 # Total run and interval level interface flow data, for specific interfaces that are specified in the input file. 
 
 annual_interface_flows = function(total.interface.flow) {
-  year.flows = total.interface.flow[name %in% interfaces,.(name,time,value)]  
+  year.flows = total.interface.flow[name %in% interfaces,.(scenario,name,time,value)]  
   return(year.flows[,.(name,GWh=value)])
 }
 
 interval_interface_flows = function(interval.interface.flow) {
-  int.flows = interval.interface.flow[name %in% interfaces,.(name,time,value)]   
+  int.flows = interval.interface.flow[name %in% interfaces,.(scenario,name,time,value)]   
   return(int.flows)
 }
 
@@ -302,8 +302,8 @@ interval_interface_flows = function(interval.interface.flow) {
 
 region_stats = function(total.region.load, total.region.imports, total.region.exports, total.region.ue) {
   r.data = rbindlist(list(total.region.load, total.region.imports, total.region.exports, total.region.ue))
-  r.data = r.data[, .(value=sum(value)), by=.(name,property)]
-  r.stats = dcast.data.table(r.data, name~property, value.var = 'value')
+  r.data = r.data[, .(value=sum(value)), by=.(name,property,scenario)]
+  r.stats = dcast.data.table(r.data, name+scenario~property, value.var = 'value')
   return(r.stats)
 }
 
@@ -313,13 +313,13 @@ zone_stats = function(total.region.load, total.region.imports, total.region.expo
     setnames(z.data,'name','Region')
     setkey(z.data,Region)
     setkey(rz.unique,Region)
-    z.stats = z.data[rz.unique][, .(value = sum(value)), by = .(Zone,property)] %>%
-      dcast.data.table(Zone~property, value.var = 'value') 
+    z.stats = z.data[rz.unique][, .(value = sum(value)), by = .(Zone,property,scenario)] %>%
+      dcast.data.table(Zone+scenario~property, value.var = 'value') 
     setnames(z.stats,'Zone','name')
   } else {
     z.data = rbindlist(list(total.zone.load, total.zone.imports, total.zone.exports, total.zone.ue))
-    z.data = z.data[,.(value=sum(value)),by=.(name,property)]
-    z.stats = dcast.data.table(z.data, name~property, value.var = 'value')
+    z.data = z.data[,.(value=sum(value)),by=.(name,property,scenario)]
+    z.stats = dcast.data.table(z.data, name+scenario~property, value.var = 'value')
   }
   return(z.stats)
 }
@@ -354,8 +354,8 @@ zone_load = function(total.region.load, total.zone.load) {
 
 capacity_factor = function(total.generation, total.installed.cap) {
   
-  setkey(total.installed.cap,name)
-  setkey(total.generation,name)
+  setkey(total.installed.cap,name,scenario)
+  setkey(total.generation,name,scenario)
   
   # Pull out installed capacity and generation and match them to generation type by generator name. 
   mc = total.installed.cap[, Type:=gen.type.mapping[name] ]
@@ -368,11 +368,11 @@ capacity_factor = function(total.generation, total.installed.cap) {
   
   # Calculates generation type total capacity and generation for the full run
   c.factor = mc[,.(name,`MaxCap (GWh)`,Type)][gen[,.(name,`Gen (GWh)`)]]
-  c.factor = c.factor[,.(`MaxCap (GWh)`=sum(`MaxCap (GWh)`),`Gen (GWh)`=sum(`Gen (GWh)`)),by=.(Type)]
+  c.factor = c.factor[,.(`MaxCap (GWh)`=sum(`MaxCap (GWh)`),`Gen (GWh)`=sum(`Gen (GWh)`)),by=.(Type,scenario)]
   
   # Calculate capacity factor for each generation type
   n.hours = length(seq(from = first.day, to = last.day, by = 'hour'))
-  c.factor = c.factor[,.(`Capacity Factor (%)` = `Gen (GWh)`/(`MaxCap (GWh)`/1000*n.hours)*100),by=.(Type, `MaxCap (GWh)`, `Gen (GWh)`)]
+  c.factor = c.factor[,.(`Capacity Factor (%)` = `Gen (GWh)`/(`MaxCap (GWh)`/1000*n.hours)*100),by=.(Type,scenario, `MaxCap (GWh)`, `Gen (GWh)`)]
   
   # make sure names of total.generation and total.installed.cap aren't changed
   try(setnames(total.generation, 'Gen (GWh)', 'value'), silent=TRUE)

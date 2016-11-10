@@ -17,6 +17,7 @@ save.data.name = '<Name of file to save data. Will save in output.dir>'
 # Run code to create HTML
 #------------------------------------------------------------------------------|
 setwd(magma.dir)
+library(data.table)
 
 # Load inputs
 inputs = read.csv(file.path(input.csv))

@@ -13,7 +13,9 @@ if (total.gen.stack){
     if ( typeof(yr.gen.scen)=='character' ) {
       print('ERROR: gen_by_type function not returning correct results.')
     } else {
-
+      # Calc diffs
+      yr.gen.scen[,GWh:=GWh-GWh[scenario==ref.scenario],by='Type']
+      
       # Create plot
       plot.data = gen_diff_stack_plot(yr.gen.scen, load.data = r.load)
       print(plot.data[[1]] + theme(aspect.ratio = 2.5) +

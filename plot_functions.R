@@ -39,7 +39,7 @@ gen_stack_plot <- function(gen.data, load.data=NULL, filters=NULL, x_col='scenar
   gen.data[, Type := factor(Type, levels = c(gen.order))]
   if(any(is.na(gen.data$Type))) {
     print("ERROR: gen.order doesn't contain all of the gen types: FIX YOUR INPUT DATA CSV")
-    print(sprintf("Missing types are: %s", gen.data[is.na(Type), category]))
+    print(sprintf("Missing types are: %s", gen.data[is.na(Type), ]))
   }
   
   if(is.null(filters)){
@@ -120,7 +120,7 @@ gen_diff_stack_plot <- function(gen.data, load.data, filters=NULL){
   gen.sum = rbindlist(list(dat.pos[, .(TWh = sum(TWh)), by=load.filters], 
                            dat.neg[, .(TWh = sum(TWh)), by=load.filters]))
   gen.sum[,value := TWh]
-  seq.py = pretty_axes(gen.sum,filters = filters)
+  seq.py = pretty_axes(gen.sum,filters = c(filters,'TWh'))
 
   # Calculate difference in load
   load.scen = load.data[, .(value = sum(value)/1000), by=load.filters]
@@ -194,14 +194,14 @@ dispatch_plot <- function(gen.data, load.data, filters=NULL){
 }
 
 
-interface_plot <- function(flow.data, x_col = 'time'){
+interface_plot <- function(flow.data, x_col = 'time',color='name'){
   # Make plots of interface flows
 
   flow.data[, name := factor(name, levels = interfaces)]
   flow.data[, value := value/1000]
 
   # Create plot of interval zone interface flow
-  p1 = ggplot(flow.data, aes_string(x=x_col, y='value', color='name', group='name'))+
+  p1 = ggplot(flow.data, aes_string(x=x_col, y='value', color=color, group='name'))+
          geom_line(size=1.2)+
          geom_hline(yintercept=0, color="black", size=0.3)+
          scale_color_manual("", values = scen.pal)+
@@ -236,7 +236,6 @@ price_duration_curve <- function(price.data, filters, color=NULL){
                   axis.title.x =     element_text(vjust=-0.3),
                   panel.grid.major = element_line(colour = "grey85"),
                   panel.grid.minor = element_line(colour = "grey93"),
-                  aspect.ratio =     0.65,
                   panel.margin =     unit(1.0, "lines") )
 
   return(p.1)

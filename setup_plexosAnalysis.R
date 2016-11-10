@@ -52,12 +52,11 @@ if(23 %in% run.sections) {capacity.factor.table=TRUE}           else {capacity.f
 if(24 %in% run.sections) {price.duration.curve=TRUE}            else {price.duration.curve=FALSE}
 if(25 %in% run.sections) {commit.dispatch.zone=TRUE}            else {commit.dispatch.zone=FALSE}
 if(26 %in% run.sections) {commit.dispatch.region=TRUE}          else {commit.dispatch.region=FALSE}
-if(24 %in% run.sections) {annual.res.short.table=TRUE}          else {annual.res.short.table=FALSE}
-if(25 %in% run.sections) {curtailment.diff.table=TRUE}          else {curtailment.diff.table=FALSE}
-if(26 %in% run.sections) {price.duration.curve.scen=TRUE}       else {price.duration.curve.scen=FALSE}
-if(27 %in% run.sections) {runtime.plots=TRUE}                   else {runtime.plots=FALSE}
-if(28 %in% run.sections) {compare.dispatch.zone=TRUE}           else {compare.dispatch.zone=FALSE}
-if(29 %in% run.sections) {compare.dispatch.region=TRUE}         else {compare.dispatch.region=FALSE}
+if(27 %in% run.sections) {annual.res.short.table=TRUE}          else {annual.res.short.table=FALSE}
+if(28 %in% run.sections) {curtailment.diff.table=TRUE}          else {curtailment.diff.table=FALSE}
+if(30 %in% run.sections) {runtime.plots=TRUE}                   else {runtime.plots=FALSE}
+if(31 %in% run.sections) {compare.dispatch.zone=TRUE}           else {compare.dispatch.zone=FALSE}
+if(32 %in% run.sections) {compare.dispatch.region=TRUE}         else {compare.dispatch.region=FALSE}
 
 
 # -----------------------------------------------------------------------
@@ -77,7 +76,7 @@ if (length(ref.scenario)>1){
   if (length(ref.scenario)==0 & has.multiple.scenarios){
     message('\nYou have not provided a reference scenario. Comparison plots will not work.')
   }
-
+}
 
 # Using CSV file to map generator types to names?
 use.gen.type.mapping.csv = as.logical(na.exclude(inputs$Using.Gen.Type.Mapping.CSV))
@@ -211,12 +210,21 @@ for (i in 1:length(db.loc)) {
 }
 # -----------------------------------------------------------------------
 # Open the database file ( must already have created this using rplexos ) 
-db = plexos_open(db.loc, basename(db.loc))
+scenario.names = basename(db.loc)
+if (length(na.omit(inputs$Scenario.Name))>0){
+  scenario.names = as.character(inputs$Scenario.Name[!is.na(inputs$Scenario.Name)])
+}
+if (length(scenario.names)!=length(db.loc)){
+  print("You specified a different number of scenario names than databases.")
+  print("Using database names as scenarios")
+  scenario.names = basename(db.loc)
+}
+db = plexos_open(db.loc, scenario.names)
 # db = db[1,] # This line queries only the first solution .db file if there are multiple in one location. 
 attributes(db)$class = c("rplexos","data.frame","tbl_df")
 
 # Open the day ahead database file
-db.day.ahead = tryCatch(plexos_open(db.day.ahead.loc, basename(db.day.ahead.loc)), error = function(cond) { return(data.frame('ERROR'))})
+db.day.ahead = tryCatch(plexos_open(db.day.ahead.loc, scenario.names), error = function(cond) { return(data.frame('ERROR'))})
 # db.day.ahead = db.day.ahead[1,] # This line queries only the first solution .db file if there are multiple in one location. 
 attributes(db.day.ahead)$class = c('rplexos', 'data.frame', 'tbl_df')
 

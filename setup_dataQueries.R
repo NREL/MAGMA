@@ -76,8 +76,8 @@ if ( region.zone.flow.table | total.gen.stack | region.gen.stacks | zone.gen.sta
   z.load             = tryCatch( zone_load(total.region.load, total.zone.load), error = function(cond) { return('ERROR') } ) 
   # Assign zone names based on PLEXOS regions or region to zone mapping file. 
   zone.names         = tryCatch( unique(z.load$Zone), error = function(cond) { return('ERROR') } ) 
-  if (typeof(total.zone.load)=='character') { 
-    message('\nMissing total zone load data from solution .db file. Ok if reassign zones is TRUE and region data is found.')
+  if (typeof(total.zone.load)=='character' & !reassign.zones) { 
+    message('\nMissing total zone load data from solution .db file.')
   }
   if( length(unique(rz.unique$Zone))!=length(zone.names) ) { 
     message('\nWarning: Number of zones in generation to region/zone mapping file different than number of zones from zone load query! Check zone.names object.') 
@@ -98,13 +98,13 @@ if ( region.zone.flow.table ) {
 
   # Total zone imports.
   total.zone.imports = tryCatch( total_zone_imports(db), error = function(cond) { return('ERROR') } ) 
-  if (typeof(total.zone.imports)=='character') { 
-    message('\nMissing total zone imports data from solution .db file. Ok if reassign zones is TRUE and region data is found.')}
+  if (typeof(total.zone.imports)=='character' & !reassign.zones) { 
+    message('\nMissing total zone imports data from solution .db file.')}
 
   # Total zone exports
   total.zone.exports = tryCatch( total_zone_exports(db), error = function(cond) { return('ERROR') } ) 
-  if (typeof(total.zone.exports)=='character') { 
-    message('\nMissing total zone exports data from solution .db file. Ok if reassign zones is TRUE and region data is found.')}
+  if (typeof(total.zone.exports)=='character' & !reassign.zones) { 
+    message('\nMissing total zone exports data from solution .db file.')}
 
   # Total zone unserved energy.
   total.zone.ue      = tryCatch( total_zone_ue(db), error = function(cond) { return('ERROR') } ) 
