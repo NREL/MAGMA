@@ -248,7 +248,7 @@ line_plot <- function(plot.data, filters, x.col, y.col, y.lab, color=NULL){
   seq.py = pretty_axes(plot.data, filters = filters, col = y.col)
   # Create plot
   p.1 = ggplot(plot.data)+
-           geom_line(aes_string(x=x.col, y=y.col, color=color), size = 2)+    
+           geom_line(aes_string(x=x.col, y=y.col, color=color), size = 1.5)+    
            labs(y=y.lab, x=NULL)+
            scale_y_continuous(breaks=seq.py, limits=c(0, max(seq.py)), expand=c(0,0))+
            theme( legend.key =       element_rect(color = "grey80", size = 0.4),

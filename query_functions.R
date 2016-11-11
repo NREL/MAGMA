@@ -272,10 +272,10 @@ annual_reserves_provision = function(total.gen.res) {
 # Calculates the interval level reserve provision
 
 interval_reserves = function(interval.reserve.provision) {
-  provision = interval.reserve.provision[, .(provision = sum(value)), by = .(time)]
+  provision = interval.reserve.provision[, .(provision = sum(value)), by = .(time,scenario)]
   # Summing reserves types, and adding indexing for interval number and day.
   provision[,day := as.POSIXlt(time)[[8]]]
-  provision[,interval := 1:intervals.per.day,by=.(day)]
+  provision[,interval := 1:intervals.per.day,by=.(day,scenario)]
   return(provision)
 }
 
