@@ -201,7 +201,7 @@ interface_plot <- function(flow.data, x_col = 'time',color='name'){
   flow.data[, value := value/1000]
 
   # Create plot of interval zone interface flow
-  p1 = ggplot(flow.data, aes_string(x=x_col, y='value', color=color, group='name'))+
+  p1 = ggplot(flow.data, aes_string(x=x_col, y='value', color=color))+
          geom_line(size=1.2)+
          geom_hline(yintercept=0, color="black", size=0.3)+
          scale_color_manual("", values = scen.pal)+
@@ -236,21 +236,22 @@ price_duration_curve <- function(price.data, filters, color=NULL){
                   axis.title.x =     element_text(vjust=-0.3),
                   panel.grid.major = element_line(colour = "grey85"),
                   panel.grid.minor = element_line(colour = "grey93"),
-                  panel.margin =     unit(1.0, "lines") )
+                  panel.margin =     unit(1.0, "lines"),
+                  aspect.ratio =     .65)
 
   return(p.1)
 }
 
 
-line_plot <- function(plot.data, filters, x.col, y.col, y.lab, color=NULL){
+line_plot <- function(plot.data, filters, x.col, y.col, y.lab, color=NULL, linesize=2){
   # Create line plots over time
 
   seq.py = pretty_axes(plot.data, filters = filters, col = y.col)
   # Create plot
   p.1 = ggplot(plot.data)+
-           geom_line(aes_string(x=x.col, y=y.col, color=color), size = 1.5)+    
+           geom_line(aes_string(x=x.col, y=y.col, color=color), size = linesize)+    
            labs(y=y.lab, x=NULL)+
-           scale_y_continuous(breaks=seq.py, limits=c(0, max(seq.py)), expand=c(0,0))+
+           scale_y_continuous(breaks=seq.py, limits=c(min(seq.py), max(seq.py)), expand=c(0,0))+
            theme( legend.key =       element_rect(color = "grey80", size = 0.4),
                   legend.key.size =  grid::unit(0.9, "lines"), 
                   legend.text =      element_text(size=text.plot/1.1),

@@ -286,7 +286,7 @@ interval_reserves = function(interval.reserve.provision) {
 
 annual_interface_flows = function(total.interface.flow) {
   year.flows = total.interface.flow[name %in% interfaces,.(scenario,name,time,value)]  
-  return(year.flows[,.(name,GWh=value)])
+  return(year.flows[,.(GWh=sum(value)), by=.(name,scenario)])
 }
 
 interval_interface_flows = function(interval.interface.flow) {

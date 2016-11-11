@@ -22,12 +22,13 @@ if (daily.curtailment) {
       daily.curt[, timeformat := sprintf("%d %d", day+1, year)]
       daily.curt[, time := as.POSIXct(strptime(timeformat,'%j %Y'))] # Add time column
 
-      p1 = line_plot(daily.curt, filters='time', x.col='time', y.col='Curtailment', y.lab='Curtailment (MWh)')
+      p1 = line_plot(daily.curt, filters='time', x.col='time', y.col='Curtailment', 
+                     y.lab='Curtailment (MWh)', linesize=1.2)
       if (nrow(daily.curt)>30) {
         p1 = p1 + scale_x_datetime(breaks = date_breaks(width = "1 month"), 
                                    labels = date_format("%b"), expand = c(0, 0))
       }
-      print(p1 + geom_point(aes(time,Curtailment),size=3))
+      print(p1)
     }
   }
 } else { print('Section not run according to input file.') }

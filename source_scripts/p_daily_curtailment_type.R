@@ -23,7 +23,7 @@ if (daily.curtailment.type) {
       daily.curt[, time := as.POSIXct(strptime(timeformat,'%j %Y'))] # Add time column
 
       p1 = line_plot(daily.curt, filters=c('time','Type'), x.col='time', y.col='Curtailment', 
-                     y.lab='Curtailment (MWh)', color='Type')
+                     y.lab='Curtailment (MWh)', color='Type', linesize=1.2)
       if (nrow(daily.curt) > 30*length(re.types)) {
         p1 = p1 + scale_x_datetime(breaks = date_breaks(width = "1 month"), 
                                    labels = date_format("%b"), expand = c(0, 0))
