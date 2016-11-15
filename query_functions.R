@@ -496,10 +496,14 @@ total_installed_cap = function(database) {
 
 # Full run reserve provision
 total_gen_reserve_provision = function(database) {
-  if ("Provision" %in% properties[is_summary==1 & collection=="Reserve.Generators",property]){
-    total.res.provision = data.table(query_year(database, 'Reserve.Generators', 'Provision', columns = c('category', 'name')))
-  } else if ("Provision" %in% properties[is_summary==0 & collection=="Reserve.Generators", property]){
-    total.res.provision = data.table(query_interval(database, 'Reserve.Generators', 'Provision', columns = c('category', 'name')))
+  if ("Provision" %in% properties[is_summary==1 & class=="Reserve",property]){
+    total.res.provision = data.table(query_year(database, 
+                                                properties[is_summary==1 & class=="Reserve" & property=='Provision',collection],
+                                                'Provision', columns = c('category', 'name')))
+  } else if ("Provision" %in% properties[is_summary==0 & class=="Reserve", property]){
+    total.res.provision = data.table(query_interval(database, 
+                                                    properties[is_summary==0 & class=="Reserve" & property=='Provision',collection], 
+                                                    'Provision', columns = c('category', 'name')))
     total.res.provision = total.res.provision[, .(value=sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name, category)]
   }
   return(total.res.provision[, .(scenario, property, name, parent, category, value)])

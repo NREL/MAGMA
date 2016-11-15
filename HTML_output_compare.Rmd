@@ -727,7 +727,7 @@ if (region.zone.gen.table) {
       
       # Sum regional generation by type
       r.gen.table = r.z.gen[!Region %in% ignore.regions, .(GWh = sum(GWh)), by=.(Region, Type, scenario)] %>%
-        dcast.data.table(Region~Type, value.var = 'GWh')
+        dcast.data.table(Region+scenario~Type, value.var = 'GWh')
       r.gen.table[is.na(r.gen.table)] = 0
       region.load = r.load[!Region %in% ignore.regions, .(Region, scenario, Load = value)]
       setkey(region.load,Region,scenario)
@@ -756,7 +756,7 @@ if (region.zone.gen.table) {
       
       # Sum zonal generation by type
       z.gen.table = r.z.gen[!Zone %in% ignore.zones, .(GWh = sum(GWh)), by=.(Zone, Type, scenario)] %>%
-        dcast.data.table(Zone~Type, value.var = 'GWh')
+        dcast.data.table(Zone+scenario~Type, value.var = 'GWh')
       z.gen.table[is.na(z.gen.table)] = 0
       zone.load = z.load[!Zone %in% ignore.zones, .(Zone, scenario, Load = value)]
       setkey(zone.load,Zone,scenario)
