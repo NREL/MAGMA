@@ -145,6 +145,7 @@ if(length(na.omit(inputs$Start.Time)) > 0){
   }
 }
 
+fig.path.name = as.character(na.omit(inputs$Fig.Path))
 # Location for saved figures
 tryCatch({
   dir.create(fig.path.name)
