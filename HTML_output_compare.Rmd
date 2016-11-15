@@ -862,25 +862,25 @@ if (compare.dispatch.region | compare.dispatch.zone) {
   source('source_scripts/compare/c_d_gen_comparison.R') # Call this R script which created the data needed for plotting.
   
   # As long as the file exists (previous source found the R script) this loop runs
-  if ( exists('plot.data.all') ) {
+  if ( exists('compare.plot.data') ) {
     # Check to see if the right data is ready for plotting.
-    if ( typeof(plot.data.all)=='character' ) {
+    if ( typeof(compare.plot.data)=='character' ) {
       print('ERROR: cap_committed function not returning correct results.')
     } else {
       
       # Check if zonal DA-RT plots were selected in input file. If so create a plot for each zone
       if (compare.dispatch.zone) {
         comp.gen.zone = mapply(function(t,z){ knit_expand(file = 'source_scripts/compare/c_p_key_period_gen_comparison_zone.Rmd', 
-                                              type.name = type.name, zone.name = zone.name) },
-                               rep(da.rt.types,length(zone.names)), rep(zone,names,each=length(da.rt.types)))
+                                              type.name = t, zone.name = z) },
+                               rep(da.rt.types,each=length(zone.names)), rep(zone.names,each=length(da.rt.types)))
         comp.gen.zone = knit_child(text = unlist(comp.gen.zone))
       } else {comp.gen.zone = 'Section not run according to input file.'}
       
       # Create a plot for each region.
       if (compare.dispatch.region) {  
-        comp.gen.region = mapply(function(t,z){ knit_expand(file = 'source_scripts/compare/c_p_key_period_gen_comparison_region.Rmd', 
-                                              type.name = type.name, region.name = region.name) },
-                               rep(da.rt.types,length(region.names)), rep(region,names,each=length(da.rt.types)))
+        comp.gen.region = mapply(function(t,r){ knit_expand(file = 'source_scripts/compare/c_p_key_period_gen_comparison_region.Rmd', 
+                                              type.name = t, region.name = r) },
+                               rep(da.rt.types,length(region.names)), rep(region.names,each=length(da.rt.types)))
         comp.gen.region = knit_child(text = unlist(comp.gen.region))
       } else {comp.gen.region = 'Section not run according to input file.'}
     }
