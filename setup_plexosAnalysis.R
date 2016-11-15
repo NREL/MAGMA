@@ -167,7 +167,7 @@ error = function(e){
   file.path(db.loc,'plots')
 })
 # Ensure path has a / at the end
-fig.path.name = file.path(fig.path.name,'')
+fig.path.name = file.path(fig.path.name,'/')
 
 # Zones to ignore for plotting
 ignore.zones = as.character(na.omit(inputs$Ignore.Zones))
