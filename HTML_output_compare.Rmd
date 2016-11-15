@@ -872,7 +872,7 @@ if (compare.dispatch.region | compare.dispatch.zone) {
       if (compare.dispatch.zone) {
         comp.gen.zone = mapply(function(t,z){ knit_expand(file = 'source_scripts/compare/c_p_key_period_gen_comparison_zone.Rmd', 
                                               type.name = t, zone.name = z) },
-                               rep(da.rt.types,each=length(zone.names)), rep(zone.names,each=length(da.rt.types)))
+                               rep(da.rt.types,length(zone.names)), rep(zone.names,each=length(da.rt.types)))
         comp.gen.zone = knit_child(text = unlist(comp.gen.zone))
       } else {comp.gen.zone = 'Section not run according to input file.'}
       
