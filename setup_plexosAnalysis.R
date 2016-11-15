@@ -145,7 +145,6 @@ if(length(na.omit(inputs$Start.Time)) > 0){
   }
 }
 
-fig.path.name = as.character(na.omit(inputs$Fig.Path))
 # Location for saved figures
 tryCatch({
   dir.create(fig.path.name)
@@ -167,7 +166,7 @@ error = function(e){
   file.path(db.loc,'plots')
 })
 # Ensure path has a / at the end
-fig.path.name = file.path(fig.path.name,'/')
+fig.path.name = file.path(fig.path.name,.Platform$file.sep)
 
 # Zones to ignore for plotting
 ignore.zones = as.character(na.omit(inputs$Ignore.Zones))
