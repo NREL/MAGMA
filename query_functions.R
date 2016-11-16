@@ -406,15 +406,15 @@ capacity_factor = function(total.generation, total.installed.cap) {
   
   # Pull out installed capacity and generation and match them to generation type by generator name. 
   mc = total.installed.cap[, Type:=gen.type.mapping[name] ]
-  setnames(mc,'value', 'MaxCap (GWh)')
+  try(setnames(mc,'value', 'MaxCap (GWh)'),silent=T)
   
   gen = total.generation[, Type:=gen.type.mapping[name] ]
-  setnames(gen,'value', 'Gen (GWh)')
+  try(setnames(gen,'value', 'Gen (GWh)'),silent=T)
   
   mc[, Type := factor(Type, levels = rev(c(gen.order)))]
   
   # Calculates generation type total capacity and generation for the full run
-  c.factor = mc[,.(name,`MaxCap (GWh)`,Type)][gen[,.(name,`Gen (GWh)`)]]
+  c.factor = mc[,.(scenario,name,`MaxCap (GWh)`,Type)][gen[,.(scenario,name,`Gen (GWh)`)]]
   c.factor = c.factor[,.(`MaxCap (GWh)`=sum(`MaxCap (GWh)`),`Gen (GWh)`=sum(`Gen (GWh)`)),by=.(Type,scenario)]
   
   # Calculate capacity factor for each generation type
