@@ -50,6 +50,7 @@ if(21 %in% run.sections) {reserve.stack=TRUE}                   else {reserve.st
 if(22 %in% run.sections) {region.zone.gen.table=TRUE}           else {region.zone.gen.table=FALSE}
 if(23 %in% run.sections) {capacity.factor.table=TRUE}           else {capacity.factor.table=FALSE}
 if(24 %in% run.sections) {price.duration.curve=TRUE}            else {price.duration.curve=FALSE}
+if(24 %in% run.sections) {res.price.duration.curve=TRUE}        else {res.price.duration.curve=FALSE}
 if(25 %in% run.sections) {commit.dispatch.zone=TRUE}            else {commit.dispatch.zone=FALSE}
 if(26 %in% run.sections) {commit.dispatch.region=TRUE}          else {commit.dispatch.region=FALSE}
 if(27 %in% run.sections) {annual.res.short.table=TRUE}          else {annual.res.short.table=FALSE}

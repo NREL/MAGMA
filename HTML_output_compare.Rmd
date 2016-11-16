@@ -800,6 +800,14 @@ source('source_scripts/compare/c_p_price_duration_curve.R')
 ```
 
 ***
+## 24. Reserve Price Duration Curves
+```{r res-price-duration-curve, fig.width = 12, fig.height=r.height}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+source('source_scripts/compare/c_p_res_price_duration_curve.R')
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
 ## 25-26. DA-RT Committment and Dispatch Plots
 ```{r committment-dispatch, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

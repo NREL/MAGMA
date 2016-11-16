@@ -50,6 +50,24 @@ gen_by_type = function(total.generation, total.avail.cap) {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Capacity by type
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# This function returns total generation by type and curtailment. Curtailment is calculated according to the renewable types specified in the input file. 
+
+cap_by_type = function(total.installed.capacity) {
+  
+  setkey(total.installed.capacity,'name')
+
+  # Add generation type by matching generator name. 
+  yr.cap = total.installed.capacity[, Type:=gen.type.mapping[name] ][,.(scenario,Type,property,value)]
+  
+  # Sum up generation by type
+  yr.cap = yr.cap[,.(GW=sum(value)),by=.(scenario,Type)]
+  
+  return(yr.cap)
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Curtailment by type
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # This function returns total curtailment by type of generator. Curtailment is calculated according to the renewable types specified in the input file. 
@@ -112,6 +130,24 @@ region_zone_gen = function(total.generation, total.avail.cap) {
   # Combine generation and curtailment and return.
   gen.data = rbindlist(list(gen.data, curt))
   setnames(gen.data,'value','GWh')
+  
+  return(gen.data)
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Region and Zone Capacity by type according to generator name
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# This function returns total generation separated by type but also by region and zone.  
+
+region_zone_cap = function(total.installed.capacity) {
+  
+  setkey(total.installed.capacity,'name')
+  gen.type.zone.region = region.zone.mapping[, Type:=gen.type.mapping[name]]
+  
+  # Add generation type by matching generator name.
+  # Also add region and zone by matching generator name in the region and zone mapping file. 
+  cap.data = gen.type.zone.region[total.installed.capacity[, .(scenario,name,category,value)]]
+  cap.data = cap.data[, .(value=sum(value)), by=.(scenario,Type, Region, Zone)]
   
   return(gen.data)
 }
@@ -277,6 +313,17 @@ interval_reserves = function(interval.reserve.provision) {
   provision[,day := as.POSIXlt(time)[[8]]]
   provision[,interval := 1:intervals.per.day,by=.(day,scenario)]
   return(provision)
+}
+
+# Calculates interval reserve provision by generator type for each reserve product
+interval_reserves_provision = function(interval.gen.res) {
+  
+  setkey(interval.gen.res, name)
+  int.gen.res = interval.gen.res[property == 'Provision', Type:=gen.type.mapping[name] ]
+  int.gen.res = int.gen.res[, .(GWh = sum(value)), by=.(scenario,name,parent,Type)]
+  setnames(int.gen.res,"parent","Reserve")
+  
+  return(int.gen.res)
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -673,6 +720,12 @@ interval_region_price = function(database) {
   return(interval.region.price[, .(scenario, property, name, time, value)])
 }
 
+# Interval level reserve price
+interval_reserve_price = function(database) {
+  interval.reserve.price = data.table(query_interval(database, 'Reserve', 'Price'))
+  return(interval.reserve.price[, .(scenario, property, name, time, value)])
+}
+
 # Interval level zone load
 interval_zone_load = function(database) {
   interval.zone.load = data.table(query_interval(database, 'Zone', 'Load'))
@@ -689,6 +742,12 @@ interval_interface_flow = function(database) {
 interval_reserve_provision = function(database) {
   interval.reserve.provision = data.table(query_interval(database, 'Reserve', 'Provision'))
   return(interval.reserve.provision[, .(scenario, property, name, time, value)])
+}
+
+# Interval level reserve provisions by generator type
+interval_gen_reserve_provision = function(database) {
+  interval.gen.reserve.provision = data.table(query_interval(database, 'Reserve.Generators', 'Provision'))
+  return(interval.gen.reserve.provision[, .(scenario, property, name, time, value)])
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -145,7 +145,7 @@ gen_diff_stack_plot <- function(gen.data, load.data, filters=NULL){
                          legend.title =    element_blank(),
                  #                         text = element_text(family="Arial"),
                          axis.text =       element_text(size=text.plot/1.2), 
-                         axis.text.x =     element_text(angle=-20, hjust=0),
+                 #        axis.text.x =     element_text(angle=-20, hjust=0),
                          axis.title =      element_text(size=text.plot, face=2), 
                          axis.title.y =    element_text(vjust=1.2), 
                          panel.margin =    unit(1.5, "lines"),

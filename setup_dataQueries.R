@@ -189,12 +189,32 @@ if ( annual.reserves.table | reserves.plots ) {
   }
 }
 
+if ( revenue.plots ) {
+  # Interval level reserve provision
+  interval.gen.reserve.provision = tryCatch( interval_gen_reserve_provision(db), error = function(cond) { return('ERROR') } ) 
+  if (exists('interval.reserve.provision')) { 
+    if (typeof(interval.gen.reserve.provision)=='character') { 
+      message('\nMissing interval reserve provision data from solution .db file.')
+    }
+  }
+}
+
 if ( price.duration.curve & !exists('interval.region.price') ) {
   # Interval level region price. This is only called if one logical is true and it doesn't already exist.
   interval.region.price = tryCatch( interval_region_price(db), error = function(cond) { return('ERROR') } ) 
   if (exists('interval.region.price')) { 
     if (typeof(interval.region.price)=='character') { 
       message('\nMissing interval region price data from solution .db file.')
+    }
+  }
+}
+
+if ( res.price.duration.curve & !exists('interval.reserve.price') ) {
+  # Interval level reserve price. This is only called if one logical is true and it doesn't already exist.
+  interval.reserve.price = tryCatch( interval_reserve_price(db), error = function(cond) { return('ERROR') } ) 
+  if (exists('interval.reserve.price')) { 
+    if (typeof(interval.reserve.price)=='character') { 
+      message('\nMissing interval reserve price data from solution .db file.')
     }
   }
 }
