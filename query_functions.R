@@ -429,6 +429,41 @@ capacity_factor = function(total.generation, total.installed.cap) {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Revenue
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# This function calculates the revenue from a particular revenue stream (reserves or generation)
+
+revenue_calculator = function(interval.generation, interval.region.price,
+                              interval.gen.reserve.provision,interval.reserve.price){
+  
+  gen.type.zone.region = region.zone.mapping[, Type:=gen.type.mapping[name]]
+  setkey(gen.type.zone.region,name)
+  setkey(interval.generation,name)
+  setkey(interval.gen.reserve.provision,name)
+  # Add region and zone by matching generator name in the region and zone mapping file. 
+  gen.data = gen.type.zone.region[interval.generation[property=='Generation', .(scenario,name,time,value)]]
+  res.data = gen.type.zone.region[interval.gen.reserve.provision[property=='Provision', 
+                                                                 .(scenario,name,parent,time,value)]]
+  #Merge prices onto generation and reserve data
+  setkey(gen.data,Region,time,scenario)
+  setkey(interval.region.price,name,time,scenario)
+  gen.data = gen.data[interval.region.price]
+  
+  setkey(res.data,parent,time,scenario)
+  setkey(interval.reserve.price,name,time,scenario)
+  res.data = res.data[interval.reserve.price]
+  
+  gen.data[, Revenue_Type:='Generation']
+  gen.data[, revenue:=value*i.value]
+  res.data[, Revenue_Type:='Reserves']
+  res.data[, revenue:=value*i.value]
+  
+  revenue = rbindlist(list(gen.data[, .(revenue=sum(revenue)), by=.(scenario,Region,Zone,Type,Revenue_Type)],
+                           res.data[, .(revenue=sum(revenue)), by=.(scenario,Region,Zone,Type,Revenue_Type)]))
+  return(revenue)
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Committed capacity 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # This function just pulls out available capacity at the interval level for use int he DA-RT committment and dispatch plots
@@ -747,7 +782,7 @@ interval_reserve_provision = function(database) {
 # Interval level reserve provisions by generator type
 interval_gen_reserve_provision = function(database) {
   interval.gen.reserve.provision = data.table(query_interval(database, 'Reserve.Generators', 'Provision'))
-  return(interval.gen.reserve.provision[, .(scenario, property, name, time, value)])
+  return(interval.gen.reserve.provision[, .(scenario, property, name, parent, time, value)])
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

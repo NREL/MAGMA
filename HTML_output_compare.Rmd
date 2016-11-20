@@ -861,6 +861,14 @@ if (commit.dispatch.region | commit.dispatch.zone) {
 ### 26. Regions
 `r da.rt.region`
 
+***
+## 33. Revenue by Generator Type
+```{r revenue-plots, fig.width = 12, fig.height=r.height}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+source('source_scripts/compare/c_p_revenue.R')
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
 ## 22. Generation comparison by Generator Type
 ```{r generation-comparison, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

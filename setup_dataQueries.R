@@ -134,7 +134,7 @@ if ( interface.flow.table ) {
 
 if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period.dispatch.zone.log |
      daily.curtailment  | daily.curtailment.type | interval.curtailment | interval.curtailment.type | 
-     commit.dispatch.zone | commit.dispatch.region ) {
+     commit.dispatch.zone | commit.dispatch.region | revenue.plots ) {
   # Interval level generation for each generator.
   interval.generation   = tryCatch( interval_gen(db), error = function(cond) { return('ERROR') } ) 
   # Interval level available capacity for each generator.
@@ -199,7 +199,7 @@ if ( revenue.plots ) {
   }
 }
 
-if ( price.duration.curve & !exists('interval.region.price') ) {
+if ( (price.duration.curve | revenue.plots) & !exists('interval.region.price') ) {
   # Interval level region price. This is only called if one logical is true and it doesn't already exist.
   interval.region.price = tryCatch( interval_region_price(db), error = function(cond) { return('ERROR') } ) 
   if (exists('interval.region.price')) { 
@@ -209,7 +209,7 @@ if ( price.duration.curve & !exists('interval.region.price') ) {
   }
 }
 
-if ( res.price.duration.curve & !exists('interval.reserve.price') ) {
+if ( (res.price.duration.curve | revenue.plots) & !exists('interval.reserve.price') ) {
   # Interval level reserve price. This is only called if one logical is true and it doesn't already exist.
   interval.reserve.price = tryCatch( interval_reserve_price(db), error = function(cond) { return('ERROR') } ) 
   if (exists('interval.reserve.price')) { 
