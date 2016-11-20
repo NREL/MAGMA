@@ -35,7 +35,7 @@ if (daily.curtailment) {
       diff.daily.curt = daily.curt[, .(scenario, Curtailment = Curtailment - Curtailment[scenario==ref.scenario]), by=.(time)]
       
       p2 = line_plot(diff.daily.curt, filters=c('scenario','time'), x.col='time',
-                     y.col='Curtailment', y.lab='Curtailment (MWh)', color='scenario')
+                     y.col='Curtailment', y.lab='Difference in Curtailment (MWh)', color='scenario')
       if (nrow(daily.curt)>30) {
         p2 = p2 + scale_x_datetime(breaks = date_breaks(width = "1 month"), 
                                    labels = date_format("%b"), expand = c(0, 0))

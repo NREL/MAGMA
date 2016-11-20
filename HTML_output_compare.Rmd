@@ -316,7 +316,7 @@ if (annual.generation.table){
     yr.gen = yr.gen[Type!='Curtailment', ]
     
     # Calculate the percent generation of each type, and percent curtailment
-    yr.gen[, Total:=sum(GWh)]
+    yr.gen[, Total:=sum(GWh), by=.(scenario)]
     yr.gen[, Percent:=GWh/Total*100]
     yr.gen[, Total:=NULL]
     curt[, Total:=GWh+yr.gen[Type %in% re.types, sum(GWh)] ]
@@ -614,7 +614,7 @@ if(annual.reserves.table) {
                                 error = function(cond) { return('ERROR: annual_reserves function not returning correct results.') })
     if(typeof(annual.reserves)!='character') { 
       if(length(unique(annual.reserves$scenario))>1){
-        kable(annual.reserves, format.args = list(big.mark = ',')) 
+        kable(annual.reserves[, .(Type, scenario, `Provisions (GWh)`, `Shortage (GWh)`)], format.args = list(big.mark = ',')) 
       } else{
         kable(annual.reserves[, .(Type, `Provisions (GWh)`, `Shortage (GWh)`)], format.args = list(big.mark = ',')) 
       }

@@ -53,6 +53,7 @@ if(24 %in% run.sections) {price.duration.curve=TRUE}            else {price.dura
 if(24 %in% run.sections) {res.price.duration.curve=TRUE}        else {res.price.duration.curve=FALSE}
 if(25 %in% run.sections) {commit.dispatch.zone=TRUE}            else {commit.dispatch.zone=FALSE}
 if(26 %in% run.sections) {commit.dispatch.region=TRUE}          else {commit.dispatch.region=FALSE}
+if(33 %in% run.sections) {revenue.plots=TRUE}                   else {revenue.plots=FALSE}
 if(27 %in% run.sections) {annual.res.short.table=TRUE}          else {annual.res.short.table=FALSE}
 if(28 %in% run.sections) {curtailment.diff.table=TRUE}          else {curtailment.diff.table=FALSE}
 if(30 %in% run.sections) {runtime.plots=TRUE}                   else {runtime.plots=FALSE}
