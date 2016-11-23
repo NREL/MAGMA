@@ -342,6 +342,21 @@ interval_interface_flows = function(interval.interface.flow) {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# line Flows 
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Total run and interval level line flow data, for specific lines that are specified in the input file. 
+
+annual_line_flows = function(total.line.flow) {
+  year.flows = total.line.flow[name %in% lines,.(scenario,name,time,value)]  
+  return(year.flows[,.(GWh=sum(value)), by=.(name,scenario)])
+}
+
+interval_line_flows = function(interval.line.flow) {
+  int.flows = interval.line.flow[name %in% lines,.(scenario,name,time,value)]   
+  return(int.flows)
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Region and Zone Stats
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # This function sums up region and zone stats for the entire run. 
@@ -725,6 +740,22 @@ total_interface_flow = function(database) {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Selected line total run data
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# Full run line flows
+total_line_flow = function(database) {
+  if ("Flow" %in% properties[is_summary==1 & collection=="Line", property]){
+    total.line = data.table(query_year(database, 'Line', 'Flow'))
+  } else if ("Flow" %in% properties[is_summary==0 & collection=="Line", property]){
+    total.line = data.table(query_interval(database, 'Line','Flow', columns = c('category','name')))
+    total.line = total.line[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
+  }
+  return(total.line[, .(scenario, property, name, value, time)])
+}
+
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Interval queries
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -771,6 +802,12 @@ interval_zone_load = function(database) {
 interval_interface_flow = function(database) {
   interval.interface.flow = data.table(query_interval(database, 'Interface', 'Flow'))
   return(interval.interface.flow[, .(scenario, property, name, time, value)])
+}
+
+# Interval level line flows
+interval_line_flow = function(database) {
+  interval.line.flow = data.table(query_interval(database, 'Line', 'Flow'))
+  return(interval.line.flow[, .(scenario, property, name, time, value)])
 }
 
 # Interval level reserve provisions

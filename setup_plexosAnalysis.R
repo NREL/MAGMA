@@ -59,6 +59,9 @@ if(28 %in% run.sections) {curtailment.diff.table=TRUE}          else {curtailmen
 if(30 %in% run.sections) {runtime.plots=TRUE}                   else {runtime.plots=FALSE}
 if(31 %in% run.sections) {compare.dispatch.zone=TRUE}           else {compare.dispatch.zone=FALSE}
 if(32 %in% run.sections) {compare.dispatch.region=TRUE}         else {compare.dispatch.region=FALSE}
+if(33 %in% run.sections) {line.flow.table=TRUE}                 else {line.flow.table=FALSE}
+if(34 %in% run.sections) {line.flow.plots=TRUE}                 else {line.flow.plots=FALSE}
+if(35 %in% run.sections) {key.period.line.flow.plots=TRUE}      else {key.period.line.flow.plots=FALSE}
 
 
 # -----------------------------------------------------------------------
@@ -187,6 +190,19 @@ if (length(interfaces)==0) {
 if (length(interfaces) > length(scen.pal)){
   message('\nYou have specified a large number of interfaces. Color palette may be hard to differentiate.')
   scen.pal = rainbow(length(interfaces))
+}
+
+# lines to look at flows for
+lines = as.character(na.omit(inputs$Lines.for.Flows))
+if (length(lines)==0) {
+  message('\nNo lines specified. No line data will be shown.')
+} else if (any(lines == 'ALL')){
+  lines = unique(query_class_member(db,'Line')$name)
+}
+# Update scen.pal to account for larger number of lines. Give warning about large number of entries
+if (length(lines) > length(scen.pal)){
+  message('\nYou have specified a large number of lines. Color palette may be hard to differentiate.')
+  scen.pal = rainbow(length(lines))
 }
 
 run.rplx=F

@@ -194,7 +194,7 @@ dispatch_plot <- function(gen.data, load.data, filters=NULL){
 }
 
 
-interface_plot <- function(flow.data, x_col = 'time',color='name'){
+interface_plot <- function(flow.data, x_col = 'time',color='name', interfaces = interfaces){
   # Make plots of interface flows
 
   flow.data[, name := factor(name, levels = interfaces)]

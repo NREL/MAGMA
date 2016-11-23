@@ -127,6 +127,13 @@ if ( interface.flow.table ) {
   if (typeof(total.interface.flow)=='character') { message('\nMissing total interface flow data from solution .db file.')}
 }
 
+if ( line.flow.table ) {
+  # Total line flow for each selected line
+  total.line.flow = tryCatch( total_line_flow(db), error = function(cond) { return('ERROR') } ) 
+  if (typeof(total.line.flow)=='character') { message('\nMissing total line flow data from solution .db file.')}
+}
+
+
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Interval level queries
@@ -175,6 +182,16 @@ if ( interface.flow.plots | key.period.interface.flow.plots ) {
   if (exists('interval.interface.flow')) { 
     if (typeof(interval.interface.flow)=='character') { 
       message('\nMissing interval interface flow data from solution .db file.')
+    }
+  }
+}
+
+if ( line.flow.plots | key.period.line.flow.plots ) {
+  # Interval level line flow for selected lines.
+  interval.line.flow = tryCatch( interval_line_flow(db), error = function(cond) { return('ERROR') } ) 
+  if (exists('interval.line.flow')) { 
+    if (typeof(interval.line.flow)=='character') { 
+      message('\nMissing interval line flow data from solution .db file.')
     }
   }
 }

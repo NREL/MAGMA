@@ -564,3 +564,68 @@ if (commit.dispatch.region | commit.dispatch.zone) {
 
 ### 26. Regions
 `r da.rt.region`
+
+
+
+***
+## 33. Line Flow Table
+```{r line-flow-table}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Check if this section was selected to run in the input file
+if(line.flow.table) {
+  if (length(lines)>0) {
+    if (typeof(total.line.flow)=='character'){
+      print('INPUT ERROR: total.line.flow has errors. Cannot run this section')
+    } else{
+      # Call the query function to get line flows for the lines selected in the input file.
+      line.flows = tryCatch( annual_line_flows(total.line.flow), 
+                                  error=function(cond) {return('ERROR: line_flows query not returning correct results.')})
+      # Print data 
+      kable(line.flows, digits=3)
+    }
+  } else { print('No lines specified. No line data will be shown.')}
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## 34. Line Flow Plots
+```{r line-flow-plots, resize.width=T, fig.width=10}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+source('source_scripts/p_line_flow.R')
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## 35. Specified Period Line Flow Plot
+```{r key-period-line-flow-plots, include=FALSE}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (key.period.line.flow.plots) {
+  if (length(lines)>0) {
+    if (length(period.names)>0) {
+
+      # Pull out line flow data for only specified periods in input file
+      source('source_scripts/d_key_period_line_flow.R')
+      
+      # As long as the file exists (previous source found the R script) this loop runs
+      if ( exists('plot.flows') ) {
+        # Check to see if the right data is ready for plotting.
+        if ( typeof(plot.flows)=='character' ) {
+          print('ERROR: interval_line_flows function not returning correct results.')
+        } else {        
+          # Create data for each plot for the interesting periods
+          key.plots = lapply(period.names, function(p){
+                             knit_expand(file = 'source_scripts/p_key_period_line_flow.Rmd', period.name = p)
+                             }) 
+          # Reconstruct the plot data into a format that will be output into the HTML below
+          key.period.line.flow = knit_child(text = unlist(key.plots))
+       
+        }
+      } else { key.period.line.flow = 'Problem sourcing or running d_key_period_line_flow.R.' }
+    } else { key.period.line.flow = 'You didnt specify key periods. Cannot run this section.'}
+  } else { key.period.line.flow = 'No lines specified. No line data will be shown.'}
+} else { key.period.line.flow = 'Section not run according to input file.' }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+`r key.period.line.flow`
+
