@@ -194,10 +194,9 @@ dispatch_plot <- function(gen.data, load.data, filters=NULL){
 }
 
 
-interface_plot <- function(flow.data, x_col = 'time',color='name', interfaces = interfaces){
+interface_plot <- function(flow.data, x_col = 'time',color='interface', interfaces = interfaces){
   # Make plots of interface flows
 
-  flow.data[, name := factor(name, levels = interfaces)]
   flow.data[, value := value/1000]
 
   # Create plot of interval zone interface flow

@@ -56,7 +56,7 @@ if(26 %in% run.sections) {commit.dispatch.region=TRUE}          else {commit.dis
 if(33 %in% run.sections) {revenue.plots=TRUE}                   else {revenue.plots=FALSE}
 if(27 %in% run.sections) {annual.res.short.table=TRUE}          else {annual.res.short.table=FALSE}
 if(28 %in% run.sections) {curtailment.diff.table=TRUE}          else {curtailment.diff.table=FALSE}
-if(30 %in% run.sections) {runtime.plots=TRUE}                   else {runtime.plots=FALSE}
+if(30 %in% run.sections) {runtime.table=TRUE}                   else {runtime.plots=FALSE}
 if(31 %in% run.sections) {compare.dispatch.zone=TRUE}           else {compare.dispatch.zone=FALSE}
 if(32 %in% run.sections) {compare.dispatch.region=TRUE}         else {compare.dispatch.region=FALSE}
 if(33 %in% run.sections) {line.flow.table=TRUE}                 else {line.flow.table=FALSE}

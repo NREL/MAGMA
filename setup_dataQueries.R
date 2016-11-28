@@ -245,3 +245,19 @@ if ( commit.dispatch.zone | commit.dispatch.region ) {
     }
   }
 }
+
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Model and database queries
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if ( runtime.table ) {
+  # Interval level day ahead generator available capacity.
+  phase.runtime = tryCatch( phase_runtime(db), error = function(cond) { return('ERROR') } ) 
+  if (exists('interval.runtime')) { 
+    if (typeof(interval.runtime)=='character') { 
+      message('\nMissing interval run times from solution .db file.')
+    }
+  }
+}
+
