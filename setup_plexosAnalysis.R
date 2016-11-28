@@ -254,6 +254,10 @@ if (typeof(db.day.ahead)!='character'){
 
 # Read mapping file to map generator names to region and zone (can be same file as gen name to type).
 if (is.na(inputs$Gen.Region.Zone.Mapping.Filename)[1]){
+  warning(paste("You did not supply a Region-Zone mapping. We will create one for you from the rplexos database",
+                "However, rplexos reassigns Zone names to the Region category. If you do not want this behavior,",
+                "please create your own mapping file. You may use the file tools/make_region_zone_csv.py to do so,",
+                "which will require COAD to be installed and part of your path."))
   gen.mapping <- query_generator(db)
   region.zone.mapping = data.table(unique(gen.mapping[,c('name','region','zone')]))
   setnames(region.zone.mapping, c("region","zone"), c("Region","Zone"))
