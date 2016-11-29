@@ -206,6 +206,7 @@ if (length(lines) > length(scen.pal)){
 }
 
 run.rplx=F
+run.rplx.all=F
 for (i in 1:length(db.loc)) { 
   if(length(list.files(pattern = "\\.zip$",path=db.loc[i]))!=0 ) {
     if(length(list.files(pattern = "\\.db$",path=db.loc[i]))==0) {
@@ -217,7 +218,13 @@ for (i in 1:length(db.loc)) {
       run.rplx=T
     } else {message(paste0('\nFound .db solution file: ', list.files(pattern='\\.db$',path=db.loc[i]), '\n'))}
     if(run.rplx) {
-      if(readline('Do you want to run the rPLEXOS db creation tool now? (y/n):')=='y' | !interactive()){
+      if(i==1 & length(db.loc)>1){
+        run.rplx.all = (readline('Do you want to run the rPLEXOS db creation tool for all zip files without db files? (y/n):')=='y' | !interactive())
+      }
+      if(run.rplx.all){
+        message('Running process_folder')
+        process_folder(db.loc[i])
+      } else if(readline('Do you want to run the rPLEXOS db creation tool now? (y/n):')=='y' | !interactive()){
         message('Running process_folder')
         process_folder(db.loc[i])
       } else {message('You need to run rPLEXOS to process your solution or point to the correct solution folder.')}
