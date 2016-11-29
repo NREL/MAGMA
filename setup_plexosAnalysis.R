@@ -207,6 +207,7 @@ if (length(lines) > length(scen.pal)){
 
 run.rplx=F
 run.rplx.all=F
+first.missing.db=T
 for (i in 1:length(db.loc)) { 
   if(length(list.files(pattern = "\\.zip$",path=db.loc[i]))!=0 ) {
     if(length(list.files(pattern = "\\.db$",path=db.loc[i]))==0) {
@@ -218,8 +219,9 @@ for (i in 1:length(db.loc)) {
       run.rplx=T
     } else {message(paste0('\nFound .db solution file: ', list.files(pattern='\\.db$',path=db.loc[i]), '\n'))}
     if(run.rplx) {
-      if(i==1 & length(db.loc)>1){
+      if(first.missing.db){
         run.rplx.all = (readline('Do you want to run the rPLEXOS db creation tool for all zip files without db files? (y/n):')=='y' | !interactive())
+        first.missing.db=F
       }
       if(run.rplx.all){
         message('Running process_folder')
