@@ -56,7 +56,7 @@ if(26 %in% run.sections) {commit.dispatch.region=TRUE}          else {commit.dis
 if(33 %in% run.sections) {revenue.plots=TRUE}                   else {revenue.plots=FALSE}
 if(27 %in% run.sections) {annual.res.short.table=TRUE}          else {annual.res.short.table=FALSE}
 if(28 %in% run.sections) {curtailment.diff.table=TRUE}          else {curtailment.diff.table=FALSE}
-if(30 %in% run.sections) {runtime.plots=TRUE}                   else {runtime.plots=FALSE}
+if(30 %in% run.sections) {runtime.table=TRUE}                   else {runtime.plots=FALSE}
 if(31 %in% run.sections) {compare.dispatch.zone=TRUE}           else {compare.dispatch.zone=FALSE}
 if(32 %in% run.sections) {compare.dispatch.region=TRUE}         else {compare.dispatch.region=FALSE}
 if(33 %in% run.sections) {line.flow.table=TRUE}                 else {line.flow.table=FALSE}
@@ -206,6 +206,8 @@ if (length(lines) > length(scen.pal)){
 }
 
 run.rplx=F
+run.rplx.all=F
+first.missing.db=T
 for (i in 1:length(db.loc)) { 
   if(length(list.files(pattern = "\\.zip$",path=db.loc[i]))!=0 ) {
     if(length(list.files(pattern = "\\.db$",path=db.loc[i]))==0) {
@@ -217,7 +219,14 @@ for (i in 1:length(db.loc)) {
       run.rplx=T
     } else {message(paste0('\nFound .db solution file: ', list.files(pattern='\\.db$',path=db.loc[i]), '\n'))}
     if(run.rplx) {
-      if(readline('Do you want to run the rPLEXOS db creation tool now? (y/n):')=='y' | !interactive()){
+      if(first.missing.db){
+        run.rplx.all = (readline('Do you want to run the rPLEXOS db creation tool for all zip files without db files? (y/n):')=='y' | !interactive())
+        first.missing.db=F
+      }
+      if(run.rplx.all){
+        message('Running process_folder')
+        process_folder(db.loc[i])
+      } else if(readline('Do you want to run the rPLEXOS db creation tool now? (y/n):')=='y' | !interactive()){
         message('Running process_folder')
         process_folder(db.loc[i])
       } else {message('You need to run rPLEXOS to process your solution or point to the correct solution folder.')}
@@ -254,6 +263,10 @@ if (typeof(db.day.ahead)!='character'){
 
 # Read mapping file to map generator names to region and zone (can be same file as gen name to type).
 if (is.na(inputs$Gen.Region.Zone.Mapping.Filename)[1]){
+  warning(paste("You did not supply a Region-Zone mapping. We will create one for you from the rplexos database",
+                "However, rplexos reassigns Zone names to the Region category. If you do not want this behavior,",
+                "please create your own mapping file. You may use the file tools/make_region_zone_csv.py to do so,",
+                "which will require COAD to be installed and part of your path."))
   gen.mapping <- query_generator(db)
   region.zone.mapping = data.table(unique(gen.mapping[,c('name','region','zone')]))
   setnames(region.zone.mapping, c("region","zone"), c("Region","Zone"))

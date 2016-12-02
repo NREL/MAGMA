@@ -536,17 +536,20 @@ if (interface.flow.plots) {
       if ( typeof(interface.flows)=='character' ) { 
         print('ERROR: interface_flows function not returning correct results.')
       } else {
+        # change name to interface in order to not hit recursive error
+        interface.flows[, interface:=factor(name, levels = interfaces)]
+        # Add day and interval
         interface.flows[, day := as.POSIXlt(time)[[8]] ]
         interface.flows[, interval := 1:intervals.per.day, by=.(day,scenario)]
         # Get interval plots
-        avg.interface = interface.flows[, .(value=sum(value)),by=.(scenario,name,interval)]
+        avg.interface = interface.flows[, .(value=sum(value)),by=.(scenario,interface,interval)]
         avg.interface[, hour := floor((interval-1)*(3600*24/intervals.per.day)/3600)]
         avg.interface[, minute := floor((interval-1)*(3600*24/intervals.per.day)/60-hour*60)]
         avg.interface[, second := floor((interval-1)*(3600*24/intervals.per.day)-hour*3600-minute*60)]
         avg.interface[, time := as.POSIXct(strptime(paste(hour,minute,second, sep=":"), "%H:%M:%S"),'UTC')]
       
         p1 = interface_plot(avg.interface, x_col = 'time', color='scenario')
-        print(p1 + labs(title='Interval Flow') + facet_wrap(~name,ncol=1,scales='free') +
+        print(p1 + labs(title='Interval Flow') + facet_wrap(~interface,ncol=1,scales='free') +
                 scale_x_datetime(breaks = date_breaks(width = "2 hour"), labels = date_format("%H:%M"), expand = c(0, 0)))
         # Aggregate interval flow data into daily flow data
         daily.flows = interface.flows[, .(value=sum(value)), by=.(day,name,scenario)]
@@ -874,35 +877,36 @@ source('source_scripts/compare/c_p_revenue.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
 if (compare.dispatch.region | compare.dispatch.zone) {
-  
-  source('source_scripts/compare/c_d_gen_comparison.R') # Call this R script which created the data needed for plotting.
-  
-  # As long as the file exists (previous source found the R script) this loop runs
-  if ( exists('compare.plot.data') ) {
-    # Check to see if the right data is ready for plotting.
-    if ( typeof(compare.plot.data)=='character' ) {
-      print('ERROR: cap_committed function not returning correct results.')
-    } else {
-      
-      # Check if zonal DA-RT plots were selected in input file. If so create a plot for each zone
-      if (compare.dispatch.zone) {
-        comp.gen.zone = mapply(function(t,z){ knit_expand(file = 'source_scripts/compare/c_p_key_period_gen_comparison_zone.Rmd', 
-                                              type.name = t, zone.name = z) },
-                               rep(da.rt.types,length(zone.names)), rep(zone.names,each=length(da.rt.types)))
-        comp.gen.zone = knit_child(text = unlist(comp.gen.zone))
-      } else {comp.gen.zone = 'Section not run according to input file.'}
-      
-      # Create a plot for each region.
-      if (compare.dispatch.region) {  
-        comp.gen.region = mapply(function(t,r){ knit_expand(file = 'source_scripts/compare/c_p_key_period_gen_comparison_region.Rmd', 
-                                              type.name = t, region.name = r) },
-                               rep(da.rt.types,length(region.names)), rep(region.names,each=length(da.rt.types)))
-        comp.gen.region = knit_child(text = unlist(comp.gen.region))
-      } else {comp.gen.region = 'Section not run according to input file.'}
-    }
-  } else { comp.gen.zone   = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'
-           comp.gen.region = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'}
-  
+  if (length(da.rt.types)>0){
+    source('source_scripts/compare/c_d_gen_comparison.R') # Call this R script which created the data needed for plotting.
+    
+    # As long as the file exists (previous source found the R script) this loop runs
+    if ( exists('compare.plot.data') ) {
+      # Check to see if the right data is ready for plotting.
+      if ( typeof(compare.plot.data)=='character' ) {
+        print('ERROR: cap_committed function not returning correct results.')
+      } else {
+        
+        # Check if zonal DA-RT plots were selected in input file. If so create a plot for each zone
+        if (compare.dispatch.zone) {
+          comp.gen.zone = mapply(function(t,z){ knit_expand(file = 'source_scripts/compare/c_p_key_period_gen_comparison_zone.Rmd', 
+                                                            type.name = t, zone.name = z) },
+                                 rep(da.rt.types,length(zone.names)), rep(zone.names,each=length(da.rt.types)))
+          comp.gen.zone = knit_child(text = unlist(comp.gen.zone))
+        } else {comp.gen.zone = 'Section not run according to input file.'}
+        
+        # Create a plot for each region.
+        if (compare.dispatch.region) {  
+          comp.gen.region = mapply(function(t,r){ knit_expand(file = 'source_scripts/compare/c_p_key_period_gen_comparison_region.Rmd', 
+                                                              type.name = t, region.name = r) },
+                                   rep(da.rt.types,length(region.names)), rep(region.names,each=length(da.rt.types)))
+          comp.gen.region = knit_child(text = unlist(comp.gen.region))
+        } else {comp.gen.region = 'Section not run according to input file.'}
+      }
+    } else { comp.gen.zone   = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'
+             comp.gen.region = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'}
+  }else {   comp.gen.zone = 'You didnt specify generation types for DA-RT plots. Plots cannot be created.'
+          comp.gen.region = 'You didnt specify generation types for DA-RT plots. Plots cannot be created.' }
 } else { comp.gen.zone   = 'Section not run according to input file.'
          comp.gen.region = 'Section not run according to input file.' }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -915,6 +919,24 @@ if (compare.dispatch.region | compare.dispatch.zone) {
 ***
 ### Regions
 `r comp.gen.region`
+
+
 ***
+## 30. Model Run Times
+```{r model-run-times}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(runtime.table) {
+  if ( typeof(phase.runtime)=='character' ) {
+    print('INPUT ERROR: phase.runtime has errors. Cannot run this section.')
+  } else{
+    if(length(unique(phase.runtime$scenario))>1){
+        kable(dcast(phase.runtime,phase~scenario,value.var='time'), format.args = list(big.mark = ','), digits=2)
+      } else{
+        kable(phase.runtime, format.args = list(big.mark = ',')) 
+      }
+  }
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
 
 

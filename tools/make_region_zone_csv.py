@@ -20,7 +20,7 @@ def get_region_zone(xml, gen, get_zone=True):
     node = xml['Generator'][gen].get_children('Node')
     # Use node to get region and zone mapping
     region = node[0].get_children('Region')[0].meta['name']
-    if get_zone:
+    if get_zone and node[0].get_children('Zone'):
         zone = node[0].get_children('Zone')[0].meta['name']
     else:
         zone = ''

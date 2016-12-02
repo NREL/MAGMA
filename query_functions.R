@@ -827,6 +827,12 @@ interval_gen_reserve_provision = function(database) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # Runtime data
+phase_runtime = function(database){
+  phase.runtime = data.table(query_log(database))
+  return(phase.runtime[,.(scenario,phase,time)] )
+}
+
+# Runtime step data
 interval_runtime = function(database){
   interval.runtime = data.table(query_log_steps(database))
   return(interval.runtime[,.(scenario,phase,step,time)] )
