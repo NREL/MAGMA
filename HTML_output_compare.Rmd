@@ -14,18 +14,21 @@ output:
 knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, include=TRUE,
                       fig.path=fig.path.name, dev='png', fig.width=12)
 
-# Set dynamic height for figure in regional generation chunk
+# Set dynamic height for figures
 if (exists('zone.names')) { z.height = ( length(zone.names[!zone.names%in%ignore.zones]) %/% 3 + 
-                                           length(zone.names[!zone.names%in%ignore.zones]) %% 3 ) * 5
+                                           length(zone.names[!zone.names%in%ignore.zones]) %% 3 ) * 4
   } else { z.height = 5 }
 if (exists('region.names')) { r.height = ( length(region.names[!region.names%in%ignore.regions]) %/% 3 + 
                                              length(region.names[!region.names%in%ignore.regions]) %% 3 ) * 4
   } else {r.height = 4 }
 if (exists('reserve.names')) { res.height = ( length(reserve.names) %/% 3 + length(reserve.names) %% 3 ) * 5
   } else { res.height = 5 }
-s.height = ( length(db.loc) ) * 4.5
+if (exists('interfaces')) { i.height = ( length(interfaces) ) * 5
+  } else { i.height = 5 }
+s.height = ( length(db.loc) ) * 4
+s.width = ( length(db.loc) %/% 3 + length(db.loc) %% 3 ) * 10
 p.height = ( length(period.names) %/% 2 + length(period.names) %% 2 ) * 5
-st.height = ( length(db.loc) * length(re.types) ) * 4
+t.height = ( length(re.types) ) * 4
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -156,7 +159,7 @@ if (region.gen.stacks) {
 
 ***
 ## 3. Regional Generation Differences
-```{r region-gen-diff-stacks, fig.height=r.height, fig.width=10}
+```{r region-gen-diff-stacks, fig.height=r.height, fig.width=s.width}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/compare/c_p_region_gen_stacks.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -274,7 +277,7 @@ source('source_scripts/compare/c_p_daily_curtailment.R')
 
 ***
 ### 9. Average Daily Curtailment by Type
-```{r yearly-curtailment-by-type, fig.height=st.height}
+```{r yearly-curtailment-by-type, fig.height=t.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/compare/c_p_daily_curtailment_type.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -290,7 +293,7 @@ source('source_scripts/compare/c_p_interval_curtailment.R')
 
 ***
 ### 11. Average Interval Curtailment by Type
-```{r daily-curtailment-by-type, fig.height=st.height}
+```{r daily-curtailment-by-type, fig.height=t.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/compare/c_p_interval_curtailment_type.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -520,7 +523,7 @@ if(interface.flow.table) {
 
 ***
 ## 17. Interface Flow Plots
-```{r interface-flow-plots, resize.width=T, fig.width=10}
+```{r interface-flow-plots, resize.width=T, fig.width=10, fig.height=i.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
 if (interface.flow.plots) {
@@ -690,7 +693,8 @@ if(reserve.stack) {
     } else {
       # Create plot
       plot.data = gen_stack_plot(yr.res.scen, filters = c('Reserve','scenario'))
-      print(plot.data[[1]] + facet_wrap(~Reserve,ncol=3,scales='free'))
+      print(plot.data[[1]] + facet_wrap(~Reserve,ncol=3,scales='free') + 
+              theme(axis.text.x = element_text(angle = -30, hjust = 0)))
     }
   }
 } else { print('Section not run according to input file.') }

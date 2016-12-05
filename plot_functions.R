@@ -173,7 +173,7 @@ dispatch_plot <- function(gen.data, load.data, filters=NULL){
   p1 = ggplot(gen.data, aes(time, value, group=Type, fill=Type, order=as.numeric(Type)), color="black")+
           geom_area(color=NA)+
           geom_line(position="stack", size=0.3)+
-          labs(y="Generation (GWh)", x=NULL)+
+          labs(y="Generation (GW)", x=NULL)+
           geom_line(data=load.data, linetype="longdash", aes(color="load"),size=0.8)+
           scale_fill_manual("",values = gen.color, limits=rev(gen.order))+
           scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
@@ -273,7 +273,7 @@ commitment_dispatch_plot <- function(plot.data){
   # Assign the order which the generation types will appear in the plot.
   plot.data[, Type := factor(Type, levels=rev(gen.order))]
   # Make sure plot axes are high enough
-  blank_data = plot.data[, .(ylim=sum(value)/1000*1.06), by=.(time,Type,data)]
+  blank_data = plot.data[, .(ylim=sum(value)/1000*1.06), by=.(time,Type,data,scenario)]
     
     # Create plot
   p = ggplot()+
