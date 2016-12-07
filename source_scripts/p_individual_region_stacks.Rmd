@@ -10,7 +10,7 @@ figure.height = 3.5 # Set figure height
 ```{r individual-region-stack-{{region.name}}, fig.height=figure.height, include=TRUE}
 # Using plot data generated in previously sourced file, filter out only the current region.
 
-plot.data = gen_stack_plot(r.z.gen[Region=='{{region.name}}',], load.data = r.load[Region=='{{region.name}}',])
+plot.data = gen_stack_plot(r.z.gen[Region=='{{region.name}}',], load.data = r.load[r.load$Region=='{{region.name}}',])
 print(plot.data[[1]] + theme(aspect.ratio = 2.5) +
       scale_y_continuous(breaks=plot.data[[2]], limits=c(min(plot.data[[2]]), max(plot.data[[2]])), 
                          expand=c(0,0), label=comma))
