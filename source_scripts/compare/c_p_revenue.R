@@ -29,6 +29,7 @@ if (revenue.plots) {
         ylab("Total Revenue, Million $") + xlab("Scenario")+
         scale_fill_manual(values=c('dodgerblue2','firebrick1'),name='Revenue Type')+
         facet_wrap(~Type,ncol=3,scales='free')
+      print(p)
     }
   }
 } else { print('Section not run according to input file.') }
