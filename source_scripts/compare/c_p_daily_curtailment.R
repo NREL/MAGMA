@@ -24,7 +24,7 @@ if (daily.curtailment) {
       
       p1 = line_plot(daily.curt, filters=c('scenario','time'), x.col='time', 
                      y.col='Curtailment', y.lab='Curtailment (MWh)', color='scenario', linesize=1.2)
-      if (nrow(daily.curt)>30) {
+      if (nrow(daily.curt)>(30*length(db.loc))) {
         p1 = p1 + scale_x_datetime(breaks = date_breaks(width = "1 month"), 
                                    labels = date_format("%b"), expand = c(0, 0))
       }
@@ -36,7 +36,7 @@ if (daily.curtailment) {
       
       p2 = line_plot(diff.daily.curt, filters=c('scenario','time'), x.col='time', y.col='Curtailment', 
                      y.lab='Difference in Curtailment (MWh)', color='scenario', linesize=1.2)
-      if (nrow(daily.curt)>30) {
+      if (nrow(daily.curt)>(30*length(db.loc))) {
         p2 = p2 + scale_x_datetime(breaks = date_breaks(width = "1 month"), 
                                    labels = date_format("%b"), expand = c(0, 0))
       }

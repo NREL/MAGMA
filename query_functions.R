@@ -232,7 +232,7 @@ total_curtailment = function(interval.generation, interval.avail.cap) {
     curt.tot = c.avail - c.gen
     curt.tot = data.table(curt.tot)
     curt.tot[,year := 1900+as.POSIXlt(time)[[6]]]
-    curt.tot[,day := rep(1:length(curt.tot)/intervals.per.day,each=intervals.per.day)]
+    curt.tot[,day := as.POSIXlt(time)[[8]]+1]
     curt.tot[,interval := 1:intervals.per.day,by=.(day)]
   } else {
     # Summing up total curtailment for each interval
