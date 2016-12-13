@@ -1,0 +1,138 @@
+---
+title: "Philippines GTG Solution Analysis - Extra Graphics"
+author: "Created by: `r Sys.info()['user']`"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: 
+  html_document: 
+    css: custom.css
+    toc: yes
+---
+
+```{r setOptions, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Set up default options for chunks, turn off error or warning messages.
+knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, include=TRUE,
+                      fig.path=fig.path.name, dev='png', fig.width=12)
+
+# Set dynamic height for figures
+if (exists('zone.names')) { z.height = ( length(zone.names[!zone.names%in%ignore.zones]) %/% 3 + 
+                                           length(zone.names[!zone.names%in%ignore.zones]) %% 3 ) * 4
+  } else { z.height = 5 }
+if (exists('region.names')) { r.height = ( length(region.names[!region.names%in%ignore.regions]) %/% 3 + 
+                                             length(region.names[!region.names%in%ignore.regions]) %% 3 ) * 4
+  } else {r.height = 4 }
+if (exists('reserve.names')) { res.height = ( length(reserve.names) %/% 3 + length(reserve.names) %% 3 ) * 5
+  } else { res.height = 5 }
+if (exists('interfaces')) { i.height = ( length(interfaces) ) * 5
+  } else { i.height = 5 }
+s.height = ( length(db.loc) ) * 4
+s.width = ( length(db.loc) %/% 3 + length(db.loc) %% 3 ) * 10
+p.height = ( length(period.names) %/% 2 + length(period.names) %% 2 ) * 5
+t.height = ( length(re.types) ) * 4
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+### Data below generated for:
+"`r gsub('.*Model', 'Model', db$filename)`"
+
+***
+
+
+## 1. Installed Capacity
+```{r installed-capacity, echo=FALSE, fig.height = 8, fig.width=10}
+
+plot_installed_MW('interconnection')
+
+installed.MW.table <- installed.MW[,.(value.GW = sum(value.GW)), 
+                                 by = .(Type, scenario)]
+setorder(installed.MW.table, Type, scenario)
+    
+#percent of total
+installed.MW.table[, Total:=sum(value.GW), by=.(scenario)]
+installed.MW.table[, Percent:=value.GW/Total*100]
+installed.MW.table[, Total:=NULL]
+setnames(installed.MW.table, 'scenario', 'Scenario')
+setnames(installed.MW.table, 'value.GW', 'Installed Capacity (GW)')
+
+row.names(installed.MW.table) = NULL
+kable(installed.MW.table, format.args = list(big.mark = ','), digits=2)
+
+```
+
+## 2. Emissions
+```{r emissions, echo=FALSE,  fig.height = 12, fig.width = 12}
+
+plot_emissions(GHG = 'CO2e')
+
+```
+
+
+
+## 3. Net Load Duration
+```{r net-load-duration-curves, echo=FALSE, fig.height = 8, fig.width=10}
+
+plot_net_load(aggregation = 'all', type = 'histogram')
+
+plot_net_load(aggregation = 'interconnection', type = 'duration curve')
+
+```
+
+
+
+## 4. Net Ramp Duration
+```{r net-ramp-duration-curves, echo=FALSE, fig.height = 8, fig.width=10}
+
+plot_net_load_ramps(fueltype = 'total', type = 'histogram')
+
+plot_net_load_ramps(fueltype = 'each', type = 'duration curve')
+
+```
+
+
+## 5. Number of Starts
+```{r number-of-starts, echo=FALSE, fig.height = 8, fig.width=10}
+
+plot_starts()
+
+```
+
+## 6. Time Spent at Minimum Stable Level (Percent of Year)
+```{r minimun-generation-year, echo=FALSE, fig.height = 8, fig.width=10}
+
+plot_min_gen(fueltype = 'Coal', percent.of = 'year')
+plot_min_gen(fueltype = 'Geothermal', percent.of = 'year')
+plot_min_gen(fueltype = 'Hydro', percent.of = 'year')
+plot_min_gen(fueltype = 'Gas CC', percent.of = 'year')
+plot_min_gen(fueltype = 'Biomass', percent.of = 'year')
+plot_min_gen(fueltype = 'Diesel/Bunker', percent.of = 'year')
+
+```
+
+## 7. Time Spent at Minimum Stable Level (Percent of Time On)
+```{r minimun-generation-on, echo=FALSE, fig.height = 8, fig.width=10}
+
+plot_min_gen(fueltype = 'Coal', percent.of = 'hours on')
+plot_min_gen(fueltype = 'Geothermal', percent.of = 'hours on')
+plot_min_gen(fueltype = 'Hydro', percent.of = 'hours on')
+plot_min_gen(fueltype = 'Gas CC', percent.of = 'hours on')
+plot_min_gen(fueltype = 'Biomass', percent.of = 'hours on')
+plot_min_gen(fueltype = 'Diesel/Bunker', percent.of = 'hours on')
+```
+
+
+## 8. Unserved energy
+```{r unserved-energy, echo=FALSE, fig.height = 8, fig.width=10}
+t <- table_USE()
+row.names(t) = NULL
+kable(t, format.args = list(big.mark = ','), digits=2)
+
+```
+
+## 9. Dump energy
+```{r dump-energy, echo=FALSE, fig.height = 8, fig.width=10}
+
+t <- table_dump_energy()
+row.names(t) = NULL
+kable(t, format.args = list(big.mark = ','), digits=2)
+
+```
