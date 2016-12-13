@@ -51,7 +51,7 @@ gen_stack_plot <- function(gen.data, load.data=NULL, filters=NULL, x_col='scenar
   
   # Group by type and convert GWh to TWh
   gen.plot = gen.data[, .(TWh = sum(GWh)/1000), by=agg.filters]
-  setorder(gen.plot,Type)
+  setorderv(gen.plot,c('Type',filters,x_col))
   
   if(!is.null(load.data)){
     tot.load = load.data[, .(TWh = sum(value)/1000), by=load.filters]
@@ -66,24 +66,23 @@ gen_stack_plot <- function(gen.data, load.data=NULL, filters=NULL, x_col='scenar
   p1 = ggplot() +
     geom_bar(data = gen.plot, aes_string(x = x_col, y = 'TWh', fill='Type'), stat="identity", position="stack" ) +
     scale_color_manual(name='', values=c("grey40"), labels=c("Load"))+
-    scale_fill_manual('', values = gen.color, limits=rev(gen.order))+     
+    scale_fill_manual('', values = gen.color)+     
     labs(y="Generation (TWh)", x=NULL)+
     guides(color = guide_legend(order=1), fill = guide_legend(order=2))+
-    theme(    legend.key =      element_rect(color="grey80", size = 0.8),
+    theme(    legend.key      = element_rect(color="grey80", size = 0.8),
               legend.key.size = grid::unit(1.0, "lines"),
-              legend.text =     element_text(size=text.plot),
-              legend.title =    element_blank(),
-              #                         text = element_text(family="Arial"),
-              axis.text =       element_text(size=text.plot/1.2),
-              # axis.text.x =   element_text(face=2),
-              axis.title =      element_text(size=text.plot, face=2),
-              axis.title.y =    element_text(vjust=1.2),
-              panel.margin =    unit(1.5, "lines"))
+              legend.text     = element_text(size=text.plot),
+              legend.title    = element_blank(),
+              axis.text       = element_text(size=text.plot/1.2),
+              # axis.text.x   = element_text(face=2),
+              axis.title      = element_text(size=text.plot, face=2),
+              axis.title.y    = element_text(vjust=1.2),
+              panel.spacing   = unit(1.5, "lines"))
   
   # Add something for if load only ??
   # Add error bar line for load if provided
   if(!is.null(load.data)){
-    p1 = p1 + geom_errorbar(data = tot.load, aes_string(x = x_col, y='TWh', ymin='TWh', ymax='TWh', color='variable'), 
+    p1 = p1 + geom_errorbar(data = tot.load, aes_string(x = x_col, ymin='TWh', ymax='TWh', color='variable'), 
                             size=0.45, linetype='longdash')
   }
   return(list(p1,seq.py))
@@ -113,8 +112,8 @@ gen_diff_stack_plot <- function(gen.data, load.data, filters=NULL){
                         .(TWh = sum(GWh)/1000), by=agg.filters]
   dat.neg = gen.data[GWh<0 & scenario!=ref.scenario, 
                         .(TWh = sum(GWh)/1000), by=agg.filters]
-  setorder(dat.pos,Type)
-  setorder(dat.neg,Type)
+  setorderv(dat.pos,c('Type',filters,'TWh'))
+  setorderv(dat.neg,c('Type',filters,'TWh'))
 
   # gen.sum is just used to set the maximum height on the plot, see pretty() fcn below
   gen.sum = rbindlist(list(dat.pos[, .(TWh = sum(TWh)), by=load.filters], 
@@ -139,17 +138,16 @@ gen_diff_stack_plot <- function(gen.data, load.data, filters=NULL){
           labs(y="Difference in Generation (TWh)", x=NULL)+
           # scale_y_continuous(breaks=seq.py, expand=c(0,0), label=comma)+
           guides(color = guide_legend(order=1), fill = guide_legend(order=2, reverse=TRUE))+
-               theme(    legend.key =      element_rect(color="grey80", size = 0.8), 
+               theme(    legend.key      = element_rect(color="grey80", size = 0.8), 
                          legend.key.size = grid::unit(1.0, "lines"),
-                         legend.text =     element_text(size=text.plot), 
-                         legend.title =    element_blank(),
-                 #                         text = element_text(family="Arial"),
-                         axis.text =       element_text(size=text.plot/1.2), 
-                 #        axis.text.x =     element_text(angle=-20, hjust=0),
-                         axis.title =      element_text(size=text.plot, face=2), 
-                         axis.title.y =    element_text(vjust=1.2), 
-                         panel.margin =    unit(1.5, "lines"),
-                         aspect.ratio =    2.5/length(unique(dat.pos$scenario)))
+                         legend.text     = element_text(size=text.plot), 
+                         legend.title    = element_blank(),
+                         axis.text       = element_text(size=text.plot/1.2), 
+                 #        axis.text.x     = element_text(angle=-20, hjust=0),
+                         axis.title      = element_text(size=text.plot, face=2), 
+                         axis.title.y    = element_text(vjust=1.2), 
+                         panel.spacing   = unit(1.5, "lines"),
+                         aspect.ratio    = 2.5/length(unique(dat.pos$scenario)))
   return(list(p1,seq.py))
 }
 
@@ -168,9 +166,11 @@ dispatch_plot <- function(gen.data, load.data, filters=NULL){
     agg.filters = c("time",filters)
   }
   seq.py.t = pretty_axes(gen.data, load.data, filters = agg.filters)
+  
+  setorderv(gen.data,c('Type',filters))
 
   # Plot
-  p1 = ggplot(gen.data, aes(time, value, group=Type, fill=Type, order=as.numeric(Type)), color="black")+
+  p1 = ggplot(gen.data, aes(time, value, group=Type, fill=Type), color="black")+
           geom_area(color=NA)+
           geom_line(position="stack", size=0.3)+
           labs(y="Generation (GW)", x=NULL)+
@@ -188,6 +188,7 @@ dispatch_plot <- function(gen.data, load.data, filters=NULL){
                 axis.title.x=element_text(vjust=-0.3),
                 panel.grid.major = element_line(colour = "grey85"),
                 panel.grid.minor = element_line(colour = "grey93"),
+                panel.spacing = unit(2,'lines'),
                 aspect.ratio = 0.5)
 
   return(p1)
@@ -212,7 +213,7 @@ interface_plot <- function(flow.data, x_col = 'time',color='interface', interfac
                axis.text=element_text(face=2, size=text.plot/1),
                axis.title=element_text(size=text.plot, face=2.3),
                # legend.position=c(0.80, 0.12),
-               panel.margin = unit(0.35, "lines"))
+               panel.spacing = unit(0.35, "lines"))
   return(p1)
 }
 
@@ -235,7 +236,7 @@ price_duration_curve <- function(price.data, filters, color=NULL){
                   axis.title.x =     element_text(vjust=-0.3),
                   panel.grid.major = element_line(colour = "grey85"),
                   panel.grid.minor = element_line(colour = "grey93"),
-                  panel.margin =     unit(1.0, "lines"),
+                  panel.spacing =     unit(1.0, "lines"),
                   aspect.ratio =     .65)
 
   return(p.1)
@@ -261,7 +262,7 @@ line_plot <- function(plot.data, filters, x.col, y.col, y.lab, color=NULL, lines
                   panel.grid.major = element_line(colour = "grey85"),
                   panel.grid.minor = element_line(colour = "grey93"),
                   aspect.ratio =     0.5,
-                  panel.margin =     unit(1.0, "lines") )
+                  panel.spacing =     unit(1.0, "lines") )
   return(p.1)
 }
 
@@ -302,7 +303,7 @@ commitment_dispatch_plot <- function(plot.data){
                axis.title=element_text(size=text.plot, face=2),
                panel.grid.major = element_line(colour = "grey85"),
                panel.grid.minor = element_line(colour = "grey93"),
-               panel.margin = unit(0.45, "lines"))
+               panel.spacing = unit(0.45, "lines"))
   return(p)
 }
 

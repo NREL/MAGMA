@@ -255,7 +255,24 @@ total_curtailment = function(interval.generation, interval.avail.cap) {
 
 costs = function(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom.cost) {
   
-  cost.data = rbindlist(list(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom.cost))
+  # add NAs for errored cost data
+  if( !(is.character(total.emissions.cost) & is.character(total.fuel.cost) & 
+        is.character(total.ss.cost) & is.character(total.vom.cost))){
+    if(is.character(total.emissions.cost)){
+      total.emissions.cost = data.table(scenario = db$scenario,property = 'Emissions Cost', value=NA)
+    }
+    if(is.character(total.fuel.cost)){
+      total.fuel.cost = data.table(scenario = db$scenario,property = 'Fuel Cost', value=NA)
+    }
+    if(is.character(total.ss.cost)){
+      total.ss.cost = data.table(scenario = db$scenario,property = 'Start & Shutdown Cost', value=NA)
+    }
+    if(is.character(total.vom.cost)){
+      total.vom.cost = data.table(scenario = db$scenario,property = 'VO&M Cost', value=NA)
+    }
+  }
+  
+  cost.data = rbindlist(list(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom.cost),fill=TRUE)
   cost.table = cost.data[,.(Cost = sum(value/1000)), by=.(scenario,property)]
   cost.table[, property:=gsub("Cost","",property)]
   tot.cost = cost.table[,.(property = "Total", Cost = sum(Cost)), by=.(scenario)]
@@ -522,7 +539,7 @@ total_generation = function(database) {
     total.gen = data.table(query_interval(database, 'Generator', 'Generation', columns = c('category', 'name')))
     total.gen = total.gen[, .(value=sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name, category)]
   }
-  return(total.gen[, .(scenario, property, name, category, value)])
+  return(total.gen[, .(value=sum(value)), by=.(scenario, property, name, category)])
 }
 
 # Full run available capacity
@@ -533,7 +550,7 @@ total_avail_cap = function(database) {
     total.avail.cap = data.table(query_interval(database, 'Generator', 'Available Capacity', columns = c('category', 'name')))
     total.avail.cap = total.avail.cap[, .(value=sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name, category)]
   }
-  return(total.avail.cap[, .(scenario, property, name, category, value)])
+  return(total.avail.cap[, .(value=sum(value)), by=.(scenario, property, name, category)])
 }
 
 # Full run emissions cost
@@ -544,7 +561,7 @@ total_emissions = function(database) {
     total.emissions.cost = data.table(query_interval(database, 'Generator', 'Emissions Cost', columns = c('category', 'name')))
     total.emissions.cost = total.emissions.cost[, .(value=sum(value)/1000), by=.(scenario, property, name, category)]
   }
-  return(total.emissions.cost[, .(scenario, property, name, category, value)])
+  return(total.emissions.cost[, .(value=sum(value)), by=.(scenario, property, name, category)])
 }
 
 # Full run fuel cost
@@ -555,7 +572,7 @@ total_fuel = function(database) {
     total.fuel.cost = data.table(query_interval(database, 'Generator', 'Fuel Cost', columns = c('category', 'name')))
     total.fuel.cost = total.fuel.cost[, .(value=sum(value)/1000), by=.(scenario, property, name, category)]
   }
-  return(total.fuel.cost[, .(scenario, property, name, category, value)])
+  return(total.fuel.cost[, .(value=sum(value)), by=.(scenario, property, name, category)])
 }
 
 # Full run S&S cost
@@ -566,7 +583,7 @@ total_ss = function(database) {
     total.ss.cost = data.table(query_interval(database, 'Generator', 'Start & Shutdown Cost', columns = c('category', 'name')))
     total.ss.cost = total.ss.cost[, .(value=sum(value)/1000), by=.(scenario, property, name, category)]
   }
-  return(total.ss.cost[, .(scenario, property, name, category, value)])
+  return(total.ss.cost[, .(value=sum(value)), by=.(scenario, property, name, category)])
 }
 
 # Full run VO&M cost
@@ -577,7 +594,7 @@ total_vom = function(database) {
     total.vom.cost = data.table(query_interval(database, 'Generator', '', columns = c('category', 'name')))
     total.vom.cost = total.vom.cost[, .(value=sum(value)/1000), by=.(scenario, property, name, category)]
   }
-  return(total.vom.cost[, .(scenario, property, name, category, value)])
+  return(total.vom.cost[, .(value=sum(value)), by=.(scenario, property, name, category)])
 }
 
 # Full run installed capacity
@@ -588,7 +605,7 @@ total_installed_cap = function(database) {
     total.installed.cap = data.table(query_interval(database, 'Generator', 'Installed Capacity', columns = c('category', 'name')))
     total.installed.cap = total.installed.cap[, .(value=max(value)), by=.(scenario, property, name, category)]
   }
-  return(total.installed.cap[, .(scenario, property, name, category, value)])
+  return(total.installed.cap[, .(value=sum(value)), by=.(scenario, property, name, category)])
 }
 
 # Full run reserve provision
@@ -599,7 +616,7 @@ total_gen_reserve_provision = function(database) {
     total.res.provision = data.table(query_interval(database, 'Reserve.Generators', 'Provision', columns = c('category', 'name')))
     total.res.provision = total.res.provision[, .(value=sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name, category)]
   }
-  return(total.res.provision[, .(scenario, property, name, parent, category, value)])
+  return(total.res.provision[, .(value=sum(value)), by=.(scenario, property, name, parent, category)])
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -614,7 +631,7 @@ total_region_load = function(database) {
     total.region.load = data.table(query_interval(database, 'Region','Load', columns = c('category','name')))
     total.region.load = total.region.load[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
   }
-  return(total.region.load[, .(scenario, property, name, value)])
+  return(total.region.load[, .(value=sum(value)), by=.(scenario, property, name)])
 }
 
 # Full run region imports
@@ -625,7 +642,7 @@ total_region_imports = function(database) {
     total.region.imports = data.table(query_interval(database, 'Region','Imports', columns = c('category','name')))
     total.region.imports = total.region.imports[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
   }
-  return(total.region.imports[, .(scenario, property, name, value)])
+  return(total.region.imports[, .(value=sum(value)), by=.(scenario, property, name)])
 }
 
 # Full run region exports
@@ -636,7 +653,7 @@ total_region_exports = function(database) {
     total.region.exports = data.table(query_interval(database, 'Region','Exports', columns = c('category','name')))
     total.region.exports = total.region.exports[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
   }
-  return(total.region.exports[, .(scenario, property, name, value)])
+  return(total.region.exports[, .(value=sum(value)), by=.(scenario, property, name)])
 }
 
 # Full run region unserved energy
@@ -647,7 +664,7 @@ total_region_ue = function(database) {
     total.region.ue = data.table(query_interval(database, 'Region','Unserved Energy', columns = c('category','name')))
     total.region.ue = total.region.ue[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
   }
-  return(total.region.ue[, .(scenario, property, name, value)])
+  return(total.region.ue[, .(value=sum(value)), by=.(scenario, property, name)])
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -662,7 +679,7 @@ total_zone_load = function(database) {
     total.zone.load = data.table(query_interval(database, 'Zone','Load', columns = c('category','name')))
     total.zone.load = total.zone.load[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
   }
-  return(total.zone.load[, .(scenario, property, name, value)])
+  return(total.zone.load[, .(value=sum(value)), by=.(scenario, property, name)])
 }
 
 # Full run zone imports
@@ -673,7 +690,7 @@ total_zone_imports = function(database) {
     total.zone.imports = data.table(query_interval(database, 'Zone','Imports', columns = c('category','name')))
     total.zone.imports = total.zone.imports[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
   }
-  return(total.zone.imports[, .(scenario, property, name, value)])
+  return(total.zone.imports[, .(value=sum(value)), by=.(scenario, property, name)])
 }
 
 # Full run zone exports
@@ -684,7 +701,7 @@ total_zone_exports = function(database) {
     total.zone.exports = data.table(query_interval(database, 'Zone','Exports', columns = c('category','name')))
     total.zone.exports = total.zone.exports[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
   }
-  return(total.zone.exports[, .(scenario, property, name, value)])
+  return(total.zone.exports[, .(value=sum(value)), by=.(scenario, property, name)])
 }
 
 # Full run zone unserved energy
@@ -695,7 +712,7 @@ total_zone_ue = function(database) {
     total.zone.ue = data.table(query_interval(database, 'Zone','Unserved Energy', columns = c('category','name')))
     total.zone.ue = total.zone.ue[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
   }
-  return(total.zone.ue[, .(scenario, property, name, value)])
+  return(total.zone.ue[, .(value=sum(value)), by=.(scenario, property, name)])
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -710,7 +727,7 @@ total_reserve_provision = function(database) {
     total.reserve.provision = data.table(query_interval(database, 'Reserve','Provision', columns = c('category','name')))
     total.reserve.provision = total.reserve.provision[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
   }
-  return(total.reserve.provision[, .(scenario, property, name, value)])
+  return(total.reserve.provision[, .(value=sum(value)), by=.(scenario, property, name)])
 }
 
 # Full run reserves shortage
@@ -721,7 +738,7 @@ total_reserve_shortage = function(database) {
     total.reserve.shortage = data.table(query_interval(database, 'Reserve','Shortage', columns = c('category','name')))
     total.reserve.shortage = total.reserve.shortage[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
   }
-  return(total.reserve.shortage[, .(scenario, property, name, value)])
+  return(total.reserve.shortage[, .(value=sum(value)), by=.(scenario, property, name)])
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -736,7 +753,7 @@ total_interface_flow = function(database) {
     total.interface = data.table(query_interval(database, 'Interface','Flow', columns = c('category','name')))
     total.interface = total.interface[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
   }
-  return(total.interface[, .(scenario, property, name, value, time)])
+  return(total.interface[, .(value=sum(value)), by=.(scenario, property, name, time)])
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -751,7 +768,7 @@ total_line_flow = function(database) {
     total.line = data.table(query_interval(database, 'Line','Flow', columns = c('category','name')))
     total.line = total.line[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
   }
-  return(total.line[, .(scenario, property, name, value, time)])
+  return(total.line[, .(value=sum(value)), by=.(scenario, property, name, time)])
 }
 
 
