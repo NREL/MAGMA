@@ -56,7 +56,7 @@ if(26 %in% run.sections) {commit.dispatch.region=TRUE}          else {commit.dis
 if(33 %in% run.sections) {revenue.plots=TRUE}                   else {revenue.plots=FALSE}
 if(27 %in% run.sections) {annual.res.short.table=TRUE}          else {annual.res.short.table=FALSE}
 if(28 %in% run.sections) {curtailment.diff.table=TRUE}          else {curtailment.diff.table=FALSE}
-if(30 %in% run.sections) {runtime.table=TRUE}                   else {runtime.plots=FALSE}
+if(30 %in% run.sections) {runtime.table=TRUE}                   else {runtime.table=FALSE}
 if(31 %in% run.sections) {compare.dispatch.zone=TRUE}           else {compare.dispatch.zone=FALSE}
 if(32 %in% run.sections) {compare.dispatch.region=TRUE}         else {compare.dispatch.region=FALSE}
 if(33 %in% run.sections) {line.flow.table=TRUE}                 else {line.flow.table=FALSE}
@@ -98,10 +98,10 @@ if (length(reassign.zones)==0) {
 }
 
 # Generation type order for plots
-gen.order = rev(as.character(na.omit(inputs$Gen.Order))) 
+gen.order = (as.character(na.omit(inputs$Gen.Order))) 
 # Add Curtailment if not included
 if (! 'Curtailment' %in% gen.order){
-  gen.order = c(gen.order,'Curtailment')
+  gen.order = c('Curtailment',gen.order)
 }
 
 # Types of renewables to be considered for curtailment calculations
@@ -276,8 +276,8 @@ if (is.na(inputs$Gen.Region.Zone.Mapping.Filename)[1]){
   if(length(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename))>1){
     warning("More than one Gen.Region.Zone.Mapping.Filename found... I'll create a unique combination for you.")
     for (i in 2:length(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename))){
-      region.zone.mapping = rbind(region.zone.mapping,data.table(read.csv(as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename)[i]), 
-                                                                          stringsAsFactors=FALSE)))
+      region.zone.mapping = rbindlist(list(region.zone.mapping,data.table(read.csv(as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename)[i]), 
+                                                                          stringsAsFactors=FALSE))),fill=TRUE)
     }
   }
 }
