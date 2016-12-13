@@ -58,7 +58,7 @@ plot_installed_MW <- function(aggregation = "all") {
                 # axis.text.x =   element_text(face=2),
                 axis.title =      element_text(size=text.plot, face=2),
                 axis.title.y =    element_text(vjust=1.2),
-                panel.margin =    unit(1.5, "lines"),
+                panel.spacing =    unit(1.5, "lines"),
                 aspect.ratio = 2.5/length(db.loc),
                 axis.text.x = element_text(angle = -30, hjust = 0)) 
     
@@ -87,7 +87,7 @@ plot_installed_MW <- function(aggregation = "all") {
                 # axis.text.x =   element_text(face=2),
                 axis.title =      element_text(size=text.plot, face=2),
                 axis.title.y =    element_text(vjust=1.2),
-                panel.margin =    unit(1.5, "lines"),
+                panel.spacing =    unit(1.5, "lines"),
                 aspect.ratio = 2.5/length(db.loc),
                 axis.text.x = element_text(angle = -30, hjust = 0)) 
     
@@ -117,7 +117,7 @@ plot_installed_MW <- function(aggregation = "all") {
                 # axis.text.x =   element_text(face=2),
                 axis.title =      element_text(size=text.plot, face=2),
                 axis.title.y =    element_text(vjust=1.2),
-                panel.margin =    unit(1.5, "lines"),
+                panel.spacing =    unit(1.5, "lines"),
                 aspect.ratio = 2.5/length(db.loc),
                 axis.text.x = element_text(angle = -30, hjust = 0))
     
@@ -148,7 +148,7 @@ plot_installed_MW <- function(aggregation = "all") {
                 # axis.text.x =   element_text(face=2),
                 axis.title =      element_text(size=text.plot, face=2),
                 axis.title.y =    element_text(vjust=1.2),
-                panel.margin =    unit(1.5, "lines"),
+                panel.spacing =    unit(1.5, "lines"),
                 aspect.ratio = 2.5/length(db.loc),
                 axis.text.x = element_text(angle = -30, hjust = 0))
   
@@ -201,7 +201,7 @@ plot_emissions <- function(GHG = 'CO2e') {
                 # axis.text.x =   element_text(face=2),
                 axis.title =      element_text(size=text.plot, face=2),
                 axis.title.y =    element_text(vjust=1.2),
-                panel.margin =    unit(1.5, "lines"),
+                panel.spacing =    unit(1.5, "lines"),
                 aspect.ratio = 2.5/length(db.loc),
                 axis.text.x = element_text(angle = -30, hjust = 0)) 
     
@@ -225,7 +225,7 @@ plot_emissions <- function(GHG = 'CO2e') {
                 # axis.text.x =   element_text(face=2),
                 axis.title =      element_text(size=text.plot, face=2),
                 axis.title.y =    element_text(vjust=1.2),
-                panel.margin =    unit(1.5, "lines"),
+                panel.spacing =    unit(1.5, "lines"),
                 aspect.ratio = 2.5/length(db.loc),
                 axis.text.x = element_text(angle = -30, hjust = 0)) 
     
@@ -289,7 +289,7 @@ plot_net_load <- function(aggregation = 'all', type = "duration curve") {
            axis.title.x =     element_text(vjust=-0.3),
            panel.grid.major = element_line(colour = "grey85"),
            panel.grid.minor = element_line(colour = "grey93"),
-           panel.margin =     unit(1.0, "lines"),
+           panel.spacing =     unit(1.0, "lines"),
            aspect.ratio =     .65)
     
   }
@@ -316,7 +316,7 @@ plot_net_load <- function(aggregation = 'all', type = "duration curve") {
              axis.title.x =     element_text(vjust=-0.3),
              panel.grid.major = element_line(colour = "grey85"),
              panel.grid.minor = element_line(colour = "grey93"),
-             panel.margin =     unit(1.0, "lines"),
+             panel.spacing =     unit(1.0, "lines"),
              aspect.ratio =     .65)
     
   }
@@ -342,7 +342,7 @@ plot_net_load <- function(aggregation = 'all', type = "duration curve") {
            axis.title.x =     element_text(vjust=-0.3),
            panel.grid.major = element_line(colour = "grey85"),
            panel.grid.minor = element_line(colour = "grey93"),
-           panel.margin =     unit(1.0, "lines"),
+           panel.spacing =     unit(1.0, "lines"),
            aspect.ratio =     0.65,
            axis.text.x = element_text(angle = -30, hjust = 0))
     
@@ -409,7 +409,7 @@ plot_net_load_ramps <- function(fueltype = 'total', type = "duration curve", nor
              axis.title.x =     element_text(vjust=-0.3),
              panel.grid.major = element_line(colour = "grey85"),
              panel.grid.minor = element_line(colour = "grey93"),
-             panel.margin =     unit(1.0, "lines"),
+             panel.spacing =     unit(1.0, "lines"),
              aspect.ratio =     .65)
     
   }
@@ -430,7 +430,7 @@ plot_net_load_ramps <- function(fueltype = 'total', type = "duration curve", nor
              axis.title.x =     element_text(vjust=-0.3),
              panel.grid.major = element_line(colour = "grey85"),
              panel.grid.minor = element_line(colour = "grey93"),
-             panel.margin =     unit(1.0, "lines"),
+             panel.spacing =     unit(1.0, "lines"),
              aspect.ratio =     0.65,
              axis.text.x = element_text(angle = -30, hjust = 0))
     
@@ -475,7 +475,7 @@ plot_net_load_ramps <- function(fueltype = 'total', type = "duration curve", nor
              axis.title.x =     element_text(vjust=-0.3),
              panel.grid.major = element_line(colour = "grey85"),
              panel.grid.minor = element_line(colour = "grey93"),
-             panel.margin =     unit(1.0, "lines"),
+             panel.spacing =     unit(1.0, "lines"),
              aspect.ratio =     .65)
     
   }
@@ -509,7 +509,7 @@ plot_net_load_ramps <- function(fueltype = 'total', type = "duration curve", nor
              axis.title.x =     element_text(vjust=-0.3),
              panel.grid.major = element_line(colour = "grey85"),
              panel.grid.minor = element_line(colour = "grey93"),
-             panel.margin =     unit(1.0, "lines"),
+             panel.spacing =     unit(1.0, "lines"),
              aspect.ratio =     .65)
     
   }
@@ -553,7 +553,7 @@ plot_starts <- function() {
               # axis.text.x =   element_text(face=2),
               axis.title =      element_text(size=text.plot, face=2),
               axis.title.y =    element_text(vjust=1.2),
-              panel.margin =    unit(1.5, "lines"),
+              panel.spacing =    unit(1.5, "lines"),
               aspect.ratio = 2.5/length(db.loc),
               axis.text.x = element_text(angle = -30, hjust = 0)) 
   
@@ -610,7 +610,7 @@ plot_min_gen <- function(fueltype = 'Coal', percent.of = 'year') {
              axis.title.x =     element_text(vjust=-0.3),
              panel.grid.major = element_line(colour = "grey85"),
              panel.grid.minor = element_line(colour = "grey93"),
-             panel.margin =     unit(1.0, "lines"),
+             panel.spacing =     unit(1.0, "lines"),
              aspect.ratio =     0.65,
              axis.text.x = element_text(angle = -30, hjust = 0))
     
@@ -633,7 +633,7 @@ plot_min_gen <- function(fueltype = 'Coal', percent.of = 'year') {
               axis.title.x =     element_text(vjust=-0.3),
               panel.grid.major = element_line(colour = "grey85"),
               panel.grid.minor = element_line(colour = "grey93"),
-              panel.margin =     unit(1.0, "lines"),
+              panel.spacing =     unit(1.0, "lines"),
               aspect.ratio =     0.65,
               axis.text.x = element_text(angle = -30, hjust = 0))
      
