@@ -27,6 +27,7 @@ if (revenue.plots) {
       p = ggplot(total.revenue)+
         geom_bar(aes(scenario,revenue/10^6,fill=Revenue_Type), stat='identity')+
         ylab("Total Revenue, Million $") + xlab("Scenario")+
+        theme(axis.text.x = element_text(angle = -30, hjust = 0))+
         scale_fill_manual(values=c('dodgerblue2','firebrick1'),name='Revenue Type')+
         facet_wrap(~Type,ncol=3,scales='free')
       print(p)

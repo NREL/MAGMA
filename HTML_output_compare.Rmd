@@ -388,10 +388,10 @@ if (curtailment.diff.table) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
 if (annual.cost.table) {
-  if ( typeof(total.emissions.cost)=='character' | typeof(total.fuel.cost)=='character' | 
-       typeof(total.ss.cost)=='character' | typeof(total.vom.cost)=='character' ) {
-    print('INPUT ERROR: at least one of total.emissions cost, total.fuel.cost, 
-           total.ss.cost, or total.vom.cost has errors. Cannot run this section.')
+  if ( typeof(total.emissions.cost)=='character' & typeof(total.fuel.cost)=='character' & 
+       typeof(total.ss.cost)=='character' & typeof(total.vom.cost)=='character' ) {
+    print('INPUT ERROR: all of total.emissions cost, total.fuel.cost, 
+           total.ss.cost, and total.vom.cost has errors. Cannot run this section.')
   } else{
     # Run the cost query function
     cost.table = tryCatch( costs(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom.cost), 

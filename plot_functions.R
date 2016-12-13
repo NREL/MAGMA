@@ -51,7 +51,7 @@ gen_stack_plot <- function(gen.data, load.data=NULL, filters=NULL, x_col='scenar
   
   # Group by type and convert GWh to TWh
   gen.plot = gen.data[, .(TWh = sum(GWh)/1000), by=agg.filters]
-  setorder(gen.plot,Type)
+  setorderv(gen.plot,c('Type',filters,x_col))
   
   if(!is.null(load.data)){
     tot.load = load.data[, .(TWh = sum(value)/1000), by=load.filters]
@@ -66,7 +66,7 @@ gen_stack_plot <- function(gen.data, load.data=NULL, filters=NULL, x_col='scenar
   p1 = ggplot() +
     geom_bar(data = gen.plot, aes_string(x = x_col, y = 'TWh', fill='Type'), stat="identity", position="stack" ) +
     scale_color_manual(name='', values=c("grey40"), labels=c("Load"))+
-    scale_fill_manual('', values = gen.color, limits=rev(gen.order))+     
+    scale_fill_manual('', values = gen.color)+     
     labs(y="Generation (TWh)", x=NULL)+
     guides(color = guide_legend(order=1), fill = guide_legend(order=2))+
     theme(    legend.key =      element_rect(color="grey80", size = 0.8),
@@ -113,8 +113,8 @@ gen_diff_stack_plot <- function(gen.data, load.data, filters=NULL){
                         .(TWh = sum(GWh)/1000), by=agg.filters]
   dat.neg = gen.data[GWh<0 & scenario!=ref.scenario, 
                         .(TWh = sum(GWh)/1000), by=agg.filters]
-  setorder(dat.pos,Type)
-  setorder(dat.neg,Type)
+  setorderv(dat.pos,c('Type',filters,'TWh'))
+  setorderv(dat.neg,c('Type',filters,'TWh'))
 
   # gen.sum is just used to set the maximum height on the plot, see pretty() fcn below
   gen.sum = rbindlist(list(dat.pos[, .(TWh = sum(TWh)), by=load.filters], 
@@ -168,9 +168,11 @@ dispatch_plot <- function(gen.data, load.data, filters=NULL){
     agg.filters = c("time",filters)
   }
   seq.py.t = pretty_axes(gen.data, load.data, filters = agg.filters)
+  
+  setorderv(gen.data,c('Type',filters))
 
   # Plot
-  p1 = ggplot(gen.data, aes(time, value, group=Type, fill=Type, order=as.numeric(Type)), color="black")+
+  p1 = ggplot(gen.data, aes(time, value, group=Type, fill=Type), color="black")+
           geom_area(color=NA)+
           geom_line(position="stack", size=0.3)+
           labs(y="Generation (GW)", x=NULL)+
