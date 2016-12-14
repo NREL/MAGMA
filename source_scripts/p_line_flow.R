@@ -13,7 +13,7 @@ if (line.flow.plots) {
         print('ERROR: line_flows function not returning correct results.')
       } else {
         # Get interval plots
-        p1 = interface_plot(line.flows, x_col = 'time',interfaces = lines)
+        p1 = interface_plot(line.flows, x_col = 'time',interfaces = lines, color = 'name')
         print(p1 + labs(title='Interval Flow'))
         # Aggregate interval flow data into daily flow data
         line.flows[, day := as.POSIXlt(time)[[8]] ]
