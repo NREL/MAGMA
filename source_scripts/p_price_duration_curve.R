@@ -7,8 +7,8 @@ if(price.duration.curve) {
     } else {
 
       # Create plot
-      p1 = price_duration_curve(interval.region.price[!name %in% ignore.regions & property == 'Price', ],
-                                filters = c('property','name'), color='area')
+      p1 = price_duration_curve(interval.region.price[!Region %in% ignore.regions & property == 'Price', ],
+                                filters = c('property','Region'), color='Region')
       p1 = p1 + theme(aspect.ratio = 0.65)
       # Create plot with slightly different y-axis limit.
       p2 = p1 + coord_cartesian(ylim=c(0,200))

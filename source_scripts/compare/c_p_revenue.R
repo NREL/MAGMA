@@ -11,13 +11,11 @@ if (revenue.plots) {
   } else if ( typeof(interval.gen.reserve.provision) == 'character' ) { 
     print('INPUT ERROR: interval.gen.reserve.provision has errors. Cannot run this section.')
   } else{
-    # If the data doesn't exist, run the query function. 
-    if ( !exists('r.z.revenue') ) {
-      # Query curtailment data
-      r.z.revenue = tryCatch( revenue_calculator(interval.generation, interval.region.price,
-                                                     interval.gen.reserve.provision,interval.reserve.price), 
-                                   error = function(cond) { return('ERROR')})
-    }
+    # Query curtailment data
+    r.z.revenue = tryCatch( revenue_calculator(interval.generation, interval.region.price,
+                                               interval.gen.reserve.provision,interval.reserve.price), 
+                            error = function(cond) { return('ERROR')})
+    
     # If there is a problem with the query return an error.
     if ( typeof(r.z.revenue)=='character' ) { 
       print('ERROR: revenue_calculator function not returning correct results.')

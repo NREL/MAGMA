@@ -8,7 +8,7 @@ if(res.price.duration.curve) {
     
     p1 = price_duration_curve(interval.reserve.price[!name %in% ignore.regions & property == 'Price', ],
                               filters = c('scenario','name'), color='scenario')
-    p1 = p1 + facet_wrap(~area, ncol=3)
+    p1 = p1 + facet_wrap(~name, ncol=3)
     
     # Create plot with slightly different y-axis limit.
     p2 = p1 + coord_cartesian(ylim=c(0,200))

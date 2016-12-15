@@ -478,12 +478,12 @@ revenue_calculator = function(interval.generation, interval.region.price,
                                                                  .(scenario,name,parent,time,value)]]
   #Merge prices onto generation and reserve data
   setkey(gen.data,Region,time,scenario)
-  setkey(interval.region.price,name,time,scenario)
-  gen.data = gen.data[interval.region.price]
+  setkey(interval.region.price,Region,time,scenario)
+  gen.data = interval.region.price[gen.data]
   
   setkey(res.data,parent,time,scenario)
   setkey(interval.reserve.price,name,time,scenario)
-  res.data = res.data[interval.reserve.price]
+  res.data = interval.reserve.price[res.data]
   
   gen.data[, Revenue_Type:='Generation']
   gen.data[, revenue:=value*i.value]
@@ -591,7 +591,7 @@ total_vom = function(database) {
   if ("VO&M Cost" %in% properties[is_summary==1 & collection=="Generator",property]){
     total.vom.cost = data.table(query_year(database, 'Generator', 'VO&M Cost', columns = c('category', 'name')))
   } else if ("VO&M Cost" %in% properties[is_summary==0 & collection=="Generator", property]){
-    total.vom.cost = data.table(query_interval(database, 'Generator', '', columns = c('category', 'name')))
+    total.vom.cost = data.table(query_interval(database, 'Generator', 'VO&M Cost', columns = c('category', 'name')))
     total.vom.cost = total.vom.cost[, .(value=sum(value)/1000), by=.(scenario, property, name, category)]
   }
   return(total.vom.cost[, .(value=sum(value)), by=.(scenario, property, name, category)])
@@ -800,7 +800,7 @@ interval_region_load = function(database) {
 # Interval level region load and price
 interval_region_price = function(database) {
   interval.region.price = data.table(query_interval(database, 'Region', 'Price'))
-  return(interval.region.price[, .(scenario, property, name, time, value)])
+  return(interval.region.price[, .(scenario, property, Region=name, time, value)])
 }
 
 # Interval level reserve price

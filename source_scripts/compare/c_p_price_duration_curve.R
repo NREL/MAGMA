@@ -6,9 +6,9 @@ if(price.duration.curve) {
     print('ERROR: interval_region_price function not returning correct results.')
   } else {
     
-    p1 = price_duration_curve(interval.region.price[!name %in% ignore.regions & property == 'Price', ],
-                              filters = c('scenario','name'), color='scenario')
-    p1 = p1 + facet_wrap(~area, ncol=3)
+    p1 = price_duration_curve(interval.region.price[!Region %in% ignore.regions & property == 'Price', ],
+                              filters = c('scenario','Region'), color='scenario')
+    p1 = p1 + facet_wrap(~Region, ncol=3)
 
     # Create plot with slightly different y-axis limit.
     p2 = p1 + coord_cartesian(ylim=c(0,200))

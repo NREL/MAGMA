@@ -221,7 +221,6 @@ interface_plot <- function(flow.data, x_col = 'time',color='interface', interfac
 price_duration_curve <- function(price.data, filters, color=NULL){
   # Create plots of price duration curves
   price.data[, interval := rank(-value,ties.method="random"), by=filters]
-  setnames(price.data,'name','area')
 
   # Create Plot
   p.1 = ggplot(price.data)+

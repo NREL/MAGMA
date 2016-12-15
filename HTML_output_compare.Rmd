@@ -21,8 +21,13 @@ if (exists('zone.names')) { z.height = ( length(zone.names[!zone.names%in%ignore
 if (exists('region.names')) { r.height = ( length(region.names[!region.names%in%ignore.regions]) %/% 3 + 
                                              length(region.names[!region.names%in%ignore.regions]) %% 3 ) * 4
   } else {r.height = 4 }
+if (exists('region.names')) { r.height2 = ( length(region.names[!region.names%in%ignore.regions]) %/% 3 + 
+                                             length(region.names[!region.names%in%ignore.regions]) %% 3 ) * 3
+  } else {r.height2 = 3 }
 if (exists('reserve.names')) { res.height = ( length(reserve.names) %/% 3 + length(reserve.names) %% 3 ) * 5
   } else { res.height = 5 }
+if (exists('reserve.names')) { res.height2 = ( length(reserve.names) %/% 3 + length(reserve.names) %% 3 ) * 3
+  } else { res.height2 = 3 }
 if (exists('interfaces')) { i.height = ( length(interfaces) ) * 5
   } else { i.height = 5 }
 s.height = ( length(db.loc) ) * 4
@@ -800,7 +805,7 @@ if(capacity.factor.table) {
 
 ***
 ## 24. Region Price Duration Curves
-```{r price-duration-curve, fig.width = 12, fig.height=r.height}
+```{r price-duration-curve, fig.width = 15, fig.height=r.height2}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/compare/c_p_price_duration_curve.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -808,7 +813,7 @@ source('source_scripts/compare/c_p_price_duration_curve.R')
 
 ***
 ## 24. Reserve Price Duration Curves
-```{r res-price-duration-curve, fig.width = 12, fig.height=r.height}
+```{r res-price-duration-curve, fig.width = 15, fig.height=res.height2}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/compare/c_p_res_price_duration_curve.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
