@@ -21,7 +21,7 @@ if ( !r.name %in% ignore.regions ) {
   if ( plot.data[, sum(value)]>0 ) {
 
     p = commitment_dispatch_plot(plot.data)
-    print(p+facet_grid(Type~scenario, scales="free_y"))
+    print(p+facet_grid(Type~scenario, scales="free_y")+theme(panel.spacing.x = unit(2,'lines')))
     
     
   }
