@@ -65,7 +65,7 @@ ggplot() +
                  # axis.text.x =   element_text(face=2),
                  axis.title =      element_text(size=text.plot, face=2),
                  axis.title.y =    element_text(vjust=1.2),
-                 panel.margin =    unit(1.5, "lines"),
+                 panel.spacing =    unit(1.5, "lines"),
                  aspect.ratio =    2.5 )
 
 ```

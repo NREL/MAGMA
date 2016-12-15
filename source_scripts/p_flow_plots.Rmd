@@ -21,7 +21,7 @@ ggplot(zonal.flows[Period == '{{period.name}}', ], aes(x=time, y=-value/1000, co
                   axis.text=element_text(face=2, size=text.plot/1),
                   axis.title=element_text(size=text.plot, face=2.3),
                   # legend.position=c(0.80, 0.12),
-                  panel.margin = unit(0.35, "lines"))+
+                  panel.spacing = unit(0.35, "lines"))+
             facet_wrap(~Period, scales = 'free_x', nrow=4)
 ```
 
