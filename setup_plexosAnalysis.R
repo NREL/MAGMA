@@ -62,6 +62,7 @@ if(32 %in% run.sections) {compare.dispatch.region=TRUE}         else {compare.di
 if(33 %in% run.sections) {line.flow.table=TRUE}                 else {line.flow.table=FALSE}
 if(34 %in% run.sections) {line.flow.plots=TRUE}                 else {line.flow.plots=FALSE}
 if(35 %in% run.sections) {key.period.line.flow.plots=TRUE}      else {key.period.line.flow.plots=FALSE}
+if(36 %in% run.sections) {installed.cap.plot=TRUE}              else {installed.cap.plot=FALSE}
 
 
 # -----------------------------------------------------------------------

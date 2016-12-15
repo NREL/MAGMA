@@ -46,7 +46,7 @@ if ( reserve.stack ) {
   if (typeof(total.gen.res)=='character') { message('\nMissing total generator reserve provision data from solution .db file.')}
 }
 
-if ( capacity.factor.table ) {
+if ( capacity.factor.table | installed.cap.plot ) {
   # Total installed capacity
   total.installed.cap  = tryCatch( total_installed_cap(db), error = function(cond) { return('ERROR') } ) 
   if (typeof(total.installed.cap)=='character') { message('\nMissing total generator installed capacity data from solution .db file.')}
