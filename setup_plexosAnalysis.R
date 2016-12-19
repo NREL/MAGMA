@@ -20,7 +20,7 @@ text.plot = 11
 theme_set(theme_bw())
 
 # Color scheme for line plots
-scen.pal = c("goldenrod2", "blue", "darkblue", "firebrick3", "deeppink", "chartreuse2", "seagreen4")
+scen.pal = c("goldenrod2", "blue", "firebrick3", "darkblue", "deeppink", "chartreuse2", "seagreen4")
 
 # -----------------------------------------------------------------------
 

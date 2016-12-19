@@ -958,12 +958,15 @@ if(installed.cap.plot) {
   if ( typeof(total.installed.cap)=='character' ) {
     print('INPUT ERROR: total.installed.cap has errors. Cannot run this section.')
   } else{
+    # Add type
+    total.installed.cap[, Type:=gen.type.mapping[name] ]
+    total.installed.cap[, GWh:=value] # Changing this so we can use gen_stack_plot
     # Create plot
     plot.data = gen_stack_plot(total.installed.cap)
     print(plot.data[[1]] + theme(aspect.ratio = 2.5/length(db.loc),axis.text.x = element_text(angle = -30, hjust = 0)) +
           scale_y_continuous(breaks=plot.data[[2]], limits=c(min(plot.data[[2]]), max(plot.data[[2]])), 
                              expand=c(0,0), label=comma) + 
-            ylabs("Installed Capacity, GW"))
+            ylab("Installed Capacity, GW"))
   }
 } else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
