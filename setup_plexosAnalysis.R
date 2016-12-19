@@ -9,7 +9,7 @@ if (!require(pacman)){
   library(pacman)
 }
 p_load(ggplot2, reshape2, plyr, lubridate, scales, RSQLite, grid, knitr, markdown, grid, gridExtra, RColorBrewer, snow,
-       doParallel, xtable, data.table, dplyr, extrafont, tidyr, stringr, rplexos, rmarkdown)
+       doParallel, xtable, data.table, dplyr, extrafont, tidyr, stringr, rplexos, rmarkdown, yaml)
 
 # -----------------------------------------------------------------------
 # Size for plot text
