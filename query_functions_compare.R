@@ -38,8 +38,7 @@ region_gen_diff = function(total.generation, total.avail.cap) {
   r.z.gen = r.z.gen[all.combos]
   r.z.gen[is.na(GWh), GWh:=0]
 
-  r.z.gen[, scenario:=as.character(scenario)]
-  r.z.diff = r.z.gen[, GWh := GWh - GWh[scenario == ref.scenario], by=.(Region, Type)]
+  r.z.diff = r.z.gen[, GWh := GWh - GWh[as.character(scenario) == ref.scenario], by=.(Region, Type)]
 
   return(r.z.diff)
 }
@@ -56,8 +55,7 @@ zone_gen_diff = function(total.generation, total.avail.cap) {
   r.z.gen = r.z.gen[all.combos]
   r.z.gen[is.na(GWh), GWh:=0]
 
-  r.z.gen[, scenario:=as.character(scenario)]
-  r.z.diff = r.z.gen[, GWh := GWh - GWh[scenario == ref.scenario], by=.(Zone, Type)]
+  r.z.diff = r.z.gen[, GWh := GWh - GWh[as.character(scenario) == ref.scenario], by=.(Zone, Type)]
   
   return(r.z.diff)
 }

@@ -123,8 +123,7 @@ gen_diff_stack_plot <- function(gen.data, load.data, filters=NULL){
 
   # Calculate difference in load
   load.scen = load.data[, .(value = sum(value)/1000), by=load.filters]
-  load.scen[, scenario:=as.character(scenario)]
-  diff.load = load.scen[, .(scenario, TWh = value-value[scenario==ref.scenario]), by=load.diff.filters]
+  diff.load = load.scen[, .(scenario, TWh = value-value[as.character(scenario)==ref.scenario]), by=load.diff.filters]
   diff.load = diff.load[scenario!=ref.scenario, ]
 
   # Create plot
