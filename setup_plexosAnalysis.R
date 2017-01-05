@@ -227,6 +227,10 @@ if (is.na(inputs$Gen.Region.Zone.Mapping.Filename)[1]){
 } else{
   region.zone.mapping = data.table(read.csv(as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename)), 
                         stringsAsFactors=FALSE))
+  if ( typeof(region.zone.mapping$Region)!="character" | typeof(region.zone.mapping$Zone)!="character" ) {
+    region.zone.mapping$Region = as.character(region.zone.mapping$Region)
+    region.zone.mapping$Zone = as.character(region.zone.mapping$Zone)
+  }
 }
 region.zone.mapping = unique(region.zone.mapping[, .(name, Region, Zone)])
 setkey(region.zone.mapping,name)
