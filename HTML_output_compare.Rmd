@@ -30,6 +30,8 @@ if (exists('reserve.names')) { res.height2 = ( length(reserve.names) %/% 3 + len
   } else { res.height2 = 3 }
 if (exists('interfaces')) { i.height = ( length(interfaces) ) * 5
   } else { i.height = 5 }
+if (exists('lines')) { l.height = ( length(lines) ) * 5
+  } else { l.height = 5 }
 s.height = ( length(db.loc) ) * 4
 s.width = ( length(db.loc) %/% 3 + length(db.loc) %% 3 ) * 10
 p.height = ( length(period.names) %/% 2 + length(period.names) %% 2 ) * 5
@@ -633,7 +635,7 @@ if(line.flow.table) {
 
 ***
 ## 34. Line Flow Plots
-```{r line-flow-plots, resize.width=T, fig.width=10, fig.height=i.height}
+```{r line-flow-plots, resize.width=T, fig.width=10, fig.height=l.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
 if (line.flow.plots) {
