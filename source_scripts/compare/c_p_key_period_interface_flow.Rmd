@@ -4,7 +4,6 @@ p.name = '{{period.name}}' # Set key period name
 cat("### ", p.name) # Print period name above plot
 text.plot=11 # Set plot text size
 figure.width = 9
-figure.height = 5*length(interfaces)
 ```
 
 ```{r key-period-interface-flow-scen-plots-{{period.name}}, fig.width=figure.width, fig.height=figure.height, include=TRUE}

@@ -28,9 +28,11 @@ if (exists('reserve.names')) { res.height = ( length(reserve.names) %/% 3 + leng
   } else { res.height = 5 }
 if (exists('reserve.names')) { res.height2 = ( length(reserve.names) %/% 3 + length(reserve.names) %% 3 ) * 3
   } else { res.height2 = 3 }
-if (exists('interfaces')) { i.height = ( length(interfaces) ) * 5
+if (exists('interfaces')) { 
+    i.height = ifelse(typeof(interfaces)=='character', 5, ( length(interfaces) ) * 5)
   } else { i.height = 5 }
-if (exists('lines')) { l.height = ( length(lines) ) * 5
+if (exists('lines')) {
+    l.height = ifelse(typeof(lines)=='character', 5, ( length(lines) ) * 5)
   } else { l.height = 5 }
 s.height = ( length(db.loc) ) * 4
 s.width = ( length(db.loc) %/% 3 + length(db.loc) %% 3 ) * 10
@@ -597,6 +599,7 @@ if (key.period.interface.flow.plots) {
           print('ERROR: interval_interface_flows function not returning correct results.')
         } else {        
           # Create data for each plot for the interesting periods
+          figure.height = i.height
           key.plots = lapply(period.names, function(p){
                              knit_expand(file = 'source_scripts/compare/c_p_key_period_interface_flow.Rmd', period.name = p)
                              }) 
@@ -661,8 +664,8 @@ if (line.flow.plots) {
         avg.line[, hour := floor((interval-1)*(3600*24/intervals.per.day)/3600)]
         avg.line[, minute := floor((interval-1)*(3600*24/intervals.per.day)/60-hour*60)]
         avg.line[, second := floor((interval-1)*(3600*24/intervals.per.day)-hour*3600-minute*60)]
-        avg.line[, time := as.POSIXct(strptime(paste(hour,minute,second, sep=":"), "%H:%M:%S"),'UTC')]
-        
+        avg.line[, time := as.POSIXct(strptime(paste(hour,minute,second, sep=":"),'UTC',format =  "%H:%M:%S"))]
+
         p1 = interface_plot(avg.line, x_col = 'time', color='scenario')
         print(p1 + labs(title='Interval Flow') + facet_wrap(~line,ncol=1,scales='free') +
                 scale_x_datetime(breaks = date_breaks(width = "2 hour"), labels = date_format("%H:%M"), expand = c(0, 0)))
@@ -701,6 +704,7 @@ if (key.period.line.flow.plots) {
           print('ERROR: interval_line_flows function not returning correct results.')
         } else {        
           # Create data for each plot for the interesting periods
+          figure.height = l.height
           key.plots = lapply(period.names, function(p){
             knit_expand(file = 'source_scripts/compare/c_p_key_period_interface_flow.Rmd', period.name = p)
           }) 
