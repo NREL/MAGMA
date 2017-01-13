@@ -618,7 +618,7 @@ total_gen_reserve_provision = function(database) {
     total.res.provision = data.table(query_year(database, 'Reserve.Generators', 'Provision', columns = c('category', 'name')))
   } else if ("Provision" %in% properties[is_summary==0 & collection=="Reserve.Generators", property]){
     total.res.provision = data.table(query_interval(database, 'Reserve.Generators', 'Provision', columns = c('category', 'name')))
-    total.res.provision = total.res.provision[, .(value=sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name, category)]
+    total.res.provision = total.res.provision[, .(value=sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name, parent, category)]
   }
   return(total.res.provision[, .(value=sum(value)), by=.(scenario, property, name, parent, category)])
 }
@@ -755,7 +755,7 @@ total_interface_flow = function(database) {
     total.interface = data.table(query_year(database, 'Interface', 'Flow'))
   } else if ("Flow" %in% properties[is_summary==0 & collection=="Interface", property]){
     total.interface = data.table(query_interval(database, 'Interface','Flow', columns = c('category','name')))
-    total.interface = total.interface[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
+    total.interface = total.interface[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name, time)]
   }
   return(total.interface[, .(value=sum(value)), by=.(scenario, property, name, time)])
 }
@@ -770,7 +770,7 @@ total_line_flow = function(database) {
     total.line = data.table(query_year(database, 'Line', 'Flow'))
   } else if ("Flow" %in% properties[is_summary==0 & collection=="Line", property]){
     total.line = data.table(query_interval(database, 'Line','Flow', columns = c('category','name')))
-    total.line = total.line[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
+    total.line = total.line[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name, time)]
   }
   return(total.line[, .(value=sum(value)), by=.(scenario, property, name, time)])
 }

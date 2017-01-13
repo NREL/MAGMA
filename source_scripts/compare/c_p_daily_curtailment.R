@@ -7,11 +7,8 @@ if (daily.curtailment) {
   } else if ( typeof(interval.avail.cap) == 'character' ) { 
     print('INPUT ERROR: interval.avail.cap has errors. Cannot run this section.')
   } else{
-    # If the data doesn't exist, run the query function. 
-    if ( !exists('interval.curt') ) {
-      # Query curtailment data
-      interval.curt = tryCatch( total_curtailment(interval.generation, interval.avail.cap), error = function(cond) { return('ERROR')})
-    }
+    # Query curtailment data
+    interval.curt = tryCatch( total_curtailment(interval.generation, interval.avail.cap), error = function(cond) { return('ERROR')})
     # If there is a problem with the query return an error.
     if ( typeof(interval.curt)=='character' ) { 
       print('ERROR: daily_curtailment function not returning correct results.')

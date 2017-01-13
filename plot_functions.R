@@ -77,6 +77,7 @@ gen_stack_plot <- function(gen.data, load.data=NULL, filters=NULL, x_col='scenar
               # axis.text.x   = element_text(face=2),
               axis.title      = element_text(size=text.plot, face=2),
               axis.title.y    = element_text(vjust=1.2),
+              strip.text      = element_text(size = text.plot),
               panel.spacing   = unit(1.5, "lines"))
   
   # Add something for if load only ??
@@ -146,6 +147,7 @@ gen_diff_stack_plot <- function(gen.data, load.data, filters=NULL){
                          axis.title      = element_text(size=text.plot, face=2), 
                          axis.title.y    = element_text(vjust=1.2), 
                          panel.spacing   = unit(1.5, "lines"),
+                         strip.text      = element_text(size = text.plot),
                          aspect.ratio    = 2.5/length(unique(dat.pos$scenario)))
   return(list(p1,seq.py))
 }
@@ -208,7 +210,7 @@ interface_plot <- function(flow.data, x_col = 'time',color='interface', interfac
          theme(legend.key = element_rect(NULL),
                legend.text = element_text(size=text.plot),
                text=element_text(size=text.plot),
-               strip.text=element_text(face="bold", size=rel(1)),
+               strip.text=element_text(face="bold", size=text.plot),
                axis.text=element_text(face=2, size=text.plot/1),
                axis.title=element_text(size=text.plot, face=2.3),
                # legend.position=c(0.80, 0.12),
@@ -228,10 +230,10 @@ price_duration_curve <- function(price.data, filters, color=NULL){
            theme( legend.key =       element_rect(color = "grey80", size = 0.4),
                   legend.key.size =  grid::unit(0.9, "lines"), 
                   legend.text =      element_text(size=text.plot/1.1),
-                  strip.text =       element_text(size=rel(0.7)),
                   axis.text =        element_text(size=text.plot/1.2), 
                   axis.title =       element_text(size=text.plot, face=2), 
                   axis.title.x =     element_text(vjust=-0.3),
+                  strip.text =       element_text(size = text.plot/1.1),
                   panel.grid.major = element_line(colour = "grey85"),
                   panel.grid.minor = element_line(colour = "grey93"),
                   panel.spacing =     unit(1.0, "lines"),
@@ -253,10 +255,10 @@ line_plot <- function(plot.data, filters, x.col, y.col, y.lab, color=NULL, lines
            theme( legend.key =       element_rect(color = "grey80", size = 0.4),
                   legend.key.size =  grid::unit(0.9, "lines"), 
                   legend.text =      element_text(size=text.plot/1.1),
-                  strip.text =       element_text(size=rel(0.7)),
                   axis.text =        element_text(size=text.plot/1.2), 
                   axis.title =       element_text(size=text.plot, face=2), 
                   axis.title.x =     element_text(vjust=-0.3),
+                  strip.text       = element_text(size = text.plot),
                   panel.grid.major = element_line(colour = "grey85"),
                   panel.grid.minor = element_line(colour = "grey93"),
                   aspect.ratio =     0.5,

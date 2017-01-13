@@ -16,6 +16,7 @@ if ( typeof(interval.interface.flow) == 'character' ) {
   } else {
   
     # From the full set of data, pull out only the data corresponding to the key period specified in the input file. 
+    setorder(interface.flows,scenario,name,time)
     timediff = interface.flows[,.(timediff=diff(time)), by=.(name,scenario)][,.(min(timediff))][,V1]
     for ( i in 1:n.periods ) {
       key.period.time = seq(start.end.times$start[i], start.end.times$end[i], by = timediff)
