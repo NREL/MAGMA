@@ -12,7 +12,7 @@ figure.height = 6
 stack.data = gen.type.region[Period==p.name & Region==r.name, ]
 # Make plot if data exists for this region
 if (length(stack.data[, value])>0 & sum(stack.data[, value])>0 ) {
-  p1 = dispatch_plot(stack.data, gen.load[Period==p.name & Region==r.name, ])
+  p1 = dispatch_plot(stack.data, gen.load.region[Period==p.name & Region==r.name, ])
   print(p1)
 } else { print('No generation found for this period and region.')}
 ```
