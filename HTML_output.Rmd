@@ -33,7 +33,7 @@ if (exists('reserve.names')) {
 ## 1. Total Generation
 ```{r total-gen-stack}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_total_gen_stack.R')
+source(file.path(magma.dir,'source_scripts/p_total_gen_stack.R'))
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -41,7 +41,7 @@ source('source_scripts/p_total_gen_stack.R')
 ## 2. Zonal Generation
 ```{r zone-gen-stacks, fig.width=10}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_zone_gen_stacks.R')
+source(file.path(magma.dir,'source_scripts/p_zone_gen_stacks.R'))
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -49,7 +49,7 @@ source('source_scripts/p_zone_gen_stacks.R')
 ## 3. Regional Generation
 ```{r region-gen-stacks, resize.height=T, fig.height=f.height, fig.width=10}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_region_gen_stacks.R')
+source(file.path(magma.dir,'source_scripts/p_region_gen_stacks.R'))
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -94,7 +94,7 @@ if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.di
   if (length(period.names)>0) {
 
     # Call interval_gen function and proces data for plots
-    source('source_scripts/d_key_period_dispatch.R')
+    source(file.path(magma.dir,'source_scripts/d_key_period_dispatch.R'))
 
     # As long as the file exists (previous source found the R script) this loop runs
     if ( exists('key.period.gen') ) {
@@ -159,7 +159,7 @@ if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.di
 ### 8. Average Daily Curtailment
 ```{r yearly-curtailment}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_daily_curtailment.R')
+source(file.path(magma.dir,'source_scripts/p_daily_curtailment.R'))
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -167,7 +167,7 @@ source('source_scripts/p_daily_curtailment.R')
 ### 9. Average Daily Curtailment by Type
 ```{r yearly-curtailment-by-type}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_daily_curtailment_type.R')
+source(file.path(magma.dir,'source_scripts/p_daily_curtailment_type.R'))
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -175,7 +175,7 @@ source('source_scripts/p_daily_curtailment_type.R')
 ### 10. Average Interval Curtailment
 ```{r daily-curtailment}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_interval_curtailment.R')
+source(file.path(magma.dir,'source_scripts/p_interval_curtailment.R'))
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -183,7 +183,7 @@ source('source_scripts/p_interval_curtailment.R')
 ### 11. Average Interval Curtailment by Type
 ```{r daily-curtailment-by-type}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_interval_curtailment_type.R')
+source(file.path(magma.dir,'source_scripts/p_interval_curtailment_type.R'))
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -346,7 +346,7 @@ if(interface.flow.table) {
 ## 17. Interface Flow Plots
 ```{r interface-flow-plots, resize.width=T, fig.width=10}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_interface_flow.R')
+source(file.path(magma.dir,'source_scripts/p_interface_flow.R'))
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -359,7 +359,7 @@ if (key.period.interface.flow.plots) {
     if (length(period.names)>0) {
 
       # Pull out interface flow data for only specified periods in input file
-      source('source_scripts/d_key_period_interface_flow.R')
+      source(file.path(magma.dir,'source_scripts/d_key_period_interface_flow.R'))
       
       # As long as the file exists (previous source found the R script) this loop runs
       if ( exists('plot.flows') ) {
@@ -413,7 +413,7 @@ if(annual.reserves.table) {
 ### 20. Average Interval and Daily Reserve Provisions
 ```{r reserves-plots}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_reserves.R')
+source(file.path(magma.dir,'source_scripts/p_reserves.R'))
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -421,7 +421,7 @@ source('source_scripts/p_reserves.R')
 ### 21. Reserve Provisions by generator type
 ```{r reserves-stacks, fig.height=res.height, fig.width=10}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source("source_scripts/p_reserves_stack.R")
+source(file.path(magma.dir,"source_scripts/p_reserves_stack.R"))
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -507,7 +507,7 @@ if(capacity.factor.table) {
 ## 24. Region Price Duration Curves
 ```{r price-duration-curve, fig.width = 10}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_price_duration_curve.R')
+source(file.path(magma.dir,'source_scripts/p_price_duration_curve.R'))
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -518,7 +518,7 @@ source('source_scripts/p_price_duration_curve.R')
 # Check if this section was selected to run in the input file
 if (commit.dispatch.region | commit.dispatch.zone) {
   if (length(da.rt.types)>0) {
-    source('source_scripts/d_DA_RT_commit_dispatch.R') # Call this R script which created the data needed for plotting.
+    source(file.path(magma.dir,'source_scripts/d_DA_RT_commit_dispatch.R') )# Call this R script which created the data needed for plotting.
   
     # As long as the file exists (previous source found the R script) this loop runs
     if ( exists('plot.data.all') ) {
@@ -592,7 +592,7 @@ if(line.flow.table) {
 ## 34. Line Flow Plots
 ```{r line-flow-plots, resize.width=T, fig.width=10}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_line_flow.R')
+source(file.path(magma.dir,'source_scripts/p_line_flow.R'))
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -605,7 +605,7 @@ if (key.period.line.flow.plots) {
     if (length(period.names)>0) {
 
       # Pull out line flow data for only specified periods in input file
-      source('source_scripts/d_key_period_line_flow.R')
+      source(file.path(magma.dir,'source_scripts/d_key_period_line_flow.R'))
       
       # As long as the file exists (previous source found the R script) this loop runs
       if ( exists('plot.flows') ) {

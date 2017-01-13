@@ -4,11 +4,10 @@ p.name = '{{period.name}}' # Set key period name
 cat("### ", p.name) # Print period name above plot
 text.plot=11 # Set plot text size
 figure.width = 9
-figure.height = 5*length(interfaces)
 ```
 
 ```{r key-period-interface-flow-scen-plots-{{period.name}}, fig.width=figure.width, fig.height=figure.height, include=TRUE}
-if (length(plot.flows[Period==p.name, value])>0 & sum(plot.flows[Period==p.name, value])>0 ) {
+if (length(plot.flows[Period==p.name, value])>0 & sum(plot.flows[Period==p.name, value])!=0 ) {
   ggplot(plot.flows[Period==p.name, ], aes(time, value/1000, color=scenario))+
     geom_line(size = 1.2)+
     geom_hline(yintercept=0, color="black", size=0.3)+
