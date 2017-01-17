@@ -198,7 +198,7 @@ if (annual.generation.table){
     # Run the query function.
     yr.gen = tryCatch(gen_by_type(total.generation, total.avail.cap), 
                         error = function(cond) { return('ERROR: gen_by_type function not returning correct results') } ) 
-    # Set the order level that generatino type will be displayed.
+    # Set the order level that generation type will be displayed.
     yr.gen[, Type := factor(Type, levels = c(gen.order))] 
     setorder(yr.gen,Type)
     
@@ -497,6 +497,7 @@ if(capacity.factor.table) {
     # Call the query function to get capacity factor.
     cf = tryCatch( capacity_factor(total.generation, total.installed.cap), 
                    error = function(cond) { return('ERROR: capacity_factor function not returning correct results.') })
+    setorder(cf, -Type)
     kable(cf, format.args = list(big.mark = ','), digits=2)
   }
 } else { print('Section not run according to input file.') }
