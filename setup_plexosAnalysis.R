@@ -69,8 +69,8 @@ if(36 %in% run.sections) {installed.cap.plot=TRUE}              else {installed.
 # Read in the data from the input_data.csv file that was just loaded
 
 # location of database
-db.loc = file.path(as.character(na.exclude(inputs$Database.Location))) 
-db.day.ahead.loc = file.path(as.character(na.exclude(inputs$DayAhead.Database.Location)))
+# db.loc = file.path(as.character(na.exclude(inputs$Database.Location))) 
+# db.day.ahead.loc = file.path(as.character(na.exclude(inputs$DayAhead.Database.Location)))
 if (length(db.day.ahead.loc)==0) { db.day.ahead.loc = db.loc }
 has.multiple.scenarios = (length(db.loc)>1)
 
