@@ -198,7 +198,7 @@ if (annual.generation.table){
     # Run the query function.
     yr.gen = tryCatch(gen_by_type(total.generation, total.avail.cap), 
                         error = function(cond) { return('ERROR: gen_by_type function not returning correct results') } ) 
-    # Set the order level that generatino type will be displayed.
+    # Set the order level that generation type will be displayed.
     yr.gen[, Type := factor(Type, levels = c(gen.order))] 
     setorder(yr.gen,Type)
     
@@ -346,7 +346,49 @@ if(interface.flow.table) {
 ## 17. Interface Flow Plots
 ```{r interface-flow-plots, resize.width=T, fig.width=10}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source(file.path(magma.dir,'source_scripts/p_interface_flow.R'))
+# Check if this section was selected to run in the input file
+if (interface.flow.plots) {
+  if (length(interfaces)>0) {
+    if ( typeof(interval.interface.flow) == 'character' ) {
+      print('INPUT ERROR: interval.interface.flow not correct. Cannot run this section')
+    } else { 
+      # Call the query function to get interface flows for the interfaces selected in the query function.
+      interface.flows = tryCatch( interval_interface_flows(interval.interface.flow), 
+                                  error=function(cond) {return('ERROR: interface_flows query not returning correct results.')})
+        
+      # Check for errors in the query function. If theres an error don't continue.
+      if ( typeof(interface.flows)=='character' ) { 
+        print('ERROR: interface_flows function not returning correct results.')
+      } else {
+        # change name to interface in order to not hit recursive error
+        interface.flows[, interface:=factor(name, levels = interfaces)]
+        # Add day and interval
+        interface.flows[, day := as.POSIXlt(time)[[8]] ]
+        interface.flows[, interval := 1:intervals.per.day, by=.(day,scenario)]
+        # Get interval plots
+        avg.interface = interface.flows[, .(value=sum(value)),by=.(scenario,interface,interval)]
+        avg.interface[, hour := floor((interval-1)*(3600*24/intervals.per.day)/3600)]
+        avg.interface[, minute := floor((interval-1)*(3600*24/intervals.per.day)/60-hour*60)]
+        avg.interface[, second := floor((interval-1)*(3600*24/intervals.per.day)-hour*3600-minute*60)]
+        avg.interface[, time := as.POSIXct(paste(hour,minute,second, sep=":"),format="%H:%M:%S",tz='UTC')]
+      
+        p1 = interface_plot(avg.interface, x_col = 'time', color='interface')
+        print(p1 + labs(title='Interval Flow') +
+                scale_x_datetime(breaks = date_breaks(width = "2 hour"), labels = date_format("%H:%M"), 
+                                 expand = c(0, 0), timezone='UTC'))
+        # Aggregate interval flow data into daily flow data
+        daily.flows = interface.flows[, .(value=sum(value)), by=.(day,interface,scenario)]
+        daily.flows[,time:=as.POSIXct(as.character(day+1),format="%j")]
+        p2 = interface_plot(daily.flows, x_col = 'time', color='interface')
+        if (nrow(daily.flows) > 30*length(interfaces)){
+          p2 = p2 + scale_x_datetime(breaks=date_breaks(width="1 month"), 
+                     labels = date_format("%b"), expand = c(0, 0), timezone='UTC')
+        }
+        print(p2 + labs(title='Daily Flow'))
+      }
+    }
+  } else { print('No interfaces specified. No interface data will be shown.')}
+} else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -497,6 +539,7 @@ if(capacity.factor.table) {
     # Call the query function to get capacity factor.
     cf = tryCatch( capacity_factor(total.generation, total.installed.cap), 
                    error = function(cond) { return('ERROR: capacity_factor function not returning correct results.') })
+    setorder(cf, -Type)
     kable(cf, format.args = list(big.mark = ','), digits=2)
   }
 } else { print('Section not run according to input file.') }

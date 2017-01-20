@@ -74,20 +74,10 @@ if(36 %in% run.sections) {installed.cap.plot=TRUE}              else {installed.
 # Read in the data from the input_data.csv file that was just loaded
 
 # location of database
-db.loc = file.path(as.character(na.exclude(inputs$Database.Location))) 
-db.day.ahead.loc = file.path(as.character(na.exclude(inputs$DayAhead.Database.Location)))
-if (length(db.day.ahead.loc)==0) { db.day.ahead.loc = db.loc }
+# db.loc = file.path(as.character(na.exclude(inputs$Database.Location))) 
+# db.day.ahead.loc = file.path(as.character(na.exclude(inputs$DayAhead.Database.Location)))
+if (length(db.day.ahead.loc)==0 | !exists('db.day.ahead.loc')) { db.day.ahead.loc = db.loc }
 has.multiple.scenarios = (length(db.loc)>1)
-
-# reference scenario, used if comparing scenarios
-ref.scenario = as.character(inputs$ref.scenario[!is.na(inputs$ref.scenario)])
-if (length(ref.scenario)>1){
-  message('\nYou have more than one reference scenario. This is likely to cause problems with comparison calculations')
-} else{
-  if (length(ref.scenario)==0 & has.multiple.scenarios){
-    message('\nYou have not provided a reference scenario. Comparison plots will not work.')
-  }
-}
 
 # Using CSV file to map generator types to names?
 use.gen.type.mapping.csv = as.logical(na.exclude(inputs$Using.Gen.Type.Mapping.CSV))
@@ -243,7 +233,7 @@ for (i in 1:length(db.loc)) {
 }
 # -----------------------------------------------------------------------
 # Open the database file ( must already have created this using rplexos ) 
-scenario.names = basename(db.loc)
+d = basename(db.loc)
 if (length(na.omit(inputs$Scenario.Name))>0){
   scenario.names = as.character(inputs$Scenario.Name[!is.na(inputs$Scenario.Name)])
 }
@@ -252,14 +242,41 @@ if (length(scenario.names)!=length(db.loc)){
   print("Using database names as scenarios")
   scenario.names = basename(db.loc)
 }
+# Remove trailing / if present
+if (substr(db.loc,nchar(db.loc),nchar(db.loc))=='/'){
+  db.loc <- substr(db.loc,1,nchar(db.loc)-1)
+}
 db = plexos_open(db.loc, scenario.names)
 # db = db[1,] # This line queries only the first solution .db file if there are multiple in one location. 
 attributes(db)$class = c("rplexos","data.frame","tbl_df")
 
 # Open the day ahead database file
+# Remove trailing / if present
+if (substr(db.day.ahead.loc,nchar(db.day.ahead.loc),nchar(db.day.ahead.loc))=='/'){
+  db.day.ahead.loc <- substr(db.day.ahead.loc,1,nchar(db.day.ahead.loc)-1)
+}
 db.day.ahead = tryCatch(plexos_open(db.day.ahead.loc, scenario.names), error = function(cond) { return(data.frame('ERROR'))})
 # db.day.ahead = db.day.ahead[1,] # This line queries only the first solution .db file if there are multiple in one location. 
 attributes(db.day.ahead)$class = c('rplexos', 'data.frame', 'tbl_df')
+
+
+# reference scenario, used if comparing scenarios
+if (has.multiple.scenarios){
+  if ('ref.scenario' %in% names(inputs)){
+    ref.scenario = as.character(inputs$ref.scenario[!is.na(inputs$ref.scenario)])
+    if (length(ref.scenario)>1){
+      message('\nYou have more than one reference scenario. This is likely to cause problems with comparison calculations')
+    } else{
+      if (length(ref.scenario)==0 & has.multiple.scenarios){
+        message('\nYou have not provided a reference scenario. Comparison plots will not work.')
+      }
+    }
+  } else {
+    message('\nYou did not specify a reference scenario for your comparisons. We will use the first scenario listed.')
+    ref.scenario <- scenario.names[1]
+  }
+} else{ ref.scenario = scenario.names[1]}
+
 
 # get available properties
 properties = data.table(query_property(db))
@@ -285,6 +302,10 @@ if (is.na(inputs$Gen.Region.Zone.Mapping.Filename)[1]){
       region.zone.mapping = rbindlist(list(region.zone.mapping,data.table(read.csv(as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename)[i]), 
                                                                           stringsAsFactors=FALSE))),fill=TRUE)
     }
+  }
+  if ( typeof(region.zone.mapping$Region)!="character" | typeof(region.zone.mapping$Zone)!="character" ) {
+    region.zone.mapping$Region = as.character(region.zone.mapping$Region)
+    region.zone.mapping$Zone = as.character(region.zone.mapping$Zone)
   }
 }
 region.zone.mapping = unique(region.zone.mapping[, .(name, Region, Zone)])

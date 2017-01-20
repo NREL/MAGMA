@@ -176,7 +176,7 @@ dispatch_plot <- function(gen.data, load.data, filters=NULL){
           geom_line(position="stack", size=0.3)+
           labs(y="Generation (GW)", x=NULL)+
           geom_line(data=load.data, linetype="longdash", aes(color="load"),size=0.8)+
-          scale_fill_manual("",values = gen.color, limits=rev(gen.order))+
+          scale_fill_manual("",values = gen.color, limits=gen.order)+
           scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
           scale_x_datetime(breaks = date_breaks(width = "1 day"), labels = date_format("%b %d\n%I %p"), expand = c(0, 0))+
           scale_y_continuous(breaks=seq.py.t, limits=c(0, max(seq.py.t)), expand=c(0,0))+
