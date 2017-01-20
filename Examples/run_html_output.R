@@ -16,6 +16,13 @@ load.data        = '<Name of file to load if query.data=FALSE >'
 save.data        = '<TRUE if you want to save all data at the end of MAGMA Run
                      FALSE if you do not want to save data. Only html will be produced>'
 save.data.name   = '<Name of file to save data. Will save in output.dir>'
+reassign.zones   = '<TRUE if reassigning zones from zones in PLEXOS
+                     FALSE if you want to use PLEXOS zones.>'
+use.gen.type.csv = '<TRUE if assigning generator type with a CSV file.
+                     FALSE if assigning generator type based on PLEXOS categories.>'
+gen.type.csv.loc = '<Location of CSV mapping generator name to type.
+                     NULL if above is false.>'
+gen.region.zone  = '<Locatin of file mapping generator names to region and zone.>'
 #------------------------------------------------------------------------------|
 # Run code to create HTML
 #------------------------------------------------------------------------------|
