@@ -80,18 +80,26 @@ if (length(db.day.ahead.loc)==0 | !exists('db.day.ahead.loc')) { db.day.ahead.lo
 has.multiple.scenarios = (length(db.loc)>1)
 
 # Using CSV file to map generator types to names?
-use.gen.type.mapping.csv = as.logical(na.exclude(inputs$Using.Gen.Type.Mapping.CSV))
-if (length(use.gen.type.mapping.csv)==0) { 
-  use.gen.type.mapping.csv = FALSE
-  message('\nMust select TRUE or FALSE for if using generator generation type mapping file!') 
+if (!exists("use.gen.type.csv")) { 
+  use.gen.type.csv = FALSE
+  message('\nMust specify either TRUE or FALSE for if using generator generation type mapping file!') 
 }
+# use.gen.type.mapping.csv = as.logical(na.exclude(inputs$Using.Gen.Type.Mapping.CSV))
+# } else if (length(use.gen.type.csv)==0) { 
+#   use.gen.type.mapping.csv = FALSE
+#   message('\nMust specify TRUE or FALSE for if using generator generation type mapping file!') 
+# }
 
 # Reassign zones based on region to zone mapping file?
-reassign.zones = as.logical(na.exclude(inputs$reassign.zones))
-if (length(reassign.zones)==0) { 
+if (!exists("reassign.zones")) { 
   reassign.zones = FALSE
-  message('\nMust select TRUE or FALSE for if reassigning what regions are in what zones!')
+  message('\nMust select TRUE or FALSE for if reassigning what regions are in what zones!') 
 }
+# reassign.zones = as.logical(na.exclude(inputs$reassign.zones))
+# if (length(reassign.zones)==0) { 
+#   reassign.zones = FALSE
+#   message('\nMust select TRUE or FALSE for if reassigning what regions are in what zones!')
+# }
 
 # Generation type order for plots
 gen.order = (as.character(na.omit(inputs$Gen.Order))) 
@@ -285,7 +293,8 @@ if (typeof(db.day.ahead)!='character'){
 }
 
 # Read mapping file to map generator names to region and zone (can be same file as gen name to type).
-if (is.na(inputs$Gen.Region.Zone.Mapping.Filename)[1]){
+# if (is.na(inputs$Gen.Region.Zone.Mapping.Filename)[1]){
+if ( !exists("gen.region.zone") ) {
   warning(paste("You did not supply a Region-Zone mapping. We will create one for you from the rplexos database",
                 "However, rplexos reassigns Zone names to the Region category. If you do not want this behavior,",
                 "please create your own mapping file. You may use the file tools/make_region_zone_csv.py to do so,",
@@ -294,12 +303,12 @@ if (is.na(inputs$Gen.Region.Zone.Mapping.Filename)[1]){
   region.zone.mapping = data.table(unique(gen.mapping[,c('name','region','zone')]))
   setnames(region.zone.mapping, c("region","zone"), c("Region","Zone"))
 } else{
-  region.zone.mapping = data.table(read.csv(as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename)[1]), 
+  region.zone.mapping = data.table(read.csv(gen.region.zone, 
                                             stringsAsFactors=FALSE))
   if(length(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename))>1){
     warning("More than one Gen.Region.Zone.Mapping.Filename found... I'll create a unique combination for you.")
     for (i in 2:length(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename))){
-      region.zone.mapping = rbindlist(list(region.zone.mapping,data.table(read.csv(as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename)[i]), 
+      region.zone.mapping = rbindlist(list(region.zone.mapping,data.table(read.csv(gen.region.zone[i], 
                                                                           stringsAsFactors=FALSE))),fill=TRUE)
     }
   }
@@ -314,9 +323,10 @@ rz.unique = unique(region.zone.mapping[,.(Region,Zone)])
 
 
 # Create generator name to type mapping
-if ( length(inputs$CSV.Gen.Type.File.Location[!is.na(inputs$CSV.Gen.Type.File.Location)]) > 0 ) {
+# if ( length(inputs$CSV.Gen.Type.File.Location[!is.na(inputs$CSV.Gen.Type.File.Location)]) > 0 ) {
+if ( use.gen.type.csv & length(gen.type.csv.loc>0) ) {
   # Read mapping file to map generator names to generation type
-  gen.type.mapping = data.table(read.csv(as.character(na.exclude(inputs$CSV.Gen.Type.File.Location)), 
+  gen.type.mapping = data.table(read.csv(gen.type.csv.loc, 
                                          stringsAsFactors=FALSE))
   gen.type.mapping = unique(gen.type.mapping[,.(name, Type)])
   gen.type.mapping = setNames(gen.type.mapping$Type, gen.type.mapping$name)
@@ -337,7 +347,7 @@ if ( length(inputs$CSV.Gen.Type.File.Location[!is.na(inputs$CSV.Gen.Type.File.Lo
         message("Generator Type mapping not provided. Will use PLEXOS categories")
         gen.type.mapping = setNames(gen.cat.plexos$category, gen.cat.plexos$name)
     }
-  if (length(gen.type.mapping)==0) { message('\nIf not using generator name to type mapping CSV, you must specify PLEXOS categories and desired generation type.') }
+  if (length(gen.type.mapping)==0) { message('\nIf not using generator name to type mapping CSV, you must specify PLEXOS categories and desired generation type in input csv file.') }
 }
 
   # Set plot color for each generation type. Use rainbow() if mapping not provided
