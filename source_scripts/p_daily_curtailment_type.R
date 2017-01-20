@@ -20,7 +20,7 @@ if (daily.curtailment.type) {
       # Calculate average curtailment for each day 
       daily.curt = interval.curt[,.(Curtailment = mean(Curtailment)),by=.(day, year, Type)] 
       daily.curt[, timeformat := sprintf("%d %d", day+1, year)]
-      daily.curt[, time := as.POSIXct(strptime(timeformat,'%j %Y'))] # Add time column
+      daily.curt[, time := as.POSIXct(timeformat,format='%j %Y', tz='UTC')] # Add time column
 
       p1 = line_plot(daily.curt, filters=c('time','Type'), x.col='time', y.col='Curtailment', 
                      y.lab='Curtailment (MWh)', color='Type', linesize=1.2)

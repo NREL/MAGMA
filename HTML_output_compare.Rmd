@@ -664,14 +664,14 @@ if (line.flow.plots) {
         avg.line[, hour := floor((interval-1)*(3600*24/intervals.per.day)/3600)]
         avg.line[, minute := floor((interval-1)*(3600*24/intervals.per.day)/60-hour*60)]
         avg.line[, second := floor((interval-1)*(3600*24/intervals.per.day)-hour*3600-minute*60)]
-        avg.line[, time := as.POSIXct(strptime(paste(hour,minute,second, sep=":"),'UTC',format =  "%H:%M:%S"))]
+        avg.line[, time := as.POSIXct(paste(hour,minute,second, sep=":"),format="%H:%M:%S",tz='UTC')]
 
         p1 = interface_plot(avg.line, x_col = 'time', color='scenario')
         print(p1 + labs(title='Interval Flow') + facet_wrap(~line,ncol=1,scales='free') +
                 scale_x_datetime(breaks = date_breaks(width = "2 hour"), labels = date_format("%H:%M"), expand = c(0, 0)))
         # Aggregate interval flow data into daily flow data
         daily.flows = line.flows[, .(value=sum(value)), by=.(day,name,scenario)]
-        daily.flows[,time:=as.POSIXct(strptime(day+1,"%j"))]
+        daily.flows[,time:=as.POSIXct(as.character(day+1),format="%j")]
         p2 = interface_plot(daily.flows, x_col = 'time', color='scenario')
         if (nrow(daily.flows) > 30*length(lines)){
           p2 = p2 + scale_x_datetime(breaks=date_breaks(width="1 month"), 

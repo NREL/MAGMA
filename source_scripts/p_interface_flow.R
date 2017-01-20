@@ -18,7 +18,7 @@ if (interface.flow.plots) {
         # Aggregate interval flow data into daily flow data
         interface.flows[, day := as.POSIXlt(time)[[8]] ]
         daily.flows = interface.flows[, .(value=sum(value)), by=.(day,name)]
-        daily.flows[,time:=as.POSIXct(strptime(day+1,"%j"))]
+        daily.flows[,time:=as.POSIXct(as.character(day+1),format="%j")]
         p2 = interface_plot(daily.flows, x_col = 'time')
         if (nrow(daily.flows) > 30*length(interfaces)){
           p2 = p2 + scale_x_datetime(breaks=date_breaks(width="1 month"), 

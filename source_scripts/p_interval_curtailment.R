@@ -22,7 +22,7 @@ if (interval.curtailment){
       avg.curt[, hour := floor((interval-1)*(3600*24/intervals.per.day)/3600)]
       avg.curt[, minute := floor((interval-1)*(3600*24/intervals.per.day)/60-hour*60)]
       avg.curt[, second := floor((interval-1)*(3600*24/intervals.per.day)-hour*3600-minute*60)]
-      avg.curt[, time := as.POSIXct(strptime(paste(hour,minute,second, sep=":"), "%H:%M:%S"),'UTC')]
+      avg.curt[, time := as.POSIXct(paste(hour,minute,second, sep=":"),'UTC', format="%H:%M:%S")]
       # Create plots
       p1 = line_plot(avg.curt, filters='interval', x.col='time', y.col='Curtailment', y.lab='Curtailment (GWh)')
       p1 = p1 + scale_x_datetime(breaks = date_breaks(width = "2 hour"), 

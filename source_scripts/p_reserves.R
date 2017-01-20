@@ -15,7 +15,7 @@ if(reserves.plots) {
       int.avg[, hour := floor((interval-1)*(3600*24/intervals.per.day)/3600)]
       int.avg[, minute := floor(((interval-1)*(3600*24/intervals.per.day)/3600-hour)/60)]
       int.avg[, second := floor((((interval-1)*(3600*24/intervals.per.day)/3600-hour)/60-minute)/60)]
-      int.avg[, time := as.POSIXct(strptime(paste(hour,minute,second, sep=":"), "%H:%M:%S"),'UTC')]
+      int.avg[, time := as.POSIXct(paste(hour,minute,second, sep=":"), format="%H:%M:%S",tz='UTC')]
     
       # Creating interval reserves provisions plot
       p.1 = line_plot(int.avg, 'interval','time', 'Provision', 'Reserve Provision (GWh)')
@@ -24,7 +24,7 @@ if(reserves.plots) {
     
       # Calculating the daily hourly average
       dy.avg = r[, .(Provision = mean(provision)/1000), by = .(day)]
-      dy.avg[, time := as.POSIXct(strptime(day,'%j'))]
+      dy.avg[, time := as.POSIXct(as.character(day),format='%j')]
     
       # Creating average daily reserves provisions plot
       p.2 = line_plot(dy.avg, 'day','time', 'Provision', 'Reserve Provision (GWh)')

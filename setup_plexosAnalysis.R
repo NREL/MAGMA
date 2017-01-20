@@ -121,20 +121,20 @@ n.periods = length(period.names)
 if(length(na.omit(inputs$Start.Time)) > 0){
   # Check if year is provided as 4-digit or 2-digit year
   if(nchar(strsplit(as.character(inputs$Start.Time[1]),'[ ,/]')[[1]][3])==2){
-    start.end.times = data.table(start = as.POSIXct( strptime( na.omit(inputs$Start.Time), format = '%m/%d/%y %H:%M'), tz='UTC'), 
-                                 end = as.POSIXct( strptime( na.omit(inputs$End.Time), format = '%m/%d/%y %H:%M'), tz='UTC' ) )
+    start.end.times = data.table(start = as.POSIXct( na.omit(inputs$Start.Time), format = '%m/%d/%y %H:%M', tz='UTC'), 
+                                 end = as.POSIXct( na.omit(inputs$End.Time), format = '%m/%d/%y %H:%M', tz='UTC' ) )
   }else if(nchar(strsplit(as.character(inputs$Start.Time[1]),'[ ,/]')[[1]][3])==4){
-    start.end.times = data.table(start = as.POSIXct( strptime( na.omit(inputs$Start.Time), format = '%m/%d/%Y %H:%M'), tz='UTC'), 
-                                 end = as.POSIXct( strptime( na.omit(inputs$End.Time), format = '%m/%d/%Y %H:%M'), tz='UTC' ) )
+    start.end.times = data.table(start = as.POSIXct( na.omit(inputs$Start.Time), format = '%m/%d/%Y %H:%M', tz='UTC'), 
+                                 end = as.POSIXct( na.omit(inputs$End.Time), format = '%m/%d/%Y %H:%M', tz='UTC' ) )
   }
   # If is NA, try without hour and minute in date format
   if (any(is.na(start.end.times))){
     if(nchar(strsplit(as.character(inputs$Start.Time[1]),'[ ,/]')[[1]][3])==2){
-      start.end.times.temp = data.table(start = as.POSIXct( strptime( na.omit(inputs$Start.Time), format = '%m/%d/%y'), tz='UTC'), 
-                                        end = as.POSIXct( strptime( na.omit(inputs$End.Time), format = '%m/%d/%y'), tz='UTC' ) )
+      start.end.times.temp = data.table(start = as.POSIXct( na.omit(inputs$Start.Time), format = '%m/%d/%y', tz='UTC'), 
+                                        end = as.POSIXct( na.omit(inputs$End.Time), format = '%m/%d/%y', tz='UTC' ) )
     }else if(nchar(strsplit(as.character(inputs$Start.Time[1]),'[ ,/]')[[1]][3])==4){
-      start.end.times.temp = data.table(start = as.POSIXct( strptime( na.omit(inputs$Start.Time), format = '%m/%d/%Y'), tz='UTC'), 
-                                        end = as.POSIXct( strptime( na.omit(inputs$End.Time), format = '%m/%d/%Y'), tz='UTC' ) )
+      start.end.times.temp = data.table(start = as.POSIXct( na.omit(inputs$Start.Time), format = '%m/%d/%Y', tz='UTC'), 
+                                        end = as.POSIXct( na.omit(inputs$End.Time), format = '%m/%d/%Y', tz='UTC' ) )
     }
     start.end.times[is.na(start), start:=start.end.times.temp[is.na(start.end.times$start),start]]
     start.end.times[is.na(end), end:=start.end.times.temp[is.na(start.end.times$end),end]]
