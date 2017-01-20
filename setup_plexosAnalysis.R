@@ -12,6 +12,11 @@ p_load(ggplot2, reshape2, plyr, lubridate, scales, RSQLite, grid, knitr, markdow
        doParallel, xtable, data.table, dplyr, extrafont, tidyr, stringr, rplexos, rmarkdown, yaml)
 
 # -----------------------------------------------------------------------
+# set rplexos tiebreak to take first values rather than last values. Can be set to 'first','last','all'
+# This is the requisite behavior for partitioned databases
+options('rplexos.tiebreak' = 'first')
+
+# -----------------------------------------------------------------------
 # Size for plot text
 text.plot = 11
 
