@@ -672,3 +672,46 @@ if (key.period.line.flow.plots) {
 ```
 `r key.period.line.flow`
 
+
+***
+## 30. Model Run Times
+```{r model-run-times}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(runtime.table) {
+  if ( typeof(phase.runtime)=='character' ) {
+    print('INPUT ERROR: phase.runtime has errors. Cannot run this section.')
+  } else{
+    if(length(unique(phase.runtime$scenario))>1){
+        kable(dcast(phase.runtime,phase~scenario,value.var='time'), format.args = list(big.mark = ','), digits=2)
+      } else{
+        kable(phase.runtime, format.args = list(big.mark = ',')) 
+      }
+  }
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+
+***
+## 36. Installed Capacity
+```{r installed-capacity}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(installed.cap.plot) {
+  if ( typeof(total.installed.cap)=='character' ) {
+    print('INPUT ERROR: total.installed.cap has errors. Cannot run this section.')
+  } else{
+    # Add type
+    total.installed.cap[, Type:=gen.type.mapping[name] ]
+    total.installed.cap[, GWh:=value] # Changing this so we can use gen_stack_plot
+    # Create plot
+    plot.data = gen_stack_plot(total.installed.cap)
+    print(plot.data[[1]] + theme(aspect.ratio = 2.5/length(db.loc)) +
+          scale_y_continuous(breaks=plot.data[[2]], limits=c(min(plot.data[[2]]), max(plot.data[[2]])), 
+                             expand=c(0,0), label=comma) + 
+            ylab("Installed Capacity, GW"))
+  }
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+
