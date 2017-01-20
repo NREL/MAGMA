@@ -15,7 +15,7 @@ if ( !z.name %in% ignore.zones ) {
   # Pull out only the data for the generation types specified in the input file and the current zone and period. Summarise by zone.
   plot.data = plot.data.all[Type %in% da.rt.types & Zone==z.name & Period==p.name, 
                             .(value = sum(value)), 
-                            by=.(Zone, time, Type, Period, data)]
+                            by=.(scenario, Zone, time, Type, Period, data)]
   
   # Check that there is actually generation data to plot, otherwise don't make a plot.
   if ( plot.data[, sum(value)]>0 ) {

@@ -15,8 +15,8 @@ knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, incl
                       fig.path=fig.path.name, dev='png')
 
 # Set dynamic height for figure in regional generation chunk
-if (exists('region.names')) { 
-  f.height = max(( length(region.names) %/% 3 + length(region.names) %% 3 ) * 5, 5)
+if (exists('zone.names')) { 
+  f.height = max(( length(zone.names) %/% 3 + length(zone.names) %% 3 ) * 5, 5)
 } else { f.height = 5 }
 if (exists('reserve.names')) { 
   res.height = max(( length(reserve.names) %/% 3 + length(reserve.names) %% 3 ) * 5, 5)
