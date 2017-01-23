@@ -1,4 +1,0 @@
-[submodule "MAGMA"]
-	path = MAGMA
-	url = git@github.com:NREL/MAGMA.git
-	branch = update_comparison
