@@ -469,21 +469,25 @@ capacity_factor = function(total.generation, total.installed.cap) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # This function calculates the revenue from a particular revenue stream (reserves or generation)
 
-revenue_calculator = function(interval.generation, interval.region.price,
+revenue_calculator = function(interval.generation, interval.pump.load, interval.region.price,
                               interval.gen.reserve.provision,interval.reserve.price){
   
   gen.type.zone.region = region.zone.mapping[, Type:=gen.type.mapping[name]]
   setkey(gen.type.zone.region,name)
   setkey(interval.generation,name)
+  setkey(interval.pump.load,name)
   setkey(interval.gen.reserve.provision,name)
   # Add region and zone by matching generator name in the region and zone mapping file. 
   gen.data = gen.type.zone.region[interval.generation[property=='Generation', .(scenario,name,time,value)]]
+  pump.data = gen.type.zone.region[interval.pump.load[property=='Pump Load', .(scenario,name,time,value)]]
   res.data = gen.type.zone.region[interval.gen.reserve.provision[property=='Provision', 
                                                                  .(scenario,name,parent,time,value)]]
-  #Merge prices onto generation and reserve data
+  #Merge prices onto generation, pump and reserve data
   setkey(gen.data,Region,time,scenario)
+  setkey(pump.data,Region,time,scenario)
   setkey(interval.region.price,Region,time,scenario)
   gen.data = interval.region.price[gen.data]
+  pump.data = interval.region.price[pump.data]
   
   setkey(res.data,parent,time,scenario)
   setkey(interval.reserve.price,name,time,scenario)
@@ -491,10 +495,13 @@ revenue_calculator = function(interval.generation, interval.region.price,
   
   gen.data[, Revenue_Type:='Generation']
   gen.data[, revenue:=value*i.value]
+  pump.data[, Revenue_Type:='Charging']
+  pump.data[, revenue:=-value*i.value]
   res.data[, Revenue_Type:='Reserves']
   res.data[, revenue:=value*i.value]
   
   revenue = rbindlist(list(gen.data[, .(revenue=sum(revenue)), by=.(scenario,Region,Zone,Type,Revenue_Type)],
+                           pump.data[, .(revenue=sum(revenue)), by=.(scenario,Region,Zone,Type,Revenue_Type)],
                            res.data[, .(revenue=sum(revenue)), by=.(scenario,Region,Zone,Type,Revenue_Type)]))
   return(revenue)
 }
@@ -784,6 +791,12 @@ total_line_flow = function(database) {
 interval_gen = function(database) {
   interval.gen = data.table(query_interval(database, 'Generator', 'Generation', columns = c('category', 'name'))) 
   return(interval.gen[,.(scenario, property, name, value, time, category) ])
+}
+
+# Interval level generator pump load
+interval_pump_load = function(database) {
+  interval.pump.load = data.table(query_interval(database, 'Generator', 'Pump Load', columns = c('category', 'name'))) 
+  return(interval.pump.load[,.(scenario, property, name, value, time, category) ])
 }
 
 # Interval level generator capacity
