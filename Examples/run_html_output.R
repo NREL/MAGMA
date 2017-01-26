@@ -22,21 +22,21 @@ use.gen.type.csv = '<TRUE if assigning generator type with a CSV file.
                      FALSE if assigning generator type based on PLEXOS categories.>'
 gen.type.csv.loc = '<Location of CSV mapping generator name to type.
                      NULL if above is false.>'
-gen.region.zone  = '<Locatin of file mapping generator names to region and zone.>'
+gen.region.zone  = '<Location of file mapping generator names to region and zone.>'
 #------------------------------------------------------------------------------|
 # Run code to create HTML
 #------------------------------------------------------------------------------|
 setwd(magma.dir)
-library(data.table)
-
-# Load inputs
-inputs = read.csv(file.path(input.csv))
-inputs[inputs==""]=NA
-inputs = data.table(inputs)
 
 # Sourcing the setup file and required functions
 source(file.path('query_functions.R'))
 source(file.path('plot_functions.R'))
+
+# Read CSV file with all inputs
+inputs = read.csv(file.path(input.csv))
+inputs[inputs==""]=NA
+
+# Either query data from database or load existing data
 source(file.path('setup_plexosAnalysis.R'))
 if (query.data){
     source(file.path('setup_dataQueries.R'))
