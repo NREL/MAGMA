@@ -286,7 +286,7 @@ source("source_scripts/compare/c_d_curtailment_data.R")
 print(p.daily)
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
-***
+
 ### 8.1. Average Daily Curtailment Differences
 ```{r yearly-curtailment-diff, fig.height=6}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -301,7 +301,7 @@ print(p.daily.diff)
 print(p.daily.type)
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
-***
+
 ### 9.1. Average Daily Curtailment Differences by Type
 ```{r yearly-curtailment-by-type-diff, fig.height=t.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -316,7 +316,7 @@ print(p.daily.type.diff)
 print(p.int)
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
-***
+
 ### 10.1. Average Interval Curtailment Differences
 ```{r daily-curtailment-diff, fig.height=6}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -331,7 +331,7 @@ print(p.int.diff)
 print(p.int.type)
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
-***
+
 ### 11.1. Average Interval Curtailment Differences by Type
 ```{r daily-curtailment-by-type-diff, fig.height=t.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -592,7 +592,7 @@ if (interface.flow.plots) {
         avg.interface[, time := as.POSIXct(paste(hour,minute,second, sep=":"),format="%H:%M:%S",tz='UTC')]
       
         p1 = interface_plot(avg.interface, x_col = 'time', color='scenario')
-        print(p1 + labs(title='Interval Flow') + facet_wrap(~interface,ncol=1,scales='free') +
+        print(p1 + facet_wrap(~interface,ncol=1,scales='free') +
                 scale_x_datetime(breaks = date_breaks(width = "2 hour"), labels = date_format("%H:%M"), 
                                  expand = c(0, 0), timezone='UTC'))
         # Aggregate interval flow data into daily flow data
@@ -603,7 +603,7 @@ if (interface.flow.plots) {
           p2 = p2 + scale_x_datetime(breaks=date_breaks(width="1 month"), 
                      labels = date_format("%b"), expand = c(0, 0), timezone='UTC')
         }
-        print(p2 + labs(title='Daily Flow') + facet_wrap(~name,ncol=1,scales='free'))
+        print(p2 + facet_wrap(~name,ncol=1,scales='free'))
       }
     }
   } else { print('No interfaces specified. No interface data will be shown.')}
@@ -793,8 +793,7 @@ if (annual.res.short.table) {
 ```
 
 ***
-### 24. Average Interval and Daily Reserve Provisions
-```{r reserves-plots}
+```{r reserves-plots-data, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
 if(reserves.plots) {
@@ -816,8 +815,8 @@ if(reserves.plots) {
       int.avg[, time := as.POSIXct(paste(hour,minute,second, sep=":"),'UTC',format="%H:%M:%S")]
     
       # Creating interval reserves provisions plot
-      p.1 = line_plot(int.avg, c('interval','scenario'),'time', 'Provision', 'Reserve Provision (GWh)',color='scenario')
-      p.1 = p.1 + scale_x_datetime(breaks = date_breaks(width = "2 hour"), 
+      p.int.res = line_plot(int.avg, c('interval','scenario'),'time', 'Provision', 'Reserve Provision (GWh)',color='scenario')
+      p.int.res = p.int.res + scale_x_datetime(breaks = date_breaks(width = "2 hour"), 
                                    labels = date_format("%H:%M"), expand = c(0, 0), timezone='UTC')
     
       # Calculating the daily hourly average
@@ -825,16 +824,28 @@ if(reserves.plots) {
       dy.avg[, time := as.POSIXct(as.character(day+1),format='%j')]
     
       # Creating average daily reserves provisions plot
-      p.2 = line_plot(dy.avg, c('day','scenario'),'time', 'Provision', 'Reserve Provision (GWh)',color='scenario')
+      p.daily.res = line_plot(dy.avg, c('day','scenario'),'time', 'Provision', 'Reserve Provision (GWh)',color='scenario')
       if (nrow(dy.avg) > 30) {
-        p.2 = p.2 + scale_x_datetime(breaks = date_breaks(width = "1 month"), 
+        p.daily.res = p.daily.res + scale_x_datetime(breaks = date_breaks(width = "1 month"), 
                                      labels = date_format("%b %d"), expand = c(0, 0), timezone='UTC')
       }
-      print(p.1)
-      print(p.2)
     }
   }
 } else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+***
+### 24. Average Interval Reserve Provisions
+```{r reserves-plots-int}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+print(p.int.res)
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+### Average Daily Reserve Provisions
+```{r reserves-plots-daily}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+print(p.daily.res)
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -1025,6 +1036,7 @@ source('source_scripts/compare/c_p_revenue.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
+***
 ## 33. Generation comparison by Generator Type
 ```{r generation-comparison, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1065,11 +1077,9 @@ if (compare.dispatch.region | compare.dispatch.zone) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
-
 ### Zones
 `r comp.gen.zone`
 
-***
 ### Regions
 `r comp.gen.region`
 
