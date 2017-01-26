@@ -37,7 +37,7 @@ if (exists('lines')) {
 s.height = ( length(db.loc) ) * 4
 s.width = ( length(db.loc) %/% 3 + length(db.loc) %% 3 ) * 10
 p.height = ( length(period.names) %/% 2 + length(period.names) %% 2 ) * 5
-t.height = ( length(re.types) ) * 4
+t.height = ( length(re.types) ) * 5
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -276,11 +276,21 @@ if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.di
 
 ***
 ## 8-11. Curtailment
+```{r curtailment-data, include=FALSE}
+source("source_scripts/compare/c_d_curtailment_data.R")
+```
 ***
 ### 8. Average Daily Curtailment
-```{r yearly-curtailment}
+```{r yearly-curtailment, fig.height=6}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/compare/c_p_daily_curtailment.R')
+print(p.daily)
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+***
+### 8.1. Average Daily Curtailment Differences
+```{r yearly-curtailment-diff, fig.height=6}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+print(p.daily.diff)
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -288,15 +298,29 @@ source('source_scripts/compare/c_p_daily_curtailment.R')
 ### 9. Average Daily Curtailment by Type
 ```{r yearly-curtailment-by-type, fig.height=t.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/compare/c_p_daily_curtailment_type.R')
+print(p.daily.type)
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+***
+### 9.1. Average Daily Curtailment Differences by Type
+```{r yearly-curtailment-by-type-diff, fig.height=t.height}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+print(p.daily.type.diff)
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
 ***
 ### 10. Average Interval Curtailment
-```{r daily-curtailment}
+```{r daily-curtailment, fig.height=6}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/compare/c_p_interval_curtailment.R')
+print(p.int)
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+***
+### 10.1. Average Interval Curtailment Differences
+```{r daily-curtailment-diff, fig.height=6}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+print(p.int.diff)
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -304,7 +328,14 @@ source('source_scripts/compare/c_p_interval_curtailment.R')
 ### 11. Average Interval Curtailment by Type
 ```{r daily-curtailment-by-type, fig.height=t.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/compare/c_p_interval_curtailment_type.R')
+print(p.int.type)
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+***
+### 11.1. Average Interval Curtailment Differences by Type
+```{r daily-curtailment-by-type-diff, fig.height=t.height}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+print(p.int.type.diff)
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -374,7 +405,7 @@ if (annual.curtailment.table){
 
 ***
 ### 13.1. Total Curtailment Difference
-```{r yearly-curtailment-diff}
+```{r yearly-curtailment-diff-plot}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (curtailment.diff.table) {
   if ( typeof(total.generation)=='character' ) {
