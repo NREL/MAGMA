@@ -711,7 +711,7 @@ if (key.period.line.flow.plots) {
 ***
 ## 22-25. Reserves
 ***
-### 22. Annual Reserve Provisions by Scenario
+### 22. Annual Reserve Provision by Scenario (GW)
 ```{r annual-reserves-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
@@ -723,11 +723,8 @@ if(annual.reserves.table) {
     annual.reserves = tryCatch( annual_reserves(total.reserve.provision, total.reserve.shortage), 
                                 error = function(cond) { return('ERROR: annual_reserves function not returning correct results.') })
     if(typeof(annual.reserves)!='character') { 
-      if(length(unique(annual.reserves$scenario))>1){
-        kable(annual.reserves[, .(Type, scenario, `Provisions (GWh)`, `Shortage (GWh)`)], format.args = list(big.mark = ',')) 
-      } else{
-        kable(annual.reserves[, .(Type, `Provisions (GWh)`, `Shortage (GWh)`)], format.args = list(big.mark = ',')) 
-      }
+      res.prov.table = dcast.data.table(annual.reserves,Type~scenario,value.var="Provisions (GWh)")
+      kable(res.prov.table, format.args = list(big.mark = ','))
     } else { print('ERROR: annual_reserves is not returning correct results.')}
   }
 } else { print('Section not run according to input file.') }
@@ -735,7 +732,7 @@ if(annual.reserves.table) {
 ```
 
 ***
-### 23. Annual Reserve Shortage by Scenario
+### 23. Annual Reserve Shortage by Scenario (GW)
 ```{r annual-reserves-scen-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file

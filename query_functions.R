@@ -26,25 +26,6 @@ gen_by_type = function(total.generation, total.avail.cap) {
 
   # Sum up generation by type
   yr.gen = yr.gen[,.(GWh=sum(value)),by=.(scenario,Type)]
-    
-  if(typeof(avail)=='double' & typeof(re.gen)=='double') {
-    # Calculate curtailment
-    curt = avail - re.gen
-    curt.tot = sum(curt)
-    
-    # Combine everything before returning the resulting data.
-    yr.gen = rbind(yr.gen, data.table(scenario = unique(yr.gen[,scenario]), Type = 'Curtailment', GWh = curt.tot))
-    
-  } else if (length(avail[,1])>0 & length(re.gen[,1])>0) {
-    # Calculate curtailment
-    setkey(avail, Type, scenario)
-    setkey(re.gen, Type, scenario)
-    curt = avail[re.gen][,curt:=value-i.value]
-    curt.tot = curt[,.(Type='Curtailment',GWh=sum(curt)), by=.(scenario)]
-    
-    # Combine everything before returning the resulting data.
-    yr.gen = rbindlist(list(yr.gen, curt.tot))
-  }
 
   return(yr.gen)
 }
