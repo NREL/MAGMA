@@ -875,6 +875,33 @@ if(reserve.stack) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
+***
+### 25.1. Difference in Reserve Provisions by generator type
+```{r reserves-stacks, fig.height=res.height, fig.width=10}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Check if this section was selected to run in the input file
+if(reserve.stack) {
+  if (typeof(total.gen.res)=='character'){
+      print('INPUT ERROR: total.gen.res has errors. Cannot run this section')
+    } else{
+    # Query annual reserves provision by type.
+    yr.res.scen = tryCatch( annual_reserves_provision(total.gen.res), error = function(cond) { return('ERROR') })
+    
+    if ( typeof(yr.res.scen)=='character' ) { 
+      print('ERROR: annual_reserves_provision function not returning correct results.')
+    } else {
+      yr.res.scen.diff = yr.res.scen[,.(scenario, GWh=GWh-GWh[scenario==ref.scenario]),by=.(Type,Reserve)]
+      plot.data = gen_diff_stack_plot(yr.res.scen.diff, filters = c('Reserve','scenario'))
+      # Create plot
+      print(plot.data[[1]] + facet_wrap(~Reserve,ncol=3,scales='free') + 
+              theme(axis.text.x = element_text(angle = -30, hjust = 0)))
+    }
+  }
+} else { print('Section not run according to input file.') }
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
 
 ***
 ## 26. Region and Zone Generation (GWh)
@@ -1037,7 +1064,7 @@ source('source_scripts/compare/c_p_revenue.R')
 ```
 
 ***
-## 33. Generation comparison by Generator Type
+## 33-34. Generation comparison by Generator Type
 ```{r generation-comparison, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
@@ -1079,15 +1106,15 @@ if (compare.dispatch.region | compare.dispatch.zone) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
-### Zones
+### 33. Zones
 `r comp.gen.zone`
 
-### Regions
+### 34. Regions
 `r comp.gen.region`
 
 
 ***
-## 34. Model Run Times
+## 35. Model Run Times
 ```{r model-run-times}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if(runtime.table) {
@@ -1107,7 +1134,7 @@ if(runtime.table) {
 
 
 ***
-## 35. Installed Capacity
+## 36. Installed Capacity
 ```{r installed-capacity}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if(installed.cap.plot) {

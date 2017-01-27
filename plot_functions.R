@@ -90,7 +90,7 @@ gen_stack_plot <- function(gen.data, load.data=NULL, filters=NULL, x_col='scenar
 }
 
 
-gen_diff_stack_plot <- function(gen.data, load.data, filters=NULL){
+gen_diff_stack_plot <- function(gen.data, load.data=NULL, filters=NULL){
   # Creates a difference in total generation stack plot
   # Assumes data has been processed according to XXX
   # Filters are other things you might want to plot over
@@ -123,16 +123,16 @@ gen_diff_stack_plot <- function(gen.data, load.data, filters=NULL){
   seq.py = pretty_axes(gen.sum,filters = c(filters,'TWh'))
 
   # Calculate difference in load
-  load.scen = load.data[, .(value = sum(value)/1000), by=load.filters]
-  diff.load = load.scen[, .(scenario, TWh = value-value[as.character(scenario)==ref.scenario]), by=load.diff.filters]
-  diff.load = diff.load[scenario!=ref.scenario, ]
+  if(!is.null(load.data)){  
+    load.scen = load.data[, .(value = sum(value)/1000), by=load.filters]
+    diff.load = load.scen[, .(scenario, TWh = value-value[as.character(scenario)==ref.scenario]), by=load.diff.filters]
+    diff.load = diff.load[scenario!=ref.scenario, ]
+  }
 
   # Create plot
   p1 = ggplot() +
           geom_bar(data = dat.pos, aes(x = scenario, y = TWh, fill=Type), stat="identity", position="stack" ) +
           geom_bar(data = dat.neg, aes(x = scenario, y = TWh, fill=Type), stat="identity", position="stack" ) +
-          geom_errorbar(data = diff.load, aes(x = scenario, ymin=TWh, ymax=TWh, color='load'), 
-                        size=0.45, linetype='longdash')+
           scale_fill_manual(values = gen.color, guide = guide_legend(reverse = TRUE))+
           scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
           labs(y="Difference in Generation (TWh)", x=NULL)+
@@ -149,6 +149,12 @@ gen_diff_stack_plot <- function(gen.data, load.data, filters=NULL){
                          panel.spacing   = unit(1.5, "lines"),
                          strip.text      = element_text(size = text.plot),
                          aspect.ratio    = 2.5/length(unique(dat.pos$scenario)))
+
+  # Add error bar line for load if provided
+  if(!is.null(load.data)){
+    p1 = p1 + geom_errorbar(data = diff.load, aes(x = scenario, ymin=TWh, ymax=TWh, color='load'), 
+                            size=0.45, linetype='longdash')
+  }
   return(list(p1,seq.py))
 }
 
