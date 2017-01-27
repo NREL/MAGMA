@@ -1054,17 +1054,19 @@ if (compare.dispatch.region | compare.dispatch.zone) {
         
         # Check if zonal DA-RT plots were selected in input file. If so create a plot for each zone
         if (compare.dispatch.zone) {
+          comp.zone.types = unique(compare.plot.data[Type%in%da.rt.types&!Zone%in%ignore.zones,.(Type,Zone)])
           comp.gen.zone = mapply(function(t,z){ knit_expand(file = 'source_scripts/compare/c_p_key_period_gen_comparison_zone.Rmd', 
                                                             type.name = t, zone.name = z) },
-                                 rep(da.rt.types,length(zone.names)), rep(zone.names,each=length(da.rt.types)))
+                                 comp.zone.types$Type, comp.zone.types$Zone)
           comp.gen.zone = knit_child(text = unlist(comp.gen.zone))
         } else {comp.gen.zone = 'Section not run according to input file.'}
         
         # Create a plot for each region.
         if (compare.dispatch.region) {  
+          comp.region.types = unique(compare.plot.data[Type%in%da.rt.types&!Region%in%ignore.zones,.(Type,Region)])
           comp.gen.region = mapply(function(t,r){ knit_expand(file = 'source_scripts/compare/c_p_key_period_gen_comparison_region.Rmd', 
                                                               type.name = t, region.name = r) },
-                                   rep(da.rt.types,length(region.names)), rep(region.names,each=length(da.rt.types)))
+                                   comp.region.types$Type, comp.region.types$Region)
           comp.gen.region = knit_child(text = unlist(comp.gen.region))
         } else {comp.gen.region = 'Section not run according to input file.'}
       }

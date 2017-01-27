@@ -1,3 +1,4 @@
+
 ```{r Gen-compare-region-{{region.name}}-{{type.name}}, results='asis', include=TRUE}
 r.name = '{{region.name}}' # Assign region name
 t.name = '{{type.name}}' # Assign generator type name
@@ -41,3 +42,4 @@ if ( !r.name %in% ignore.regions ) {
   }
   
 }
+```

@@ -1,3 +1,4 @@
+
 ```{r Gen-compare-zone-{{zone.name}}-{{type.name}}, results='asis', include=TRUE}
 z.name = '{{zone.name}}' # Assign zone name
 t.name = '{{type.name}}' # Assign generator type name
@@ -42,3 +43,4 @@ if ( !z.name %in% ignore.zones ) {
   }
   
 }
+```
