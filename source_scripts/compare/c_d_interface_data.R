@@ -46,7 +46,7 @@ if (interface.flow.plots) {
         daily.flows = interface.flows[, .(value=mean(value)), by=.(day,name,scenario)]
         daily.flows[,time:=as.POSIXct(as.character(day+1),format="%j")]
         p.daily.interface = interface_plot(daily.flows, x_col = 'time', color='scenario')
-        if (nrow(daily.flows) > 30*length(interfaces)){
+        if (nrow(daily.flows)/length(db.loc) > 30*length(interfaces)){
           p.daily.interface = p.daily.interface + scale_x_datetime(breaks=date_breaks(width="1 month"), 
                      labels = date_format("%b"), expand = c(0, 0), timezone='UTC')
         }
@@ -55,7 +55,7 @@ if (interface.flow.plots) {
         diff.daily.flows = daily.flows[, .(scenario, value = value - value[as.character(scenario)==ref.scenario]), 
                                      by=.(time,name)]
         p.daily.interface.diff = interface_plot(diff.daily.flows, x_col = 'time', color='scenario')
-        if (nrow(daily.flows) > 30*length(interfaces)){
+        if (nrow(daily.flows)/length(db.loc) > 30*length(interfaces)){
           p.daily.interface.diff = p.daily.interface.diff + scale_x_datetime(breaks=date_breaks(width="1 month"), 
                      labels = date_format("%b"), expand = c(0, 0), timezone='UTC')
         }
