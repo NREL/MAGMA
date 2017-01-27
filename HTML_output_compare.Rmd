@@ -543,53 +543,40 @@ if(interface.flow.table) {
 ```
 
 ***
-## 17. Interface Flow Plots
-```{r interface-flow-plots, resize.width=T, fig.width=10, fig.height=i.height}
+```{r interface-plots-data, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Check if this section was selected to run in the input file
-if (interface.flow.plots) {
-  if (length(interfaces)>0) {
-    if ( typeof(interval.interface.flow) == 'character' ) {
-      print('INPUT ERROR: interval.interface.flow not correct. Cannot run this section')
-    } else { 
-      # Call the query function to get interface flows for the interfaces selected in the query function.
-      interface.flows = tryCatch( interval_interface_flows(interval.interface.flow), 
-                                  error=function(cond) {return('ERROR: interface_flows query not returning correct results.')})
-        
-      # Check for errors in the query function. If theres an error don't continue.
-      if ( typeof(interface.flows)=='character' ) { 
-        print('ERROR: interface_flows function not returning correct results.')
-      } else {
-        # change name to interface in order to not hit recursive error
-        interface.flows[, interface:=factor(name, levels = interfaces)]
-        # Add day and interval
-        interface.flows[, day := as.POSIXlt(time)[[8]] ]
-        interface.flows[, interval := 1:intervals.per.day, by=.(day,scenario)]
-        # Get interval plots
-        avg.interface = interface.flows[, .(value=sum(value)),by=.(scenario,interface,interval)]
-        avg.interface[, hour := floor((interval-1)*(3600*24/intervals.per.day)/3600)]
-        avg.interface[, minute := floor((interval-1)*(3600*24/intervals.per.day)/60-hour*60)]
-        avg.interface[, second := floor((interval-1)*(3600*24/intervals.per.day)-hour*3600-minute*60)]
-        avg.interface[, time := as.POSIXct(paste(hour,minute,second, sep=":"),format="%H:%M:%S",tz='UTC')]
-      
-        p1 = interface_plot(avg.interface, x_col = 'time', color='scenario')
-        print(p1 + facet_wrap(~interface,ncol=1,scales='free') +
-                scale_x_datetime(breaks = date_breaks(width = "2 hour"), labels = date_format("%H:%M"), 
-                                 expand = c(0, 0), timezone='UTC'))
-        # Aggregate interval flow data into daily flow data
-        daily.flows = interface.flows[, .(value=sum(value)), by=.(day,name,scenario)]
-        daily.flows[,time:=as.POSIXct(as.character(day+1),format="%j")]
-        p2 = interface_plot(daily.flows, x_col = 'time', color='scenario')
-        if (nrow(daily.flows) > 30*length(interfaces)){
-          p2 = p2 + scale_x_datetime(breaks=date_breaks(width="1 month"), 
-                     labels = date_format("%b"), expand = c(0, 0), timezone='UTC')
-        }
-        print(p2 + facet_wrap(~name,ncol=1,scales='free'))
-      }
-    }
-  } else { print('No interfaces specified. No interface data will be shown.')}
-} else { print('Section not run according to input file.') }
+source('source_scripts/compare/c_d_interface_data.R')
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+***
+## 17. Average Interval Interface Flow
+```{r interface-interval-flow-plots, resize.width=T, fig.width=10, fig.height=i.height}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+print(p.int.interface)
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
 
+***
+## Average Daily Interface Flow
+```{r interface-daily-flow-plots, resize.width=T, fig.width=10, fig.height=i.height}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+print(p.daily.interface)
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## 17.1. Difference in Average Interval Interface Flow
+```{r interface-interval-diff-flow-plots, resize.width=T, fig.width=10, fig.height=i.height}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+print(p.int.interface.diff)
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## Difference in Average Daily Interface Flow
+```{r interface-daily-diff-flow-plots, resize.width=T, fig.width=10, fig.height=i.height}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+print(p.daily.interface.diff)
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -649,52 +636,40 @@ if(line.flow.table) {
 ```
 
 ***
-## 20. Line Flow Plots
-```{r line-flow-plots, resize.width=T, fig.width=10, fig.height=l.height}
+```{r line-plots-data, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Check if this section was selected to run in the input file
-if (line.flow.plots) {
-  if (length(lines)>0) {
-    if ( typeof(interval.line.flow) == 'character' ) {
-      print('INPUT ERROR: interval.line.flow not correct. Cannot run this section')
-    } else { 
-      # Call the query function to get line flows for the lines selected in the query function.
-      line.flows = tryCatch( interval_line_flows(interval.line.flow), 
-                             error=function(cond) {return('ERROR: line_flows query not returning correct results.')})
-      
-      # Check for errors in the query function. If theres an error don't continue.
-      if ( typeof(line.flows)=='character' ) { 
-        print('ERROR: line_flows function not returning correct results.')
-      } else {
-        # change name to line in order to not hit recursive error
-        line.flows[, line:=factor(name, levels = lines)]
-        # Add day and interval
-        line.flows[, day := as.POSIXlt(time)[[8]] ]
-        line.flows[, interval := 1:intervals.per.day, by=.(day,scenario)]
-        # Get interval plots
-        avg.line = line.flows[, .(value=sum(value)),by=.(scenario,line,interval)]
-        avg.line[, hour := floor((interval-1)*(3600*24/intervals.per.day)/3600)]
-        avg.line[, minute := floor((interval-1)*(3600*24/intervals.per.day)/60-hour*60)]
-        avg.line[, second := floor((interval-1)*(3600*24/intervals.per.day)-hour*3600-minute*60)]
-        avg.line[, time := as.POSIXct(paste(hour,minute,second, sep=":"),format="%H:%M:%S",tz='UTC')]
+source('source_scripts/compare/c_d_line_data.R')
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+***
+## 20. Average Interval Line Flow
+```{r line-interval-flow-plots, resize.width=T, fig.width=10, fig.height=l.height}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+print(p.int.line)
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
 
-        p1 = interface_plot(avg.line, x_col = 'time', color='scenario')
-        print(p1 + labs(title='Interval Flow') + facet_wrap(~line,ncol=1,scales='free') +
-                scale_x_datetime(breaks = date_breaks(width = "2 hour"), labels = date_format("%H:%M"), expand = c(0, 0)))
-        # Aggregate interval flow data into daily flow data
-        daily.flows = line.flows[, .(value=sum(value)), by=.(day,name,scenario)]
-        daily.flows[,time:=as.POSIXct(as.character(day+1),format="%j")]
-        p2 = interface_plot(daily.flows, x_col = 'time', color='scenario')
-        if (nrow(daily.flows) > 30*length(lines)){
-          p2 = p2 + scale_x_datetime(breaks=date_breaks(width="1 month"), 
-                                     labels = date_format("%b"), expand = c(0, 0))
-        }
-        print(p2 + labs(title='Daily Flow') + facet_wrap(~name,ncol=1,scales='free'))
-      }
-    }
-  } else { print('No lines specified. No line data will be shown.')}
-} else { print('Section not run according to input file.') }
+***
+## Average Daily Line Flow
+```{r line-daily-flow-plots, resize.width=T, fig.width=10, fig.height=l.height}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+print(p.daily.line)
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
 
+***
+## 20.1. Difference in Average Interval Line Flow
+```{r line-interval-diff-flow-plots, resize.width=T, fig.width=10, fig.height=l.height}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+print(p.int.line.diff)
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## Difference in Average Daily Line Flow
+```{r line-daily-diff-flow-plots, resize.width=T, fig.width=10, fig.height=l.height}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+print(p.daily.line.diff)
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -718,7 +693,7 @@ if (key.period.line.flow.plots) {
           # Create data for each plot for the interesting periods
           figure.height = l.height
           key.plots = lapply(period.names, function(p){
-            knit_expand(file = 'source_scripts/compare/c_p_key_period_interface_flow.Rmd', period.name = p)
+            knit_expand(file = 'source_scripts/compare/c_p_key_period_line_flow.Rmd', period.name = p)
           }) 
           # Reconstruct the plot data into a format that will be output into the HTML below
           key.period.line.flow = knit_child(text = unlist(key.plots))
