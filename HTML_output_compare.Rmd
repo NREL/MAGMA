@@ -19,8 +19,8 @@ if (exists('zone.names')) { z.height = ( length(zone.names[!zone.names%in%ignore
                                            length(zone.names[!zone.names%in%ignore.zones]) %% 3 ) * 4
   } else { z.height = 5 }
 if (exists('region.names')) { r.height = ( length(region.names[!region.names%in%ignore.regions]) %/% 3 + 
-                                             length(region.names[!region.names%in%ignore.regions]) %% 3 ) * 4
-  } else {r.height = 4 }
+                                             length(region.names[!region.names%in%ignore.regions]) %% 3 ) * 5
+  } else {r.height = 5 }
 if (exists('region.names')) { r.height2 = ( length(region.names[!region.names%in%ignore.regions]) %/% 3 + 
                                              length(region.names[!region.names%in%ignore.regions]) %% 3 ) * 3
   } else {r.height2 = 3 }
@@ -94,7 +94,8 @@ if (zone.gen.stacks) {
     plot.data = gen_stack_plot(r.z.gen[!Zone %in% ignore.zones, ],
                                load.data = z.load[!Zone %in% ignore.zones, ], 
                                filters = 'Zone', x_col='scenario')
-    print(plot.data[[1]] + facet_wrap(~Zone, scales = 'free', ncol=3)+theme(aspect.ratio = 2.5, axis.text.x = element_text(angle = -30, hjust = 0)))
+    print(plot.data[[1]] + facet_wrap(~Zone, scales = 'free', ncol=3)+
+      theme(aspect.ratio = 2.5, axis.text.x = element_text(angle = -30, hjust = 0)))
   }
 } else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -110,7 +111,7 @@ source('source_scripts/compare/c_p_zone_gen_stacks.Rmd')
 
 ***
 ## 3. Regional Generation
-```{r region-gen-stacks, resize.height=T, fig.height=s.height, fig.width=12}
+```{r region-gen-stacks, resize.height=T, fig.height=r.height, fig.width=12}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected run in the input file
 if (region.gen.stacks) {
@@ -119,47 +120,27 @@ if (region.gen.stacks) {
   } else if ( typeof(total.avail.cap) == 'character' ) { 
     print('INPUT ERROR: total.avail.cap has errors. Cannot run this section.')
   } else{
-
-    if( !exists('r.z.gen') ) {
-      # Query region and zonal generation
-      r.z.gen = tryCatch( region_zone_gen(total.generation, total.avail.cap), error = function(cond) { return('ERROR') } )
-    }
-
-    # Check if zonal.gen query worked and create plot of regional gen, else return an error.
+    # Query region and zonal generation
+    r.z.gen = tryCatch( region_zone_gen(total.generation, total.avail.cap), error = function(cond) { return('ERROR') } )
+    # Check if region_zone_gen query worked and create plot of regional gen, else return an error.
     if ( typeof(r.z.gen)=='character' ) {
       print('ERROR: region_zone_gen function not returning correct results.')
     } else if ( typeof(r.load) == 'character' ) {
       print('ERROR: region_load function not returning correct results.')
     } else {
-      if (length(unique(r.z.gen$Region))>length(unique(r.z.gen$Zone))) {
-        region.load = r.load[!Region %in% ignore.regions, ] # Remove load data from regions being ignored
-        
-        setkey(region.load,Region)
-        setkey(rz.unique,Region)
-        region.load = rz.unique[region.load][!Zone %in% ignore.zones, ] # ignored regions removed above
-        region.load = region.load[complete.cases(region.load),]
-        plot.load = region.load
-
-        x.col = 'Region'
-        facet = facet_grid(scenario~., scales = 'free')
-      } else{
-        zone.load = z.load[!Zone %in% ignore.zones, ] # Remove load data from regions being ignored
-
-        setkey(zone.load,Zone)
-        setkey(rz.unique,Zone)
-        zone.load = rz.unique[zone.load][!Region %in% ignore.regions, ] # ignored zones removed above
-        zone.load = zone.load[complete.cases(zone.load),]
-        plot.load = zone.load
-
-        x.col = 'Zone'
-        facet = facet_grid(scenario~., scales = 'free')
-      }
+      region.load = r.load[!Region %in% ignore.regions, ] # Remove load data from regions being ignored
+      setkey(region.load,Region)
+      setkey(rz.unique,Region)
+      region.load = rz.unique[region.load][!Zone %in% ignore.zones, ] # ignored regions removed above
+      region.load = region.load[complete.cases(region.load),]
+      plot.load = region.load
       
       # Create and plot data
       p1 <- gen_stack_plot(r.z.gen[(!Zone %in% ignore.zones & !Region %in% ignore.regions),],
                            load.data = plot.load[(!Zone %in% ignore.zones & !Region %in% ignore.regions),],
-                           filters = c('Region','Zone'), x_col = x.col)
-      print(p1[[1]] + facet + theme(axis.text.x = element_text(angle = -30, hjust = 0)))
+                           filters = c('Region'))
+      print(p1[[1]] + facet_wrap(~Region, scales = 'free', ncol=3) + 
+        theme(aspect.ratio = 2.5, axis.text.x = element_text(angle = -30, hjust = 0)))
     }
   }
 } else { print('Section not run according to input file.') }
@@ -168,7 +149,7 @@ if (region.gen.stacks) {
 
 ***
 ## 3.1. Regional Generation Differences
-```{r region-gen-diff-stacks, fig.height=s.height, fig.width=12}
+```{r region-gen-diff-stacks, fig.height=r.height, fig.width=12}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/compare/c_p_region_gen_stacks.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -867,7 +848,7 @@ if(reserve.stack) {
       # Create plot
       plot.data = gen_stack_plot(yr.res.scen, filters = c('Reserve','scenario'))
       print(plot.data[[1]] + facet_wrap(~Reserve,ncol=3,scales='free') + 
-              theme(axis.text.x = element_text(angle = -30, hjust = 0)))
+              theme(aspect.ratio = 2.5/length(db.loc),axis.text.x = element_text(angle = -30, hjust = 0)))
     }
   }
 } else { print('Section not run according to input file.') }
@@ -877,7 +858,7 @@ if(reserve.stack) {
 
 ***
 ### 25.1. Difference in Reserve Provisions by generator type
-```{r reserves-stacks, fig.height=res.height, fig.width=10}
+```{r reserves-stacks-diff, fig.height=res.height, fig.width=10}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
 if(reserve.stack) {
