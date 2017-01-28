@@ -372,7 +372,7 @@ if ( use.gen.type.csv & length(gen.type.csv.loc>0) ) {
 # if (is.na(inputs$Gen.Region.Zone.Mapping.Filename)[1]){
 if ( !exists("gen.region.zone") ) {
   if ('Gen.Region.Zone.Mapping.Filename'%in%names(inputs)){
-    gen.region.zone <- as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename)[1])
+    gen.region.zone <- as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename))
   } else{
     gen.region.zone <- NULL
   }
@@ -386,14 +386,16 @@ if (length(gen.region.zone)==0) {
   region.zone.mapping = data.table(unique(gen.mapping[,c('name','region','zone')]))
   setnames(region.zone.mapping, c("region","zone"), c("Region","Zone"))
 } else{
-  region.zone.mapping = data.table(read.csv(gen.region.zone, 
-                                            stringsAsFactors=FALSE))
-  if(length(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename))>1){
+  if(length(region.zone.mapping)>1){
     warning("More than one Gen.Region.Zone.Mapping.Filename found... I'll create a unique combination for you.")
-    for (i in 2:length(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename))){
+    gen.region.zone <- as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename))
+    for (i in 1:length(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename))){
       region.zone.mapping = rbindlist(list(region.zone.mapping,data.table(read.csv(gen.region.zone[i], 
                                                                           stringsAsFactors=FALSE))),fill=TRUE)
     }
+  } else{
+    region.zone.mapping = data.table(read.csv(gen.region.zone, 
+                                              stringsAsFactors=FALSE))
   }
   if ( typeof(region.zone.mapping$Region)!="character" | typeof(region.zone.mapping$Zone)!="character" ) {
     region.zone.mapping$Region = as.character(region.zone.mapping$Region)

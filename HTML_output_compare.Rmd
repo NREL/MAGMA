@@ -388,7 +388,7 @@ if (annual.curtailment.table){
 ### 13.1. Total Curtailment Difference
 ```{r yearly-curtailment-diff-plot}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (curtailment.diff.table) {
+if (annual.curtailment.table) {
   if ( typeof(total.generation)=='character' ) {
     print('ERROR: total.generation has errors. Cannot run this section.')
   } else if ( typeof(total.avail.cap) == 'character' ) { 
