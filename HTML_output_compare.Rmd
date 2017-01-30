@@ -432,7 +432,7 @@ if (annual.curtailment.table) {
 ```
 
 ***
-## 14. Total Costs
+## 14. Total Costs (MM$)
 ```{r annual-cost-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file

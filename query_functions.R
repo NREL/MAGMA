@@ -264,8 +264,10 @@ costs = function(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom
   cost.table = rbindlist(list(cost.table,tot.cost))
   cost.table[,property:=factor(property,levels=unique(property))]
 
+  cost.table = dcast(cost.table, property~scenario, value.var='Cost')
+  
   setnames(cost.table, "property","Type")
-  setnames(cost.table, "Cost", "Cost (MM$)")
+  # setnames(cost.table, "Cost", "Cost (MM$)")
 
   if (length(unique(cost.table$scenario))==1){
     cost.table[, scenario := NULL]
@@ -336,6 +338,9 @@ interval_reserves_provision = function(interval.gen.res) {
 annual_interface_flows = function(total.interface.flow) {
   year.flows = total.interface.flow[name %in% interfaces,.(scenario,name,time,value)]  
   year.flows = dcast(year.flows[,.(GWh=sum(value)), by=.(name,scenario)], name~scenario, value.var='GWh')
+  if (length(unique(year.flows$scenario))==1){
+    year.flows[, scenario := NULL]
+  }
   return(year.flows)
 }
 
