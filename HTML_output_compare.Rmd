@@ -73,7 +73,9 @@ if (total.gen.stack){
 ## 1.1. Generation Differences
 ```{r gen-diff-stack}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/compare/c_p_diff_gen_stack.R')
+if(has.multiple.scenarios){
+  source('source_scripts/compare/c_p_diff_gen_stack.R')
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -105,7 +107,9 @@ if (zone.gen.stacks) {
 ## 2.1. Zonal Generation Differences
 ```{r zone-gen-diff-stacks, fig.height=z.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/compare/c_p_zone_gen_stacks.Rmd')
+if(has.multiple.scenarios){
+  source('source_scripts/compare/c_p_zone_gen_stacks.Rmd')
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -151,7 +155,9 @@ if (region.gen.stacks) {
 ## 3.1. Regional Generation Differences
 ```{r region-gen-diff-stacks, fig.height=r.height, fig.width=12}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/compare/c_p_region_gen_stacks.R')
+if(has.multiple.scenarios){
+  source('source_scripts/compare/c_p_region_gen_stacks.R')
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -271,7 +277,9 @@ print(p.daily)
 ### 8.1. Average Daily Curtailment Differences
 ```{r yearly-curtailment-diff, fig.height=6}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-print(p.daily.diff)
+if(has.multiple.scenarios){
+  print(p.daily.diff)
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -286,7 +294,9 @@ print(p.daily.type)
 ### 9.1. Average Daily Curtailment Differences by Type
 ```{r yearly-curtailment-by-type-diff, fig.height=t.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-print(p.daily.type.diff)
+if(has.multiple.scenarios){
+  print(p.daily.type.diff)
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -301,7 +311,9 @@ print(p.int)
 ### 10.1. Average Interval Curtailment Differences
 ```{r daily-curtailment-diff, fig.height=6}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-print(p.int.diff)
+if(has.multiple.scenarios){
+  print(p.int.diff)
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -316,7 +328,9 @@ print(p.int.type)
 ### 11.1. Average Interval Curtailment Differences by Type
 ```{r daily-curtailment-by-type-diff, fig.height=t.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-print(p.int.type.diff)
+if(has.multiple.scenarios){
+  print(p.int.type.diff)
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -388,18 +402,20 @@ if (annual.curtailment.table){
 ### 13.1. Total Curtailment Difference
 ```{r yearly-curtailment-diff-plot}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (annual.curtailment.table) {
-  if ( typeof(total.generation)=='character' ) {
-    print('ERROR: total.generation has errors. Cannot run this section.')
-  } else if ( typeof(total.avail.cap) == 'character' ) { 
-    print('ERROR: total.avail.cap has errors. Cannot run this section.')
-  } else{
-    # Run the cost query function
-    curt.diff = tryCatch( curtailment_diff(total.generation, total.avail.cap), 
-                          error = function(cond) { return('ERROR: curtailment diff function not returning correct results.') })
-    kable(curt.diff, format.args = list(big.mark = ','), digits=2)
-  }
-} else { print('Section not run according to input file.') }
+if(has.multiple.scenarios){
+  if (annual.curtailment.table) {
+    if ( typeof(total.generation)=='character' ) {
+      print('ERROR: total.generation has errors. Cannot run this section.')
+    } else if ( typeof(total.avail.cap) == 'character' ) { 
+      print('ERROR: total.avail.cap has errors. Cannot run this section.')
+    } else{
+      # Run the cost query function
+      curt.diff = tryCatch( curtailment_diff(total.generation, total.avail.cap), 
+                            error = function(cond) { return('ERROR: curtailment diff function not returning correct results.') })
+      kable(curt.diff, format.args = list(big.mark = ','), digits=2)
+    }
+  } else { print('Section not run according to input file.') }
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -427,13 +443,15 @@ if (annual.cost.table) {
 ## 14.1. Total Cost Differences
 ```{r annual-cost-difference-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Check if this section was selected to run in the input file
-if (annual.cost.table) {
-  # Run the cost query function
-  cost.diff.table = tryCatch( costs_diff(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom.cost), 
-                              error = function(cond) { return('ERROR: costs function not returning correct results.') })
-  kable(cost.diff.table, format.args = list(big.mark = ',')) 
-} else { print('Section not run according to input file.') }
+if(has.multiple.scenarios){
+  # Check if this section was selected to run in the input file
+  if (annual.cost.table) {
+    # Run the cost query function
+    cost.diff.table = tryCatch( costs_diff(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom.cost), 
+                                error = function(cond) { return('ERROR: costs function not returning correct results.') })
+    kable(cost.diff.table, format.args = list(big.mark = ',')) 
+  } else { print('Section not run according to input file.') }
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -491,33 +509,35 @@ if (region.zone.flow.table) {
 ## 15.1. Region and Zone Differences (GWh)
 ``` {r region-zone-flow-diff-tables}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- if (region.zone.flow.table) {
-  if ( (typeof(total.region.load)=='character' | typeof(total.region.imports)=='character' | 
-         typeof(total.region.exports)=='character' | typeof(total.region.ue)=='character') & 
-       (typeof(total.zone.load)=='character' | typeof(total.zone.imports)=='character' | 
-               typeof(total.zone.exports)=='character' | typeof(total.zone.ue)=='character') ) {
-    print('INPUT ERROR: at least one of total.region.load, total.region.imports, 
+if(has.multiple.scenarios){
+  if (region.zone.flow.table) {
+    if ( (typeof(total.region.load)=='character' | typeof(total.region.imports)=='character' | 
+          typeof(total.region.exports)=='character' | typeof(total.region.ue)=='character') & 
+         (typeof(total.zone.load)=='character' | typeof(total.zone.imports)=='character' | 
+          typeof(total.zone.exports)=='character' | typeof(total.zone.ue)=='character') ) {
+      print('INPUT ERROR: at least one of total.region.load, total.region.imports, 
            total.region.exports, or total.region.ue, or total.zone.load, total.zone.imports, 
            total.zone.exports, or total.zone.ue has errors. Cannot run this section.')
-  } else{
-    # Query region and zone stats.
-    z.stats = tryCatch( zone_stats(total.region.load, total.region.imports, total.region.exports, total.region.ue, 
-                                   total.zone.load, total.zone.imports, total.zone.exports, total.zone.ue), 
-                        error = function(cond) { return('ERROR: zone_stats function not returning correct results.') })
-    # Set names if data exists
-    if ( !typeof(z.stats)=='character' ) { 
-      z.diff.stats = z.stats[,.(scenario, Exports=Exports-Exports[scenario==ref.scenario],
-                                Imports=Imports-Imports[scenario==ref.scenario],
-                                Load=Load-Load[scenario==ref.scenario],
-                                `Unserved Energy`=`Unserved Energy`-`Unserved Energy`[scenario==ref.scenario]), 
-                             by=.(name)]
-      setnames(z.diff.stats, 'name', 'Zone Name')
-      z.diff.stats=z.diff.stats[scenario!=ref.scenario]
-    } else{ print("ERROR: region_stats not returning correct results")}
-    # Print data. Will print error message if errors
-    kable(z.diff.stats[!`Zone Name` %in% ignore.zones], format.args = list(big.mark = ','), digits=2)
-  }
-} else { print('Section not run according to input file.') }
+    } else{
+      # Query region and zone stats.
+      z.stats = tryCatch( zone_stats(total.region.load, total.region.imports, total.region.exports, total.region.ue, 
+                                     total.zone.load, total.zone.imports, total.zone.exports, total.zone.ue), 
+                          error = function(cond) { return('ERROR: zone_stats function not returning correct results.') })
+      # Set names if data exists
+      if ( !typeof(z.stats)=='character' ) { 
+        z.diff.stats = z.stats[,.(scenario, Exports=Exports-Exports[scenario==ref.scenario],
+                                  Imports=Imports-Imports[scenario==ref.scenario],
+                                  Load=Load-Load[scenario==ref.scenario],
+                                  `Unserved Energy`=`Unserved Energy`-`Unserved Energy`[scenario==ref.scenario]), 
+                               by=.(name)]
+        setnames(z.diff.stats, 'name', 'Zone Name')
+        z.diff.stats=z.diff.stats[scenario!=ref.scenario]
+      } else{ print("ERROR: region_stats not returning correct results")}
+      # Print data. Will print error message if errors
+      kable(z.diff.stats[!`Zone Name` %in% ignore.zones], format.args = list(big.mark = ','), digits=2)
+    }
+  } else { print('Section not run according to input file.') }
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -568,7 +588,9 @@ print(p.daily.interface)
 ## 17.1. Difference in Average Interval Interface Flow
 ```{r interface-interval-diff-flow-plots, resize.width=T, fig.width=10, fig.height=i.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-print(p.int.interface.diff)
+if(has.multiple.scenarios){
+  print(p.int.interface.diff)
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -576,7 +598,9 @@ print(p.int.interface.diff)
 ## Difference in Average Daily Interface Flow
 ```{r interface-daily-diff-flow-plots, resize.width=T, fig.width=10, fig.height=i.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-print(p.daily.interface.diff)
+if(has.multiple.scenarios){
+  print(p.daily.interface.diff)
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -661,7 +685,9 @@ print(p.daily.line)
 ## 20.1. Difference in Average Interval Line Flow
 ```{r line-interval-diff-flow-plots, resize.width=T, fig.width=10, fig.height=l.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-print(p.int.line.diff)
+if(has.multiple.scenarios){
+  print(p.int.line.diff)
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -669,7 +695,9 @@ print(p.int.line.diff)
 ## Difference in Average Daily Line Flow
 ```{r line-daily-diff-flow-plots, resize.width=T, fig.width=10, fig.height=l.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-print(p.daily.line.diff)
+if(has.multiple.scenarios){
+  print(p.daily.line.diff)
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -832,14 +860,18 @@ print(p.daily.res)
 ### 24.1. Difference in Average Interval Reserve Provisions
 ```{r reserves-plots-int-diff}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-print(p.int.res.diff)
+if(has.multiple.scenarios){
+  print(p.int.res.diff)
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
 ### Difference in Average Daily Reserve Provisions
 ```{r reserves-plots-daily-diff}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-print(p.daily.res.diff)
+if(has.multiple.scenarios){
+  print(p.daily.res.diff)
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -873,26 +905,27 @@ if(reserve.stack) {
 ### 25.1. Difference in Reserve Provisions by generator type
 ```{r reserves-stacks-diff, fig.height=res.height, fig.width=10}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Check if this section was selected to run in the input file
-if(reserve.stack) {
-  if (typeof(total.gen.res)=='character'){
+if(has.multiple.scenarios){
+  # Check if this section was selected to run in the input file
+  if(reserve.stack) {
+    if (typeof(total.gen.res)=='character'){
       print('INPUT ERROR: total.gen.res has errors. Cannot run this section')
     } else{
-    # Query annual reserves provision by type.
-    yr.res.scen = tryCatch( annual_reserves_provision(total.gen.res), error = function(cond) { return('ERROR') })
-    
-    if ( typeof(yr.res.scen)=='character' ) { 
-      print('ERROR: annual_reserves_provision function not returning correct results.')
-    } else {
-      yr.res.scen.diff = yr.res.scen[,.(scenario, GWh=GWh-GWh[scenario==ref.scenario]),by=.(Type,Reserve)]
-      plot.data = gen_diff_stack_plot(yr.res.scen.diff, filters = c('Reserve','scenario'))
-      # Create plot
-      print(plot.data[[1]] + facet_wrap(~Reserve,ncol=3,scales='free') + 
-              theme(axis.text.x = element_text(angle = -30, hjust = 0)))
+      # Query annual reserves provision by type.
+      yr.res.scen = tryCatch( annual_reserves_provision(total.gen.res), error = function(cond) { return('ERROR') })
+      
+      if ( typeof(yr.res.scen)=='character' ) { 
+        print('ERROR: annual_reserves_provision function not returning correct results.')
+      } else {
+        yr.res.scen.diff = yr.res.scen[,.(scenario, GWh=GWh-GWh[scenario==ref.scenario]),by=.(Type,Reserve)]
+        plot.data = gen_diff_stack_plot(yr.res.scen.diff, filters = c('Reserve','scenario'))
+        # Create plot
+        print(plot.data[[1]] + facet_wrap(~Reserve,ncol=3,scales='free') + 
+                theme(axis.text.x = element_text(angle = -30, hjust = 0)))
+      }
     }
-  }
-} else { print('Section not run according to input file.') }
-
+  } else { print('Section not run according to input file.') }
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 

@@ -4,7 +4,7 @@ r.name = '{{region.name}}' # Assign region name
 p.name = '{{period.name}}' # Assign period name
 cat("### ", p.name, ': ', r.name) # Print period and region name above the plot
 text.plot=14 # Plot text size.
-figure.width = max(5*plot.data.all[Type %in% da.rt.types & Region==r.name & Period==p.name, length(unique(scenario))], 5)
+figure.width = max(7*plot.data.all[Type %in% da.rt.types & Region==r.name & Period==p.name, length(unique(scenario))], 10)
 figure.height = max(2*plot.data.all[Type %in% da.rt.types & Region==r.name & Period==p.name, length(unique(Type))], 2)
 ```
 
