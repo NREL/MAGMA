@@ -322,6 +322,7 @@ print(p.int.type.diff)
 
 ***
 ## 12. Total Gen
+#### GWh Generation
 ```{r annual-generation-table, fig.width=10}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (annual.generation.table){
@@ -350,7 +351,34 @@ if (annual.generation.table){
     # combine back into one table. 
     yr.gen = rbindlist(list(yr.gen, yr.gen[,.(Type='Total',GWh=sum(GWh),Percent=sum(Percent)), by=.(scenario)], curt))
     row.names(yr.gen) = NULL
-    kable(yr.gen, format.args = list(big.mark = ','), digits=2) 
+    
+    # recast so scenarios are columns
+    yr.gen.val = dcast(yr.gen, Type~scenario, value.var='GWh')
+    
+    kable(yr.gen.val, format.args = list(big.mark = ','), digits=2) 
+    
+  }
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+#### Percent Generation
+```{r annual-percent-generation-table, fig.width=10}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (annual.generation.table){
+  if ( typeof(total.generation)=='character' | typeof(total.avail.cap) == 'character' ) {
+    print('INPUT ERROR: total.generation or total.avail.cap has errors. Cannot run this section.')
+  } else {
+    if ( typeof(yr.gen)=='character' ) {
+      yr.gen.percent = 'ERROR: gen_by_type function not returning correct results'
+    } else {
+
+    # recast so scenarios are columns
+    yr.gen.percent = dcast(yr.gen, Type~scenario, value.var='Percent')
+
+    kable(yr.gen.percent, format.args = list(big.mark = ','), digits=2) 
+
+    }
   }
 } else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -522,7 +550,7 @@ if (region.zone.flow.table) {
 ```
 
 ***
-## 16. Interface Flow Table
+## 16. Interface Flow Table (GWh)
 ```{r interface-flow-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
