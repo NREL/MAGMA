@@ -268,12 +268,18 @@ if (length(scenario.names)!=length(db.loc)){
   scenario.names = basename(db.loc)
 }
 # Remove trailing / if present
-if (substr(db.loc,nchar(db.loc),nchar(db.loc))=='/'){
-  db.loc <- substr(db.loc,1,nchar(db.loc)-1)
-}
-if (substr(db.day.ahead.loc,nchar(db.day.ahead.loc),nchar(db.day.ahead.loc))=='/'){
-  db.day.ahead.loc <- substr(db.day.ahead.loc,1,nchar(db.day.ahead.loc)-1)
-}
+db.loc <- unlist(lapply(db.loc, function(x) { 
+  if (substr(x,nchar(x),nchar(x))=='/'){
+    substr(x,1,nchar(x)-1)
+  }else{x} 
+}))
+  
+db.day.ahead.loc <- unlist(lapply(db.day.ahead.loc, function(x) { 
+  if (substr(x,nchar(x),nchar(x))=='/'){
+    substr(x,1,nchar(x)-1)
+  }else{x} 
+}))
+
 # Open database
 db = plexos_open(db.loc, scenario.names)
 attributes(db)$class = c("rplexos","data.frame","tbl_df")
@@ -386,10 +392,10 @@ if (length(gen.region.zone)==0) {
   region.zone.mapping = data.table(unique(gen.mapping[,c('name','region','zone')]))
   setnames(region.zone.mapping, c("region","zone"), c("Region","Zone"))
 } else{
-  if(length(region.zone.mapping)>1){
+  if(length(gen.region.zone)>1){
     warning("More than one Gen.Region.Zone.Mapping.Filename found... I'll create a unique combination for you.")
-    gen.region.zone <- as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename))
-    for (i in 1:length(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename))){
+    region.zone.mapping = data.table()
+    for (i in 1:length(gen.region.zone)){
       region.zone.mapping = rbindlist(list(region.zone.mapping,data.table(read.csv(gen.region.zone[i], 
                                                                           stringsAsFactors=FALSE))),fill=TRUE)
     }
