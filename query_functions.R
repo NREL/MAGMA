@@ -623,6 +623,7 @@ total_region_load = function(database) {
     total.region.load = data.table(query_interval(database, 'Region','Load', columns = c('category','name')))
     total.region.load = total.region.load[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
   }
+  total.region.load[, name:=factor(name,region.order)]
   return(total.region.load[, .(value=sum(value)), by=.(scenario, property, name)])
 }
 
@@ -634,6 +635,7 @@ total_region_imports = function(database) {
     total.region.imports = data.table(query_interval(database, 'Region','Imports', columns = c('category','name')))
     total.region.imports = total.region.imports[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
   }
+  total.region.imports[, name:=factor(name,region.order)]
   return(total.region.imports[, .(value=sum(value)), by=.(scenario, property, name)])
 }
 
@@ -645,6 +647,7 @@ total_region_exports = function(database) {
     total.region.exports = data.table(query_interval(database, 'Region','Exports', columns = c('category','name')))
     total.region.exports = total.region.exports[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
   }
+  total.region.exports[, name:=factor(name,region.order)]
   return(total.region.exports[, .(value=sum(value)), by=.(scenario, property, name)])
 }
 
@@ -656,6 +659,7 @@ total_region_ue = function(database) {
     total.region.ue = data.table(query_interval(database, 'Region','Unserved Energy', columns = c('category','name')))
     total.region.ue = total.region.ue[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
   }
+  total.region.ue[, name:=factor(name,region.order)]
   return(total.region.ue[, .(value=sum(value)), by=.(scenario, property, name)])
 }
 
@@ -671,6 +675,7 @@ total_zone_load = function(database) {
     total.zone.load = data.table(query_interval(database, 'Zone','Load', columns = c('category','name')))
     total.zone.load = total.zone.load[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
   }
+  total.zone.load[, name:=factor(name,zone.order)]
   return(total.zone.load[, .(value=sum(value)), by=.(scenario, property, name)])
 }
 
@@ -682,6 +687,7 @@ total_zone_imports = function(database) {
     total.zone.imports = data.table(query_interval(database, 'Zone','Imports', columns = c('category','name')))
     total.zone.imports = total.zone.imports[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
   }
+  total.zone.imports[, name:=factor(name,zone.order)]
   return(total.zone.imports[, .(value=sum(value)), by=.(scenario, property, name)])
 }
 
@@ -693,6 +699,7 @@ total_zone_exports = function(database) {
     total.zone.exports = data.table(query_interval(database, 'Zone','Exports', columns = c('category','name')))
     total.zone.exports = total.zone.exports[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
   }
+  total.zone.exports[, name:=factor(name,zone.order)]
   return(total.zone.exports[, .(value=sum(value)), by=.(scenario, property, name)])
 }
 
@@ -704,6 +711,7 @@ total_zone_ue = function(database) {
     total.zone.ue = data.table(query_interval(database, 'Zone','Unserved Energy', columns = c('category','name')))
     total.zone.ue = total.zone.ue[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
   }
+  total.zone.ue[, name:=factor(name,zone.order)]
   return(total.zone.ue[, .(value=sum(value)), by=.(scenario, property, name)])
 }
 
@@ -792,12 +800,14 @@ interval_avail_cap = function(database) {
 # Interval level region load 
 interval_region_load = function(database) {
   interval.region.load = data.table(query_interval(database, 'Region', 'Load'))
+  interval.region.load[, name:=factor(name,region.order)]
   return(interval.region.load[, .(scenario, property, name, time, value)])
 }
 
 # Interval level region load and price
 interval_region_price = function(database) {
   interval.region.price = data.table(query_interval(database, 'Region', 'Price'))
+  interval.region.price[, name:=factor(name,region.order)]
   return(interval.region.price[, .(scenario, property, Region=name, time, value)])
 }
 
@@ -810,6 +820,7 @@ interval_reserve_price = function(database) {
 # Interval level zone load
 interval_zone_load = function(database) {
   interval.zone.load = data.table(query_interval(database, 'Zone', 'Load'))
+  interval.zone.load[, name:=factor(name,zone.order)]
   return(interval.zone.load[, .(scenario, property, name, time, value)])
 }
 

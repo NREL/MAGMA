@@ -226,7 +226,7 @@ if ( revenue.plots ) {
   }
 }
 
-if ( (price.duration.curve | revenue.plots) & !exists('interval.region.price') ) {
+if ( (price.duration.curve | revenue.plots) ) {
   # Interval level region price. This is only called if one logical is true and it doesn't already exist.
   interval.region.price = tryCatch( interval_region_price(db), error = function(cond) { return('ERROR') } ) 
   if (exists('interval.region.price')) { 
@@ -236,7 +236,7 @@ if ( (price.duration.curve | revenue.plots) & !exists('interval.region.price') )
   }
 }
 
-if ( (res.price.duration.curve | revenue.plots) & !exists('interval.reserve.price') ) {
+if ( (res.price.duration.curve | revenue.plots) ) {
   # Interval level reserve price. This is only called if one logical is true and it doesn't already exist.
   interval.reserve.price = tryCatch( interval_reserve_price(db), error = function(cond) { return('ERROR') } ) 
   if (exists('interval.reserve.price')) { 

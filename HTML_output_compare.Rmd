@@ -222,7 +222,7 @@ if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.di
           
         # Create data if zonal dispatch stacks were selected in input file.
         if (key.period.dispatch.zone.log) {
-            plot.zones = zone.names[!zone.names %in% ignore.zones]
+            plot.zones = levels(zone.names)[!levels(zone.names) %in% ignore.zones]
             key.plots.zone = mapply(function(p,z){knit_expand(file = 'source_scripts/compare/c_p_key_period_dispatch_zone.Rmd', 
                                                               period.name = p, zone.name = z)},
                                     rep(period.names,length(plot.zones)), rep(plot.zones,each=n.periods))
@@ -231,7 +231,7 @@ if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.di
           
         # Create data if regional dispatch stacks were selected in input file.
         if (key.period.dispatch.region.log) {
-          plot.regions = region.names[!region.names %in% ignore.regions]
+          plot.regions = levels(region.names)[!levels(region.names) %in% ignore.regions]
           key.plots.region = mapply(function(p,r){knit_expand(file = 'source_scripts/compare/c_p_key_period_dispatch_region.Rmd', 
                                                               period.name = p, region.name = r)},
                                     rep(period.names,length(plot.regions)), rep(plot.regions,each=n.periods))
@@ -1045,7 +1045,7 @@ if (commit.dispatch.region | commit.dispatch.zone) {
       } else {
         # Check if zonal DA-RT plots were selected in input file. If so create a plot for each zone
         if (commit.dispatch.zone) {
-          plot.zones = zone.names[!zone.names %in% ignore.zones]
+          plot.zones = levels(zone.names)[!levels(zone.names) %in% ignore.zones]
           da.rt.zone = mapply(function(p,z){knit_expand(file = 'source_scripts/compare/c_p_DA_RT_commit_dispatch_zone.Rmd', 
                                                         period.name = p, zone.name = z)},
                               rep(period.names,length(plot.zones)), rep(plot.zones,each=n.periods))
@@ -1054,7 +1054,7 @@ if (commit.dispatch.region | commit.dispatch.zone) {
         
         # Check if regional DA-RT plots were selected in input file. If so create a plot for each region
         if (commit.dispatch.region) {  
-          plot.regions = region.names[!region.names %in% ignore.regions]
+          plot.regions = levels(region.names)[!levels(region.names) %in% ignore.regions]
           da.rt.region = mapply(function(p,r){knit_expand(file = 'source_scripts/compare/c_p_DA_RT_commit_dispatch_region.Rmd', 
                                                           period.name = p, region.name = r)},
                                 rep(period.names,length(plot.regions)), rep(plot.regions,each=n.periods))

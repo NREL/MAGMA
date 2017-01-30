@@ -410,8 +410,36 @@ if (length(gen.region.zone)==0) {
 }
 region.zone.mapping = unique(region.zone.mapping[, .(name, Region, Zone)])
 setkey(region.zone.mapping,name)
-rz.unique = unique(region.zone.mapping[,.(Region,Zone)])
 
+# -----------------------------------------------------------------------
+# Get Region and Zone orders
+# -----------------------------------------------------------------------
+if ('Region.Order'%in%names(inputs)){
+  region.order <- as.character(na.exclude(inputs$Region.Order))
+  missing.regions <- unique(region.zone.mapping$Region)[!unique(region.zone.mapping$Region) %in% region.order]
+  if (length(missing.regions) > 0){
+    warning(sprintf('Your Region order does not contain all regions. You are missing %s. Adding those regions.',
+                    missing.regions))
+    region.order <- c(region.order,missing.regions)
+  }
+} else{
+  region.order <- sort(unique(region.zone.mapping$Region))
+}
+
+if('Zone.Order'%in%names(inputs)){
+  zone.order <- as.character(na.exclude(inputs$Zone.Order))
+  missing.zones <- unique(region.zone.mapping$Zone)[!unique(region.zone.mapping$Zone) %in% zone.order]
+  if (length(missing.zones) > 0){
+    warning(sprintf('Your Zone order does not contain all zones. You are missing %s. Adding those zones.',
+                    missing.zones))
+    zone.order <- c(zone.order,missing.zones)
+  }
+} else{
+  zone.order <- sort(unique(region.zone.mapping$Zone))
+}
+region.zone.mapping[, Region:=factor(Region,levels=region.order)]
+region.zone.mapping[, Zone:=factor(Zone,levels=zone.order)]
+rz.unique = unique(region.zone.mapping[,.(Region,Zone)])
 
 # -----------------------------------------------------------------------
 # Create Generator-Color mapping 
