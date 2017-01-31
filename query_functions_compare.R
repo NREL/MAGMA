@@ -11,6 +11,7 @@ gen_diff_by_type = function(total.generation, total.avail.cap) {
   
   #*************************** Potentially make this an input
   yr.gen = tryCatch( gen_by_type(total.generation, total.avail.cap), error = function(cond) { return('ERROR') } )
+  yr.gen = yr.gen[Type!='Curtailment', ]
   all.combos = data.table(expand.grid(unique(yr.gen$scenario), unique(yr.gen$Type)))
   setkey(all.combos,Var1,Var2)
   setkey(yr.gen,scenario,Type)

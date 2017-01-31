@@ -336,22 +336,13 @@ if (annual.generation.table){
     yr.gen[, Type := factor(Type, levels = c(gen.order))] 
     setorder(yr.gen,Type)
     
-    # Separate out curtailment from generation
-    curt = yr.gen[Type=='Curtailment', ]
     yr.gen = yr.gen[Type!='Curtailment', ]
     
-    # Calculate the percent generation of each type, and percent curtailment
+    # Calculate the percent generation of each type
     yr.gen[, Total:=sum(GWh), by=.(scenario)]
     yr.gen[, Percent:=GWh/Total*100]
     yr.gen[, Total:=NULL]
-    curt[, Total:=GWh+yr.gen[Type %in% re.types, sum(GWh)] ]
-    curt[, Percent:=GWh/Total*100]
-    curt[, Total:=NULL]
-    
-    # combine back into one table. 
-    yr.gen = rbindlist(list(yr.gen, yr.gen[,.(Type='Total',GWh=sum(GWh),Percent=sum(Percent)), by=.(scenario)], curt))
-    row.names(yr.gen) = NULL
-    
+
     # recast so scenarios are columns
     yr.gen.val = dcast(yr.gen, Type~scenario, value.var='GWh')
     
@@ -399,8 +390,6 @@ if (annual.generation.table){
     # Set the order level that generatino type will be displayed.
     yr.gen.diff[, Type := factor(Type, levels = c(gen.order))] 
     setorder(yr.gen.diff,Type)
-
-    # row.names(yr.gen) = NULL
     
     # recast so scenarios are columns
     yr.gen.diff = dcast(yr.gen.diff, Type~scenario, value.var='GWh')
