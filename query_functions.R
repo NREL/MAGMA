@@ -365,15 +365,55 @@ interval_line_flows = function(interval.line.flow) {
 # zones are defined either in PLEXOS, or using the region and zone mapping file. 
 
 region_stats = function(total.region.load, total.region.imports, total.region.exports, total.region.ue) {
-  r.data = rbindlist(list(total.region.load, total.region.imports, total.region.exports, total.region.ue))
+  # add NAs for errored region data
+  if( !(is.character(total.region.load) & is.character(total.region.imports) & 
+        is.character(total.region.exports) & is.character(total.region.ue))){
+    if(is.character(total.region.load)){
+      total.region.load = merge(data.table(scenario = db$scenario, property = 'Load', value=NA), 
+                                data.table(name=region.names, property = 'Load'), by="property", allow.cartesian=TRUE)
+    }
+    if(is.character(total.region.imports)){
+      total.region.imports = merge(data.table(scenario = db$scenario, property = 'Imports', value=NA), 
+                                data.table(name=region.names, property = 'Imports'), by="property", allow.cartesian=TRUE)
+    }
+    if(is.character(total.region.exports)){
+      total.region.exports = merge(data.table(scenario = db$scenario, property = 'Exports', value=NA), 
+                                data.table(name=region.names, property = 'Exports'), by="property", allow.cartesian=TRUE)
+    }
+    if(is.character(total.region.ue)){
+      total.region.ue = merge(data.table(scenario = db$scenario, property = 'Unserved Energy', value=NA), 
+                                data.table(name=region.names, property = 'Unserved Energy'), by="property", allow.cartesian=TRUE)
+    }
+  }
+  r.data = rbindlist(list(total.region.load, total.region.imports, total.region.exports, total.region.ue), fill=TRUE)
   r.data = r.data[, .(value=sum(value)), by=.(name,property,scenario)]
   r.stats = dcast.data.table(r.data, name+scenario~property, value.var = 'value')
   return(r.stats)
 }
 
 zone_stats = function(total.region.load, total.region.imports, total.region.exports, total.region.ue, total.zone.load, total.zone.imports, total.zone.exports, total.zone.ue) {
-  if (reassign.zones==TRUE | any(as.character(total.zone.load)=='ERROR')){
-    z.data = rbindlist(list(total.region.load, total.region.imports, total.region.exports, total.region.ue))
+  if ( reassign.zones==TRUE ){
+    # add NAs for errored region data
+    if( !(is.character(total.region.load) & is.character(total.region.imports) & 
+          is.character(total.region.exports) & is.character(total.region.ue))){
+      if(is.character(total.region.load)){
+        total.region.load = merge(data.table(scenario = db$scenario, property = 'Load', value=NA), 
+                                  data.table(name=region.names, property = 'Load'), by="property", allow.cartesian=TRUE)
+      }
+      if(is.character(total.region.imports)){
+        total.region.imports = merge(data.table(scenario = db$scenario, property = 'Imports', value=NA), 
+                                  data.table(name=region.names, property = 'Imports'), by="property", allow.cartesian=TRUE)
+      }
+      if(is.character(total.region.exports)){
+        total.region.exports = merge(data.table(scenario = db$scenario, property = 'Exports', value=NA), 
+                                  data.table(name=region.names, property = 'Exports'), by="property", allow.cartesian=TRUE)
+      }
+      if(is.character(total.region.ue)){
+        total.region.ue = merge(data.table(scenario = db$scenario, property = 'Unserved Energy', value=NA), 
+                                  data.table(name=region.names, property = 'Unserved Energy'), by="property", allow.cartesian=TRUE)
+      }
+    }
+    z.data = rbindlist(list(total.region.load, total.region.imports, total.region.exports, total.region.ue),fill=TRUE)
     setnames(z.data,'name','Region')
     setkey(z.data,Region)
     setkey(rz.unique,Region)
@@ -381,6 +421,26 @@ zone_stats = function(total.region.load, total.region.imports, total.region.expo
       dcast.data.table(Zone+scenario~property, value.var = 'value') 
     setnames(z.stats,'Zone','name')
   } else {
+    # add NAs for errored region data
+    if( !(is.character(total.zone.load) & is.character(total.zone.imports) & 
+          is.character(total.zone.exports) & is.character(total.zone.ue))){
+      if(is.character(total.zone.load)){
+        total.zone.load = merge(data.table(scenario = db$scenario, property = 'Load', value=NA), 
+                                  data.table(name=zone.names, property = 'Load'), by="property", allow.cartesian=TRUE)
+      }
+      if(is.character(total.zone.imports)){
+        total.zone.imports = merge(data.table(scenario = db$scenario, property = 'Imports', value=NA), 
+                                  data.table(name=zone.names, property = 'Imports'), by="property", allow.cartesian=TRUE)
+      }
+      if(is.character(total.zone.exports)){
+        total.zone.exports = merge(data.table(scenario = db$scenario, property = 'Exports', value=NA), 
+                                  data.table(name=zone.names, property = 'Exports'), by="property", allow.cartesian=TRUE)
+      }
+      if(is.character(total.zone.ue)){
+        total.zone.ue = merge(data.table(scenario = db$scenario, property = 'Unserved Energy', value=NA), 
+                                  data.table(name=zone.names, property = 'Unserved Energy'), by="property", allow.cartesian=TRUE)
+      }
+    }
     z.data = rbindlist(list(total.zone.load, total.zone.imports, total.zone.exports, total.zone.ue))
     z.data = z.data[,.(value=sum(value)),by=.(name,property,scenario)]
     z.stats = dcast.data.table(z.data, name+scenario~property, value.var = 'value')
