@@ -11,11 +11,11 @@
 6. Zone key period generation dispatch plots
 7. Region key period generation dispatch plots
 8. Average curtailment in each day
- 8.1 Average daily curtailment difference
+  8.1 Average daily curtailment difference
 9. Average curtailment in each day, by type
- 9.1 Average daily curtailment difference by type
+  9.1 Average daily curtailment difference by type
 10. Average curtailment in each interval
- 10.1 Average interval curtailment difference
+  10.1 Average interval curtailment difference
 11. Average curtailment in each interval, by type
  11.1 Average intervail curtailment difference by type
 12. Total generation table
