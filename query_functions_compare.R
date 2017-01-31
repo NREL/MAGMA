@@ -92,18 +92,6 @@ return(cost.diff.table)
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Annual Reserve Shortages
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-annual_reserves_short = function(total.reserve.provision, total.reserve.shortage) {
-  
-  annual.reserves.scen = tryCatch( annual_reserves(total.reserve.provision, total.reserve.shortage), error = function(cond) { return('ERROR: annual_reserves function not returning correct results.') })
-  reserves.shortage.table = dcast.data.table(annual.reserves.scen, Type~scenario, value.var = "Shortage (GWh)")
-  
-  return(reserves.shortage.table)
-}
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Annual Reserve Provision
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Calculates total reserve provision by generator type for each reserve product
@@ -194,4 +182,17 @@ capacity_factor_diff = function() {
   
   return(c.factor)
   
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Reserve Provision and Shortage Difference
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Calculate difference in total reserve provision and shortage for each scenario
+
+annual_reserves_diff = function() {
+  
+  annual.reserves[,scenario:=as.character(scenario)]
+  annual.reserves.diff = annual.reserves[, .(scenario, Type, `Provisions (GWh)` = (`Provisions (GWh)` - `Provisions (GWh)`[scenario==ref.scenario]), 
+                                 `Shortage (GWh)` = (`Shortage (GWh)` - `Shortage (GWh)`[scenario==ref.scenario]))]
+  return(data.table(annual.reserves.diff))
 }

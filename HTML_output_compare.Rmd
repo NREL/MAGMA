@@ -760,15 +760,52 @@ if(annual.reserves.table) {
 ```
 
 ***
+### 22.1 Annual Reserve Provision Difference by Scenario (GW)
+```{r annual-reserves-diff-table}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Check if this section was selected to run in the input file
+if(annual.reserves.table) {
+  if (typeof(total.reserve.provision)=='character' | typeof(total.reserve.shortage)=='character'){
+    print('INPUT ERROR: total.reserve.provision or total.reserve.shortage has errors. Cannot run this section')
+  } else{
+    # Call the query function to get annual reserve amounts.
+    annual.reserves.diff = tryCatch( annual_reserves_diff(), 
+                                error = function(cond) { return('ERROR: annual_reserves function not returning correct results.') })
+    if(typeof(annual.reserves.diff)!='character') { 
+      res.prov.diff.table = dcast.data.table(annual.reserves.diff,Type~scenario,value.var="Provisions (GWh)")
+      kable(res.prov.diff.table, format.args = list(big.mark = ','))
+    } else { print('ERROR: annual_reserves_diff is not returning correct results.')}
+  }
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
 ### 23. Annual Reserve Shortage by Scenario (GW)
-```{r annual-reserves-scen-table}
+```{r annual-reserves-short-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
 if (annual.res.short.table) {
   # Run the cost query function
-  res.short.table = tryCatch( annual_reserves_short(total.reserve.provision, total.reserve.shortage), 
+  res.short.table = tryCatch( annual_reserves(total.reserve.provision, total.reserve.shortage), 
                               error = function(cond) { return('ERROR: reserve function not returning correct results.') })
+  res.short.table = dcast.data.table(res.short.table,Type~scenario,value.var="Shortage (GWh)")
   kable(res.short.table, format.args = list(big.mark = ','))
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+### 23.1 Annual Reserve Shortage Difference by Scenario (GW)
+```{r annual-reserves-short-diff-table}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Check if this section was selected to run in the input file
+if (annual.res.short.table) {
+  # Run the cost query function
+  res.short.diff.table = tryCatch( annual_reserves_diff(), 
+                              error = function(cond) { return('ERROR: reserve function not returning correct results.') })
+  res.short.diff.table = dcast.data.table(annual.reserves.diff,Type~scenario,value.var="Shortage (GWh)")
+  kable(res.short.diff.table, format.args = list(big.mark = ','))
 } else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
