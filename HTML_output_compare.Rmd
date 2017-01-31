@@ -385,6 +385,34 @@ if (annual.generation.table){
 ```
 
 ***
+## 12.1 Total Gen Difference
+#### GWh Generation Difference
+```{r annual-generation-diff-table, fig.width=10}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (annual.generation.table){
+  if ( typeof(total.generation)=='character' | typeof(total.avail.cap) == 'character' ) {
+    print('INPUT ERROR: total.generation or total.avail.cap has errors. Cannot run this section.')
+  } else {
+    # Run the difference function.
+    yr.gen.diff = tryCatch(gen_diff_by_type(total.generation, total.avail.cap), 
+                        error = function(cond) { return('ERROR: gen_diff_by_type function not returning correct results') } ) 
+    # Set the order level that generatino type will be displayed.
+    yr.gen.diff[, Type := factor(Type, levels = c(gen.order))] 
+    setorder(yr.gen.diff,Type)
+
+    # row.names(yr.gen) = NULL
+    
+    # recast so scenarios are columns
+    yr.gen.diff = dcast(yr.gen.diff, Type~scenario, value.var='GWh')
+    
+    kable(yr.gen.diff, format.args = list(big.mark = ','), digits=2) 
+    
+  }
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
 ## 13. Total Curtailment (GWh)
 ```{r annual-curtailment-table, fig.width=12}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
