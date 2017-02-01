@@ -4,9 +4,9 @@
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Generation by type
+# Generation by type ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# This function returns total generation by type and curtailment. Curtailment is calculated according to the renewable types specified in the input file. 
+# This function returns total generation by type.
 
 gen_by_type = function(total.generation, total.avail.cap) {
   
@@ -31,55 +31,7 @@ gen_by_type = function(total.generation, total.avail.cap) {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Capacity by type
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# This function returns total generation by type and curtailment. Curtailment is calculated according to the renewable types specified in the input file. 
-
-cap_by_type = function(total.installed.capacity) {
-  
-  setkey(total.installed.capacity,'name')
-
-  # Add generation type by matching generator name. 
-  yr.cap = total.installed.capacity[, Type:=gen.type.mapping[name] ][,.(scenario,Type,property,value)]
-  
-  # Sum up generation by type
-  yr.cap = yr.cap[,.(GW=sum(value)),by=.(scenario,Type)]
-  
-  return(yr.cap)
-}
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Curtailment by type
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# This function returns total curtailment by type of generator. Curtailment is calculated according to the renewable types specified in the input file. 
-
-curt_by_type = function(total.generation, total.avail.cap) {
-  
-  setkey(total.generation,'name')
-  setkey(total.avail.cap,'name')
-  
-  # Filter out generation and available capacity data for RE types
-  # and add generation type by matching generator name. 
-  yr.gen = total.generation[property == 'Generation',][, Type:=gen.type.mapping[name] ][,.(scenario,Type,property,value)]
-  re.gen = yr.gen[Type %in% re.types, .(value=sum(value)),by=.(scenario,Type,property)]
-  re.gen[,property:=NULL]
-  setnames(re.gen,'value','Generation')
-  
-  avail = total.avail.cap[property == 'Available Energy',][, Type:=gen.type.mapping[name] ][,.(scenario,Type,property,value)]
-  avail = avail[Type %in% re.types,.(value=sum(value)),by=.(scenario,Type,property)]
-  avail[,property:=NULL]
-  setnames(avail,'value','Available Energy')
-  
-  # Calculate curtailment
-  setkey(avail, Type, scenario)
-  setkey(re.gen, Type, scenario)
-  curt = avail[re.gen][,Curtailment:=`Available Energy`-Generation]
-
-  return(curt)
-}
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Region and Zone Generation by type according to generator name
+# Region and Zone Generation by type according to generator name ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # This function returns total generation separated by type but also by region and zone.  
 
@@ -120,25 +72,7 @@ region_zone_gen = function(total.generation, total.avail.cap) {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Region and Zone Capacity by type according to generator name
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# This function returns total generation separated by type but also by region and zone.  
-
-region_zone_cap = function(total.installed.capacity) {
-  
-  setkey(total.installed.capacity,'name')
-  gen.type.zone.region = region.zone.mapping[, Type:=gen.type.mapping[name]]
-  
-  # Add generation type by matching generator name.
-  # Also add region and zone by matching generator name in the region and zone mapping file. 
-  cap.data = gen.type.zone.region[total.installed.capacity[, .(scenario,name,category,value)]]
-  cap.data = cap.data[, .(value=sum(value)), by=.(scenario,Type, Region, Zone)]
-  
-  return(gen.data)
-}
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Key Period Generation by Type 
+# Key Period Generation by Type  ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # This function returns interval level generation and curtailment used for the key period time series dispatch stacks. 
 
@@ -200,7 +134,130 @@ interval_generation = function(interval.region.load, interval.zone.load, interva
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Total Curtailment
+# Capacity by type ----
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# This function returns total generation by type and curtailment. Curtailment is calculated according to the renewable types specified in the input file. 
+
+cap_by_type = function(total.installed.capacity) {
+  
+  setkey(total.installed.capacity,'name')
+
+  # Add generation type by matching generator name. 
+  yr.cap = total.installed.capacity[, Type:=gen.type.mapping[name] ][,.(scenario,Type,property,value)]
+  
+  # Sum up generation by type
+  yr.cap = yr.cap[,.(GW=sum(value)),by=.(scenario,Type)]
+  
+  return(yr.cap)
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Region and Zone Capacity by type according to generator name ----
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# This function returns total generation separated by type but also by region and zone.  
+
+region_zone_cap = function(total.installed.capacity) {
+  
+  setkey(total.installed.capacity,'name')
+  gen.type.zone.region = region.zone.mapping[, Type:=gen.type.mapping[name]]
+  
+  # Add generation type by matching generator name.
+  # Also add region and zone by matching generator name in the region and zone mapping file. 
+  cap.data = gen.type.zone.region[total.installed.capacity[, .(scenario,name,category,value)]]
+  cap.data = cap.data[, .(value=sum(value)), by=.(scenario,Type, Region, Zone)]
+  
+  return(gen.data)
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Capacity Factor ----
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Calculates the capacity factor of all the generation types for the full run. 
+
+capacity_factor = function(total.generation, total.installed.cap) {
+  
+  setkey(total.installed.cap,name,scenario)
+  setkey(total.generation,name,scenario)
+  
+  # Pull out installed capacity and generation and match them to generation type by generator name. 
+  mc = total.installed.cap[, Type:=gen.type.mapping[name] ]
+  try(setnames(mc,'value', 'MaxCap (GWh)'),silent=T)
+  
+  gen = total.generation[, Type:=gen.type.mapping[name] ]
+  try(setnames(gen,'value', 'Gen (GWh)'),silent=T)
+  
+  mc[, Type := factor(Type, levels = rev(c(gen.order)))]
+  
+  # Calculates generation type total capacity and generation for the full run
+  c.factor = mc[,.(scenario,name,`MaxCap (GWh)`,Type)][gen[,.(scenario,name,`Gen (GWh)`)]]
+  c.factor = c.factor[,.(`MaxCap (GWh)`=sum(`MaxCap (GWh)`),`Gen (GWh)`=sum(`Gen (GWh)`)),by=.(Type,scenario)]
+  
+  # Calculate capacity factor for each generation type
+  n.hours = length(seq(from = first.day, to = last.day, by = 'hour'))
+  c.factor = c.factor[,.(`Capacity Factor (%)` = `Gen (GWh)`/(`MaxCap (GWh)`/1000*n.hours)*100),by=.(Type,scenario, `MaxCap (GWh)`, `Gen (GWh)`)]
+  
+  # make sure names of total.generation and total.installed.cap aren't changed
+  try(setnames(total.generation, 'Gen (GWh)', 'value'), silent=TRUE)
+  try(setnames(total.installed.cap, 'MaxCap (GWh)', 'value'), silent=TRUE)
+  
+  return(c.factor)
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Committed capacity  ----
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# This function just pulls out available capacity at the interval level for use int he DA-RT committment and dispatch plots
+
+cap_committed = function(interval.da.committment) {
+  
+  if (length(region.names)>=length(zone.names)){
+    spatialcol = "Region"
+  } else {
+    spatialcol = "Zone"    
+  }
+
+  gen.type.zone.region = region.zone.mapping[, Type:=gen.type.mapping[name]]
+  setkey(interval.da.committment,name)
+  
+  # Query available capacity at the interval level, add generation type and region and zone by matching mapping file with generator names.
+  commit.data = gen.type.zone.region[interval.da.committment[,.(scenario,time,name,category,value)]]
+  commit.data = commit.data[,.(committed.cap=sum(value)),by=.(scenario,time,Region,Zone,Type)]
+  
+  return(commit.data)
+} 
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Curtailment by type ----
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# This function returns total curtailment by type of generator. Curtailment is calculated according to the renewable types specified in the input file. 
+
+curt_by_type = function(total.generation, total.avail.cap) {
+  
+  setkey(total.generation,'name')
+  setkey(total.avail.cap,'name')
+  
+  # Filter out generation and available capacity data for RE types
+  # and add generation type by matching generator name. 
+  yr.gen = total.generation[property == 'Generation',][, Type:=gen.type.mapping[name] ][,.(scenario,Type,property,value)]
+  re.gen = yr.gen[Type %in% re.types, .(value=sum(value)),by=.(scenario,Type,property)]
+  re.gen[,property:=NULL]
+  setnames(re.gen,'value','Generation')
+  
+  avail = total.avail.cap[property == 'Available Energy',][, Type:=gen.type.mapping[name] ][,.(scenario,Type,property,value)]
+  avail = avail[Type %in% re.types,.(value=sum(value)),by=.(scenario,Type,property)]
+  avail[,property:=NULL]
+  setnames(avail,'value','Available Energy')
+  
+  # Calculate curtailment
+  setkey(avail, Type, scenario)
+  setkey(re.gen, Type, scenario)
+  curt = avail[re.gen][,Curtailment:=`Available Energy`-Generation]
+
+  return(curt)
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Total Curtailment ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Calculates interval level total curtailment
 
@@ -234,7 +291,7 @@ total_curtailment = function(interval.generation, interval.avail.cap) {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Cost 
+# Cost  ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Returns a table of total run costs
 
@@ -277,7 +334,7 @@ return(cost.table)
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Annual Reserve Provisions
+# Annual Reserve Provisions ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Calculates total reserve provision and shortage for each reserve type. 
 
@@ -307,7 +364,7 @@ annual_reserves_provision = function(total.gen.res) {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Interval Reserve Provisions 
+# Interval Reserve Provisions  ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Calculates the interval level reserve provision
 
@@ -331,7 +388,7 @@ interval_reserves_provision = function(interval.gen.res) {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Interface Flows 
+# Interface Flows  ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Total run and interval level interface flow data, for specific interfaces that are specified in the input file. 
 
@@ -350,7 +407,7 @@ interval_interface_flows = function(interval.interface.flow) {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# line Flows 
+# line Flows  ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Total run and interval level line flow data, for specific lines that are specified in the input file. 
 
@@ -365,7 +422,7 @@ interval_line_flows = function(interval.line.flow) {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Region and Zone Stats
+# Region and Zone Stats ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # This function sums up region and zone stats for the entire run. 
 # zones are defined either in PLEXOS, or using the region and zone mapping file. 
@@ -395,7 +452,7 @@ zone_stats = function(total.region.load, total.region.imports, total.region.expo
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Region and Zone Load
+# Region and Zone Load ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Returns region level and zone level load data for the entire run. 
 
@@ -407,7 +464,7 @@ region_load = function(total.region.load) {
 
 zone_load = function(total.region.load, total.zone.load) {
   if (reassign.zones==TRUE | any(as.character(total.zone.load)=='ERROR')){
-    setkey(total.region.load,name)
+    setkey(total.region.load,Region)
     setkey(rz.unique,Region)
     z.load = rz.unique[total.region.load][, .(value=sum(value)), by=.(scenario, Zone)]
   } else {
@@ -418,41 +475,7 @@ zone_load = function(total.region.load, total.zone.load) {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Capacity Factor
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Calculates the capacity factor of all the generation types for the full run. 
-
-capacity_factor = function(total.generation, total.installed.cap) {
-  
-  setkey(total.installed.cap,name,scenario)
-  setkey(total.generation,name,scenario)
-  
-  # Pull out installed capacity and generation and match them to generation type by generator name. 
-  mc = total.installed.cap[, Type:=gen.type.mapping[name] ]
-  try(setnames(mc,'value', 'MaxCap (GWh)'),silent=T)
-  
-  gen = total.generation[, Type:=gen.type.mapping[name] ]
-  try(setnames(gen,'value', 'Gen (GWh)'),silent=T)
-  
-  mc[, Type := factor(Type, levels = rev(c(gen.order)))]
-  
-  # Calculates generation type total capacity and generation for the full run
-  c.factor = mc[,.(scenario,name,`MaxCap (GWh)`,Type)][gen[,.(scenario,name,`Gen (GWh)`)]]
-  c.factor = c.factor[,.(`MaxCap (GWh)`=sum(`MaxCap (GWh)`),`Gen (GWh)`=sum(`Gen (GWh)`)),by=.(Type,scenario)]
-  
-  # Calculate capacity factor for each generation type
-  n.hours = length(seq(from = first.day, to = last.day, by = 'hour'))
-  c.factor = c.factor[,.(`Capacity Factor (%)` = `Gen (GWh)`/(`MaxCap (GWh)`/1000*n.hours)*100),by=.(Type,scenario, `MaxCap (GWh)`, `Gen (GWh)`)]
-  
-  # make sure names of total.generation and total.installed.cap aren't changed
-  try(setnames(total.generation, 'Gen (GWh)', 'value'), silent=TRUE)
-  try(setnames(total.installed.cap, 'MaxCap (GWh)', 'value'), silent=TRUE)
-  
-  return(c.factor)
-}
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Revenue
+# Revenue ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # This function calculates the revenue from a particular revenue stream (reserves or generation)
 
@@ -494,39 +517,197 @@ revenue_calculator = function(interval.generation, interval.pump.load, interval.
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Committed capacity 
+# This section contains functions for comparing multiple PLEXOS solutions. Difference Functions. ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# This function just pulls out available capacity at the interval level for use int he DA-RT committment and dispatch plots
-
-cap_committed = function(interval.da.committment) {
-  
-  if (length(region.names)>=length(zone.names)){
-    spatialcol = "Region"
-  } else {
-    spatialcol = "Zone"    
-  }
-
-  gen.type.zone.region = region.zone.mapping[, Type:=gen.type.mapping[name]]
-  setkey(interval.da.committment,name)
-  
-  # Query available capacity at the interval level, add generation type and region and zone by matching mapping file with generator names.
-  commit.data = gen.type.zone.region[interval.da.committment[,.(scenario,time,name,category,value)]]
-  commit.data = commit.data[,.(committed.cap=sum(value)),by=.(scenario,time,Region,Zone,Type)]
-  
-  return(commit.data)
-} 
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Generation Difference by type ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+gen_diff_by_type = function(total.generation, total.avail.cap) {
+  
+  #*************************** Potentially make this an input
+  yr.gen = tryCatch( gen_by_type(total.generation, total.avail.cap), error = function(cond) { return('ERROR') } )
+  yr.gen = yr.gen[Type!='Curtailment', ]
+  all.combos = data.table(expand.grid(unique(yr.gen$scenario), unique(yr.gen$Type)))
+  setkey(all.combos,Var1,Var2)
+  setkey(yr.gen,scenario,Type)
+  yr.gen = yr.gen[all.combos]
+  yr.gen[is.na(GWh), GWh:=0]
+  
+  yr.gen[, scenario:=as.character(scenario)]
+  gen.diff = yr.gen[, GWh:=GWh-GWh[scenario==ref.scenario], by=.(Type)]
+  
+  return(gen.diff)
+}
+
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Region and Zone Generation Difference by type according to generator name ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Calculate regional generation differences
+region_gen_diff = function(total.generation, total.avail.cap) {
+  
+  r.z.gen = tryCatch( region_zone_gen(total.generation, total.avail.cap)[, .(GWh=sum(GWh)), by=.(scenario, Region, Type)], 
+                      error = function(cond) { return('ERROR') } )
+  
+  all.combos = data.table(expand.grid(unique(r.z.gen$scenario), unique(r.z.gen$Region), unique(r.z.gen$Type)))
+  setkey(all.combos,Var1,Var2,Var3)
+  setkey(r.z.gen,scenario, Region,Type)
+  r.z.gen = r.z.gen[all.combos]
+  r.z.gen[is.na(GWh), GWh:=0]
+  
+  r.z.diff = r.z.gen[, GWh := GWh - GWh[as.character(scenario) == ref.scenario], by=.(Region, Type)]
+  
+  return(r.z.diff)
+}
+
+# Calculate zonal generation differences
+zone_gen_diff = function(total.generation, total.avail.cap) {
+  
+  r.z.gen = tryCatch( region_zone_gen(total.generation, total.avail.cap)[, .(GWh=sum(GWh)), by=.(scenario, Zone, Type)], 
+                      error = function(cond) { return('ERROR') } )
+  
+  all.combos = data.table(expand.grid(unique(r.z.gen$scenario), unique(r.z.gen$Zone), unique(r.z.gen$Type)))
+  setkey(all.combos,Var1,Var2,Var3)
+  setkey(r.z.gen,scenario,Zone,Type)
+  r.z.gen = r.z.gen[all.combos]
+  r.z.gen[is.na(GWh), GWh:=0]
+  
+  r.z.diff = r.z.gen[, GWh := GWh - GWh[as.character(scenario) == ref.scenario], by=.(Zone, Type)]
+  
+  return(r.z.diff)
+}
+
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Query General Data
+# Total Curtailment ----
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Calculate difference in total curtailment for each scenario
+
+curtailment_diff = function(yr.curt) {
+  
+  curt.diff = yr.curt[, .(scenario, Type, `Available Energy`, Generation, Curtailment)]
+  curt.diff[,scenario:=as.character(scenario)]
+  curt.diff[, ':=' (scenario=scenario, Type=Type, 
+                    `Available Energy` = (`Available Energy` - `Available Energy`[scenario==ref.scenario]),
+                    Generation = (Generation - Generation[scenario==ref.scenario]),
+                    Curtailment = (Curtailment - Curtailment[scenario==ref.scenario])), by=Type]
+  return(curt.diff)
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Cost Difference ----
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Calculate difference in costs between scenarios
+
+costs_diff = function(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom.cost) {
+  
+  cost.table = tryCatch( costs(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom.cost), 
+                         error = function(cond) { return('ERROR: costs function not returning correct results.') })
+  cost.table[, scenario := as.character(scenario)]
+  cost.diff = cost.table[, .(scenario, `Cost (MM$)` = `Cost (MM$)` - `Cost (MM$)`[scenario == ref.scenario]), by=.(Type)]
+  cost.diff.table = dcast.data.table(cost.diff, Type~scenario, value.var = 'Cost (MM$)')
+  
+  return(cost.diff.table)
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Interface Flows Difference ----
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+interface_flows_diff = function() {
+  
+  int.flows = int.data.interface %>%
+    select(name, time, value) %>%
+    filter(name %in% interfaces)
+  
+  year.flows = yr.data.interface.flow %>%
+    select(name, time, value) %>%
+    filter(name %in% interfaces)
+  
+  int.flows$Type = 'Interval_Flow'
+  year.flows$Type = 'Annual_Flow'
+  
+  flows = rbind(int.flows, year.flows)
+  
+  return(flows)
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Region and Zone Stats Difference ----
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+region_diff_stats = function() {
+  r.data = yr.data.region
+  r.stats = dcast(r.data, name~property, value.var = 'value', fun.aggregate = sum)
+  return(r.stats)
+}
+
+zone_diff_stats = function() {
+  z.data = yr.data.region
+  z.stats = z.data %>%
+    join(select(region.zone.mapping, name=Region, Zone), by='name', match='first') %>%
+    dcast(Zone~property, value.var = 'value', fun.aggregate = sum)
+  colnames(z.stats)[colnames(z.stats)=='Zone']='name'
+  return(z.stats)
+}
+
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Capacity Factor Difference ----
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+capacity_factor_diff = function() {
+  
+  cf = yr.data.generator
+  
+  mc = cf %>%
+    filter(property == 'Installed Capacity') %>%
+    rename(MaxCap = value) %>%
+    join(gen.type.mapping, by = 'name')
+  
+  gen = cf %>%
+    filter(property == 'Generation') %>%
+    rename(Gen = value) %>%
+    join(gen.type.mapping, by = 'name')
+  
+  
+  mc$Type = factor(mc$Type, levels = rev(c(gen.order)))
+  
+  c.factor = mc %>%
+    select(name, MaxCap, Type) %>%
+    join(gen[,c('name', 'Gen')], by = 'name') %>%
+    select(Type, MaxCap, Gen) %>%
+    ddply('Type', summarise, MaxCap=sum(MaxCap), Gen=sum(Gen))  
+  
+  n.int = length(seq(from = first.day, to = last.day, by = 'day'))*intervals.per.day
+  c.factor$`Capacity Factor (%)` = c.factor$Gen/(c.factor$MaxCap/1000*n.int)*100
+  
+  c.factor = select(c.factor, Type, `Capacity Factor (%)`)
+  
+  return(c.factor)
+  
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Reserve Provision and Shortage Difference ----
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Calculate difference in total reserve provision and shortage for each scenario
+
+annual_reserves_diff = function() {
+  
+  annual.reserves[,scenario:=as.character(scenario)]
+  annual.reserves.diff = annual.reserves[, .(scenario, `Provisions (GWh)` = (`Provisions (GWh)` - `Provisions (GWh)`[scenario==ref.scenario]), 
+                                             `Shortage (GWh)` = (`Shortage (GWh)` - `Shortage (GWh)`[scenario==ref.scenario])), by=.(Type)]
+  return(data.table(annual.reserves.diff))
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Query General Data ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # These functions are called from the setup data queries file. They use the rplexos package to query the solution database.
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Generator total run data
+# Generator total run data ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # Full run generation data
@@ -618,7 +799,7 @@ total_gen_reserve_provision = function(database) {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Region total run data
+# Region total run data ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # Full run region load
@@ -666,7 +847,7 @@ total_region_ue = function(database) {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Zone total run data
+# Zone total run data ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # Full run zone load
@@ -714,7 +895,7 @@ total_zone_ue = function(database) {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Reserves total run data
+# Reserves total run data ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # Full run reserves provision
@@ -740,7 +921,7 @@ total_reserve_shortage = function(database) {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Selected interface total run data
+# Selected interface total run data ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # Full run interface flows
@@ -755,7 +936,7 @@ total_interface_flow = function(database) {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Selected line total run data
+# Selected line total run data ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # Full run line flows
@@ -771,7 +952,7 @@ total_line_flow = function(database) {
 
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Interval queries
+# Interval queries ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # Interval level generator generation
@@ -844,7 +1025,7 @@ interval_gen_reserve_provision = function(database) {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Runtime queries
+# Runtime queries ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # Runtime data
@@ -864,206 +1045,4 @@ model_timesteps = function(database){
   timesteps = data.table(query_time(database))
   timesteps = timesteps[phase=="ST", ]
   return(timesteps[, .(scenario, phase, start, end, count, timestep)])
-}
-
-
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# This section contains functions for comparing PLEXOS solutions that reports an HTML of common figures.
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Generation Difference by type
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-gen_diff_by_type = function(total.generation, total.avail.cap) {
-  
-  #*************************** Potentially make this an input
-  yr.gen = tryCatch( gen_by_type(total.generation, total.avail.cap), error = function(cond) { return('ERROR') } )
-  yr.gen = yr.gen[Type!='Curtailment', ]
-  all.combos = data.table(expand.grid(unique(yr.gen$scenario), unique(yr.gen$Type)))
-  setkey(all.combos,Var1,Var2)
-  setkey(yr.gen,scenario,Type)
-  yr.gen = yr.gen[all.combos]
-  yr.gen[is.na(GWh), GWh:=0]
-  
-  yr.gen[, scenario:=as.character(scenario)]
-  gen.diff = yr.gen[, GWh:=GWh-GWh[scenario==ref.scenario], by=.(Type)]
-  
-  return(gen.diff)
-}
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Region and Zone Generation by type according to generator name
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Calculate regional generation differences
-region_gen_diff = function(total.generation, total.avail.cap) {
-  
-  r.z.gen = tryCatch( region_zone_gen(total.generation, total.avail.cap)[, .(GWh=sum(GWh)), by=.(scenario, Region, Type)], 
-                      error = function(cond) { return('ERROR') } )
-  
-  all.combos = data.table(expand.grid(unique(r.z.gen$scenario), unique(r.z.gen$Region), unique(r.z.gen$Type)))
-  setkey(all.combos,Var1,Var2,Var3)
-  setkey(r.z.gen,scenario, Region,Type)
-  r.z.gen = r.z.gen[all.combos]
-  r.z.gen[is.na(GWh), GWh:=0]
-  
-  r.z.diff = r.z.gen[, GWh := GWh - GWh[as.character(scenario) == ref.scenario], by=.(Region, Type)]
-  
-  return(r.z.diff)
-}
-
-# Calculate zonal generation differences
-zone_gen_diff = function(total.generation, total.avail.cap) {
-  
-  r.z.gen = tryCatch( region_zone_gen(total.generation, total.avail.cap)[, .(GWh=sum(GWh)), by=.(scenario, Zone, Type)], 
-                      error = function(cond) { return('ERROR') } )
-  
-  all.combos = data.table(expand.grid(unique(r.z.gen$scenario), unique(r.z.gen$Zone), unique(r.z.gen$Type)))
-  setkey(all.combos,Var1,Var2,Var3)
-  setkey(r.z.gen,scenario,Zone,Type)
-  r.z.gen = r.z.gen[all.combos]
-  r.z.gen[is.na(GWh), GWh:=0]
-  
-  r.z.diff = r.z.gen[, GWh := GWh - GWh[as.character(scenario) == ref.scenario], by=.(Zone, Type)]
-  
-  return(r.z.diff)
-}
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Total Curtailment
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Calculate difference in total curtailment for each scenario
-
-curtailment_diff = function(yr.curt) {
-  
-  curt.diff = yr.curt[, .(scenario, Type, `Available Energy`, Generation, Curtailment)]
-  curt.diff[,scenario:=as.character(scenario)]
-  curt.diff[, ':=' (scenario=scenario, Type=Type, 
-                    `Available Energy` = (`Available Energy` - `Available Energy`[scenario==ref.scenario]),
-                    Generation = (Generation - Generation[scenario==ref.scenario]),
-                    Curtailment = (Curtailment - Curtailment[scenario==ref.scenario])), by=Type]
-  return(curt.diff)
-}
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Cost 
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Calculate difference in costs between scenarios
-
-costs_diff = function(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom.cost) {
-  
-  cost.table = tryCatch( costs(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom.cost), 
-                         error = function(cond) { return('ERROR: costs function not returning correct results.') })
-  cost.table[, scenario := as.character(scenario)]
-  cost.diff = cost.table[, .(scenario, `Cost (MM$)` = `Cost (MM$)` - `Cost (MM$)`[scenario == ref.scenario]), by=.(Type)]
-  cost.diff.table = dcast.data.table(cost.diff, Type~scenario, value.var = 'Cost (MM$)')
-  
-  return(cost.diff.table)
-}
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Annual Reserve Provision
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Calculates total reserve provision by generator type for each reserve product
-
-annual_reserves_provision = function(total.gen.res) {
-  
-  setkey(total.gen.res, name)
-  yr.gen.res = total.gen.res[property == 'Provision', Type:=gen.type.mapping[name] ]
-  yr.gen.res = yr.gen.res[, .(GWh = sum(value)), by=.(scenario,parent,Type)]
-  setnames(yr.gen.res,"parent","Reserve")
-  
-  return(yr.gen.res)
-}
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Interface Flows 
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-interface_flows_diff = function() {
-  
-  int.flows = int.data.interface %>%
-    select(name, time, value) %>%
-    filter(name %in% interfaces)
-  
-  year.flows = yr.data.interface.flow %>%
-    select(name, time, value) %>%
-    filter(name %in% interfaces)
-  
-  int.flows$Type = 'Interval_Flow'
-  year.flows$Type = 'Annual_Flow'
-  
-  flows = rbind(int.flows, year.flows)
-  
-  return(flows)
-}
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Region and Zone Stats
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-region_diff_stats = function() {
-  r.data = yr.data.region
-  r.stats = dcast(r.data, name~property, value.var = 'value', fun.aggregate = sum)
-  return(r.stats)
-}
-
-zone_diff_stats = function() {
-  z.data = yr.data.region
-  z.stats = z.data %>%
-    join(select(region.zone.mapping, name=Region, Zone), by='name', match='first') %>%
-    dcast(Zone~property, value.var = 'value', fun.aggregate = sum)
-  colnames(z.stats)[colnames(z.stats)=='Zone']='name'
-  return(z.stats)
-}
-
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Capacity Factor
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-capacity_factor_diff = function() {
-  
-  cf = yr.data.generator
-  
-  mc = cf %>%
-    filter(property == 'Installed Capacity') %>%
-    rename(MaxCap = value) %>%
-    join(gen.type.mapping, by = 'name')
-  
-  gen = cf %>%
-    filter(property == 'Generation') %>%
-    rename(Gen = value) %>%
-    join(gen.type.mapping, by = 'name')
-  
-  
-  mc$Type = factor(mc$Type, levels = rev(c(gen.order)))
-  
-  c.factor = mc %>%
-    select(name, MaxCap, Type) %>%
-    join(gen[,c('name', 'Gen')], by = 'name') %>%
-    select(Type, MaxCap, Gen) %>%
-    ddply('Type', summarise, MaxCap=sum(MaxCap), Gen=sum(Gen))  
-  
-  n.int = length(seq(from = first.day, to = last.day, by = 'day'))*intervals.per.day
-  c.factor$`Capacity Factor (%)` = c.factor$Gen/(c.factor$MaxCap/1000*n.int)*100
-  
-  c.factor = select(c.factor, Type, `Capacity Factor (%)`)
-  
-  return(c.factor)
-  
-}
-
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Reserve Provision and Shortage Difference
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Calculate difference in total reserve provision and shortage for each scenario
-
-annual_reserves_diff = function() {
-  
-  annual.reserves[,scenario:=as.character(scenario)]
-  annual.reserves.diff = annual.reserves[, .(scenario, `Provisions (GWh)` = (`Provisions (GWh)` - `Provisions (GWh)`[scenario==ref.scenario]), 
-                                             `Shortage (GWh)` = (`Shortage (GWh)` - `Shortage (GWh)`[scenario==ref.scenario])), by=.(Type)]
-  return(data.table(annual.reserves.diff))
 }
