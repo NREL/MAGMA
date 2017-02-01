@@ -109,7 +109,7 @@ if (zone.gen.stacks) {
 ## 2.1. Zonal Generation Differences
 ```{r zone-gen-diff-stacks, fig.height=z.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/compare/c_p_zone_gen_stacks.Rmd')
+source('source_scripts/compare/c_p_zone_gen_stacks.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
