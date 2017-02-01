@@ -464,7 +464,7 @@ region_load = function(total.region.load) {
 
 zone_load = function(total.region.load, total.zone.load) {
   if (reassign.zones==TRUE | any(as.character(total.zone.load)=='ERROR')){
-    setkey(total.region.load,Region)
+    setkey(total.region.load,name)
     setkey(rz.unique,Region)
     z.load = rz.unique[total.region.load][, .(value=sum(value)), by=.(scenario, Zone)]
   } else {
