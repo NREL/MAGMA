@@ -26,7 +26,6 @@ inputs = data.table(inputs)
 
 # Sourcing the setup file and required functions
 source(file.path('query_functions.R'))
-source(file.path('query_functions_compare.R'))
 source(file.path('plot_functions.R'))
 source(file.path('setup_plexosAnalysis.R'))
 
@@ -37,7 +36,7 @@ if (query.data){
     load(load.data)
 }
 
-render(input=file.path('HTML_output_compare.Rmd'), c("html_document"), 
+render(input=file.path('HTML_output.Rmd'), c("html_document"), 
        output_file=output.name, output_dir = file.path(output.dir))
 
 if (save.data){
