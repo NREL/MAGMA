@@ -9,7 +9,9 @@ if ( typeof(interval.region.load)=='character' ) {
     print('INPUT ERROR: interval.avail.cap has errors. Cannot run this section.')
   } else{
     # Query interval generation by type from interval data
-    int.gen = tryCatch( interval_generation(interval.region.load, interval.zone.load, interval.generation, interval.avail.cap), error = function(cond) { return('ERROR') } )
+    int.gen = tryCatch( interval_generation(interval.region.load, interval.zone.load, interval.region.ue, 
+                                            interval.zone.ue, interval.generation, interval.avail.cap), 
+                        error = function(cond) { return('ERROR') } )
 
     # If the query doesn't work, return an error. 
     if ( typeof(int.gen)=='character' ) { 
@@ -36,15 +38,15 @@ if ( typeof(interval.region.load)=='character' ) {
       key.period.gen = int.gen.key.periods 
       
       # Rearrange factor levels for plotting.
-      key.period.gen[, Type := factor(Type, levels = c(gen.order, 'Load'))]
+      key.period.gen[, Type := factor(Type, levels = c(gen.order, 'Load','Served Load'))]
       
       # Pull out just generation data
-      gen.type = key.period.gen[Type != 'Load', ]
+      gen.type = key.period.gen[! Type %in% c('Load','Served Load'), ]
       gen.type[value<0, value:=0]
       gen.type[, Period := ordered(Period, levels = period.names)]
       
       # Pull out just load data
-      gen.load = key.period.gen[Type == 'Load', ]
+      gen.load = key.period.gen[Type %in% c('Load','Served Load'), ]
 
       # ###############################################################################
       # Region Data

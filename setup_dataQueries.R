@@ -186,6 +186,23 @@ if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period
     }
 }
 
+if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period.dispatch.zone.log ){
+  # interval level region ue.
+  interval.region.ue  = tryCatch( interval_region_ue(db), error = function(cond) { return('ERROR') } )
+  # Interval level zone ue 
+  interval.zone.ue    = tryCatch( interval_zone_ue(db), error = function(cond) { return('ERROR') } ) 
+  if (exists('interval.region.ue')) { 
+    if (typeof(interval.region.ue)=='character') { 
+      message('\nMissing interval region ue data from solution .db file.')
+      }
+    }
+  if (exists('interval.zone.ue')) { 
+    if (typeof(interval.zone.ue)=='character') { 
+      message('\nMissing interval zone ue data from solution .db file.')
+      }
+    }
+}
+
 if ( interface.flow.plots | key.period.interface.flow.plots ) {
   # Interval level interface flow for selected interfaces.
   interval.interface.flow = tryCatch( interval_interface_flow(db), error = function(cond) { return('ERROR') } ) 

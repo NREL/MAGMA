@@ -142,7 +142,7 @@ region_zone_cap = function(total.installed.capacity) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # This function returns interval level generation and curtailment used for the key period time series dispatch stacks. 
 
-interval_generation = function(interval.region.load, interval.zone.load, interval.generation, interval.avail.cap) {
+interval_generation = function(interval.region.load, interval.zone.load, interval.region.ue, interval.zone.ue, interval.generation, interval.avail.cap) {
 
   gen.type.zone.region = region.zone.mapping[, Type:=gen.type.mapping[name]]
   setkey(interval.generation,name)
@@ -152,12 +152,29 @@ interval_generation = function(interval.region.load, interval.zone.load, interva
   if (length(region.names)>=length(zone.names)){
     load = interval.region.load[,.(value=sum(value)),by=.(scenario,time,name,property)]
     setnames(load,"name","Region")
-    spatialcol = "Region"    
+    spatialcol = "Region"  
+    if (is.character(interval.region.ue)){
+      warning("Your region does not have interval level unserved energy. Skipping that in your dispatch plots.")
+    } else{
+      ue = interval.region.ue[, .(value = -sum(value)), by=.(scenario,time,name,property)]
+      setnames(ue,"name",spatialcol)
+      served.load = rbindlist(list(load,ue))[, .(property='Served Load',value=sum(value)), by=c('scenario','time',spatialcol)]
+      load = rbindlist(list(load,served.load))
+    }  
   } else {
     load = interval.zone.load[,.(value=sum(value)),by=.(scenario,time,name,property)]
     setnames(load,"name","Zone")
     spatialcol = "Zone"
+    if (is.character(interval.zone.ue)){
+      warning("Your zone does not have interval level unserved energy. Skipping that in your dispatch plots.")
+    } else{
+      ue = interval.zone.ue[, .(value = -sum(value)), by=.(scenario,time,name,property)]
+      setnames(ue,"name",spatialcol)
+      served.load = rbindlist(list(load,ue))[, .(property='Served Load',value=sum(value)), by=c('scenario','time',spatialcol)]
+      load = rbindlist(list(load,served.load))
+    }  
   }
+
   setkeyv(rz.unique,spatialcol)
   setkeyv(load,spatialcol)
   load = load[rz.unique]
@@ -864,6 +881,13 @@ interval_region_load = function(database) {
   return(interval.region.load[, .(scenario, property, name, time, value)])
 }
 
+# Interval level region ue 
+interval_region_ue = function(database) {
+  interval.region.ue = data.table(query_interval(database, 'Region', 'Unserved Energy'))
+  interval.region.ue[, name:=factor(name,region.order)]
+  return(interval.region.ue[, .(scenario, property, name, time, value)])
+}
+
 # Interval level region load and price
 interval_region_price = function(database) {
   interval.region.price = data.table(query_interval(database, 'Region', 'Price'))
@@ -882,6 +906,13 @@ interval_zone_load = function(database) {
   interval.zone.load = data.table(query_interval(database, 'Zone', 'Load'))
   interval.zone.load[, name:=factor(name,zone.order)]
   return(interval.zone.load[, .(scenario, property, name, time, value)])
+}
+
+# Interval level zone ue 
+interval_zone_ue = function(database) {
+  interval.zone.ue = data.table(query_interval(database, 'Zone', 'Unserved Energy'))
+  interval.zone.ue[, name:=factor(name,zone.order)]
+  return(interval.zone.ue[, .(scenario, property, name, time, value)])
 }
 
 # Interval level interface flows

@@ -172,18 +172,18 @@ dispatch_plot <- function(gen.data, load.data, filters=NULL){
   }else{
     agg.filters = c("time",filters)
   }
-  seq.py.t = pretty_axes(gen.data, load.data, filters = agg.filters)
+  seq.py.t = pretty_axes(gen.data, load.data[Type=='Load'], filters = agg.filters)
   
   setorderv(gen.data,c('Type',filters))
 
   # Plot
-  p1 = ggplot(gen.data, aes(time, value, group=Type, fill=Type), color="black")+
-          geom_area(color=NA)+
-          geom_line(position="stack", size=0.3)+
+  p1 = ggplot(gen.data, color="black")+
+          geom_area(aes(time, value, group=Type, fill=Type), color=NA)+
+          geom_line(aes(time, value, group=Type), position="stack", size=0.3)+
           labs(y="Generation (GW)", x=NULL)+
-          geom_line(data=load.data, linetype="longdash", aes(color="load"),size=0.8)+
+          geom_line(data=load.data[Type=='Load'], linetype="longdash", aes(time, value, color=Type),size=0.8)+
           scale_fill_manual("",values = gen.color, limits=gen.order)+
-          scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
+          scale_color_manual(name='', values=c("Load"="grey40"))+
           scale_x_datetime(breaks = date_breaks(width = "1 day"), labels = date_format("%b %d\n%I %p"), expand = c(0, 0))+
           scale_y_continuous(breaks=seq.py.t, limits=c(0, max(seq.py.t)), expand=c(0,0))+
           theme(legend.key = element_rect(color = "grey80", size = 0.4),
@@ -197,6 +197,20 @@ dispatch_plot <- function(gen.data, load.data, filters=NULL){
                 panel.grid.minor = element_line(colour = "grey93"),
                 panel.spacing = unit(2,'lines'),
                 aspect.ratio = 0.5)
+  if(load.data[, .(value=abs(diff(value))), by=agg.filters][,sum(value)]>0){
+    if(!'Unserved Energy' %in% gen.color){
+      warning("You have unserved energy and don't have a color for it. Adding it as bright pink.")
+      if(!'Unserved Energy' %in% gen.order){
+        warning("You also don't have unserved energy in your generation order. Adding it last.")
+        p1 <- p1 + scale_fill_manual("",values = c(gen.color,setNames('maroon1','Unserved Energy')), limits=c('Unserved Energy',gen.order))
+      } else{
+        p1 <- p1 + scale_fill_manual("",values = c(gen.color,setNames('maroon1','Unserved Energy')), limits=gen.order)
+      }
+    }
+    p1 <- p1 + geom_ribbon(data=dcast.data.table(load.data,...~Type,value.var='value'),
+                           aes(time, ymin=`Served Load`, ymax=Load, fill='Unserved Energy')) +
+               scale_color_manual(name='', values=c("Load"="grey80","Served Load"="grey40"))
+  }
 
   return(p1)
 }
