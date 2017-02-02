@@ -337,8 +337,6 @@ costs = function(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom
   tot.cost = cost.table[,.(property = "Total", Cost = sum(Cost)), by=.(scenario)]
   cost.table = rbindlist(list(cost.table,tot.cost))
   cost.table[,property:=factor(property,levels=unique(property))]
-
-  cost.table = dcast(cost.table, property~scenario, value.var='Cost')
   
   setnames(cost.table, "property","Type")
 
@@ -673,10 +671,9 @@ costs_diff = function(total.emissions.cost, total.fuel.cost, total.ss.cost, tota
   cost.table = tryCatch( costs(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom.cost), 
                          error = function(cond) { return('ERROR: costs function not returning correct results.') })
   cost.table[, scenario := as.character(scenario)]
-  cost.diff = cost.table[, .(scenario, `Cost (MM$)` = `Cost (MM$)` - `Cost (MM$)`[scenario == ref.scenario]), by=.(Type)]
-  cost.diff.table = dcast.data.table(cost.diff, Type~scenario, value.var = 'Cost (MM$)')
-  
-  return(cost.diff.table)
+  cost.diff = cost.table[, .(scenario, Cost = Cost - Cost[scenario == ref.scenario]), by=.(Type)]
+
+  return(cost.diff)
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
