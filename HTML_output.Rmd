@@ -1,6 +1,6 @@
 ---
 title: "Multi-area Grid Metrics Analyzer"
-author: "Created by: National Renewable Energy Laboratory (NREL)"
+author: "Created by: `r Sys.info()['user']`"
 date: "`r format(Sys.time(), '%d %B %Y')`"
 output: 
   html_document: 
@@ -56,9 +56,13 @@ if (total.gen.stack){
   } else if ( typeof(total.avail.cap) == 'character' ) { 
     print('INPUT ERROR: total.avail.cap has errors. Cannot run this section.')
   } else{
-    # Query annual generation by type.
+    # Query annual generation by type and curtailment.
     yr.gen = tryCatch( gen_by_type(total.generation, total.avail.cap), 
                        error = function(cond) { return('ERROR: gen_by_type function not returning correct results.') } )
+    curt.by.type = tryCatch( curt_by_type(total.generation, total.avail.cap),
+                             error = function(cond) { return('ERROR: curt_by_type function not returning correct results.') } )
+    yr.gen = rbind(yr.gen, curt.by.type[,.(Type='Curtailment', GWh=sum(Curtailment)), by=scenario])
+    
     # Create plot
     plot.data = gen_stack_plot(yr.gen, load.data = r.load)
     print(plot.data[[1]] + theme(aspect.ratio = 2.5,axis.text.x = element_text(angle = -30, hjust = 0)) +
@@ -349,22 +353,66 @@ if (annual.generation.table){
     yr.gen[, Type := factor(Type, levels = c(gen.order))] 
     setorder(yr.gen,Type)
     
-    # Separate out curtailment from generation
-    curt = yr.gen[Type=='Curtailment', ]
     yr.gen = yr.gen[Type!='Curtailment', ]
     
-    # Calculate the percent generation of each type, and percent curtailment
+    # Calculate the percent generation of each type
     yr.gen[, Total:=sum(GWh), by=.(scenario)]
     yr.gen[, Percent:=GWh/Total*100]
     yr.gen[, Total:=NULL]
-    curt[, Total:=GWh+yr.gen[Type %in% re.types, sum(GWh)] ]
-    curt[, Percent:=GWh/Total*100]
-    curt[, Total:=NULL]
+
+    # recast so scenarios are columns
+    yr.gen.val = dcast(yr.gen, Type~scenario, value.var='GWh')
     
-    # combine back into one table. 
-    yr.gen = rbindlist(list(yr.gen, yr.gen[,.(Type='Total',GWh=sum(GWh),Percent=sum(Percent)), by=.(scenario)], curt))
-    row.names(yr.gen) = NULL
-    kable(yr.gen, format.args = list(big.mark = ','), digits=2) 
+    kable(yr.gen.val, format.args = list(big.mark = ','), digits=2) 
+    
+  }
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+#### Percent Generation
+```{r annual-percent-generation-table, fig.width=10}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (annual.generation.table){
+  if ( typeof(total.generation)=='character' | typeof(total.avail.cap) == 'character' ) {
+    print('INPUT ERROR: total.generation or total.avail.cap has errors. Cannot run this section.')
+  } else {
+    if ( typeof(yr.gen)=='character' ) {
+      yr.gen.percent = 'ERROR: gen_by_type function not returning correct results'
+    } else {
+
+    # recast so scenarios are columns
+    yr.gen.percent = dcast(yr.gen, Type~scenario, value.var='Percent')
+
+    kable(yr.gen.percent, format.args = list(big.mark = ','), digits=2) 
+
+    }
+  }
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## 12.1 Total Gen Difference
+#### GWh Generation Difference
+```{r annual-generation-diff-table, fig.width=10}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (annual.generation.table){
+  if ( typeof(total.generation)=='character' | typeof(total.avail.cap) == 'character' ) {
+    print('INPUT ERROR: total.generation or total.avail.cap has errors. Cannot run this section.')
+  } else {
+    # Run the difference function.
+    yr.gen.diff = tryCatch(gen_diff_by_type(total.generation, total.avail.cap), 
+                        error = function(cond) { return('ERROR: gen_diff_by_type function not returning correct results') } ) 
+    # Set the order level that generatino type will be displayed.
+    yr.gen.diff[, Type := factor(Type, levels = c(gen.order))] 
+    setorder(yr.gen.diff,Type)
+    
+    # recast so scenarios are columns
+    yr.gen.diff = dcast(yr.gen.diff, Type~scenario, value.var='GWh')
+    
+    kable(yr.gen.diff, format.args = list(big.mark = ','), digits=2) 
+    
   }
 } else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -403,24 +451,24 @@ if (annual.curtailment.table){
 ```{r yearly-curtailment-diff-plot}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if(has.multiple.scenarios){
-  if (annual.curtailment.table) {
-    if ( typeof(total.generation)=='character' ) {
-      print('ERROR: total.generation has errors. Cannot run this section.')
-    } else if ( typeof(total.avail.cap) == 'character' ) { 
-      print('ERROR: total.avail.cap has errors. Cannot run this section.')
-    } else{
-      # Run the cost query function
-      curt.diff = tryCatch( curtailment_diff(total.generation, total.avail.cap), 
-                            error = function(cond) { return('ERROR: curtailment diff function not returning correct results.') })
-      kable(curt.diff, format.args = list(big.mark = ','), digits=2)
-    }
-  } else { print('Section not run according to input file.') }
 } else{print("You only have one scenario. Skipping Difference plots")}
+if (annual.curtailment.table) {
+  if ( typeof(total.generation)=='character' ) {
+    print('ERROR: total.generation has errors. Cannot run this section.')
+  } else if ( typeof(total.avail.cap) == 'character' ) { 
+    print('ERROR: total.avail.cap has errors. Cannot run this section.')
+  } else{
+    # Run the cost query function
+    curt.diff = tryCatch( curtailment_diff(yr.curt), 
+                          error = function(cond) { return('ERROR: curtailment diff function not returning correct results.') })
+    kable(curt.diff, format.args = list(big.mark = ','), digits=2)
+  }
+} else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
 ***
-## 14. Total Costs
+## 14. Total Costs (MM$)
 ```{r annual-cost-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
@@ -542,7 +590,7 @@ if(has.multiple.scenarios){
 ```
 
 ***
-## 16. Interface Flow Table
+## 16. Total Interface Flow (GWh)
 ```{r interface-flow-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
@@ -739,7 +787,7 @@ if (key.period.line.flow.plots) {
 ***
 ## 22-25. Reserves
 ***
-### 22. Annual Reserve Provision by Scenario (GW)
+### 22. Total Reserve Provision (GW)
 ```{r annual-reserves-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
@@ -760,15 +808,52 @@ if(annual.reserves.table) {
 ```
 
 ***
-### 23. Annual Reserve Shortage by Scenario (GW)
-```{r annual-reserves-scen-table}
+### 22.1 Total Reserve Provision Difference (GW)
+```{r annual-reserves-diff-table}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Check if this section was selected to run in the input file
+if(annual.reserves.table) {
+  if (typeof(total.reserve.provision)=='character' | typeof(total.reserve.shortage)=='character'){
+    print('INPUT ERROR: total.reserve.provision or total.reserve.shortage has errors. Cannot run this section')
+  } else{
+    # Call the query function to get annual reserve amounts.
+    annual.reserves.diff = tryCatch( annual_reserves_diff(), 
+                                error = function(cond) { return('ERROR: annual_reserves function not returning correct results.') })
+    if(typeof(annual.reserves.diff)!='character') { 
+      res.prov.diff.table = dcast.data.table(annual.reserves.diff,Type~scenario,value.var="Provisions (GWh)")
+      kable(res.prov.diff.table, format.args = list(big.mark = ','))
+    } else { print('ERROR: annual_reserves_diff is not returning correct results.')}
+  }
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+### 23. Total Reserve Shortage (GW)
+```{r annual-reserves-short-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
 if (annual.res.short.table) {
   # Run the cost query function
-  res.short.table = tryCatch( annual_reserves_short(total.reserve.provision, total.reserve.shortage), 
+  res.short.table = tryCatch( annual_reserves(total.reserve.provision, total.reserve.shortage), 
                               error = function(cond) { return('ERROR: reserve function not returning correct results.') })
+  res.short.table = dcast.data.table(res.short.table,Type~scenario,value.var="Shortage (GWh)")
   kable(res.short.table, format.args = list(big.mark = ','))
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+### 23.1 Total Reserve Shortage Difference (GW)
+```{r annual-reserves-short-diff-table}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Check if this section was selected to run in the input file
+if (annual.res.short.table) {
+  # Run the cost query function
+  res.short.diff.table = tryCatch( annual_reserves_diff(), 
+                              error = function(cond) { return('ERROR: reserve function not returning correct results.') })
+  res.short.diff.table = dcast.data.table(annual.reserves.diff,Type~scenario,value.var="Shortage (GWh)")
+  kable(res.short.diff.table, format.args = list(big.mark = ','))
 } else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
@@ -1139,7 +1224,6 @@ if (compare.dispatch.region | compare.dispatch.zone) {
 ### 34. Regions
 `r comp.gen.region`
 
-
 ***
 ## 35. Model Run Times
 ```{r model-run-times}
@@ -1157,8 +1241,6 @@ if(runtime.table) {
 } else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
-
-
 
 ***
 ## 36. Installed Capacity
