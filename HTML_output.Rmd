@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, incl
 
 # Set dynamic height for figures
 if (exists('zone.names')) { z.height = ( length(zone.names[!zone.names%in%ignore.zones]) %/% 3 + 
-                                           length(zone.names[!zone.names%in%ignore.zones]) %% 3 ) * 4
+                                           length(zone.names[!zone.names%in%ignore.zones]) %% 3 ) * 3
   } else { z.height = 5 }
 if (exists('region.names')) { r.height = ( length(region.names[!region.names%in%ignore.regions]) %/% 3 + 
                                              length(region.names[!region.names%in%ignore.regions]) %% 3 ) * 5
@@ -61,7 +61,7 @@ if (total.gen.stack){
                        error = function(cond) { return('ERROR: gen_by_type function not returning correct results.') } )
     # Create plot
     plot.data = gen_stack_plot(yr.gen, load.data = r.load)
-    print(plot.data[[1]] + theme(aspect.ratio = 2.5/length(db.loc),axis.text.x = element_text(angle = -30, hjust = 0)) +
+    print(plot.data[[1]] + theme(aspect.ratio = 2.5,axis.text.x = element_text(angle = -30, hjust = 0)) +
           scale_y_continuous(breaks=plot.data[[2]], limits=c(min(plot.data[[2]]), max(plot.data[[2]])), 
                              expand=c(0,0), label=comma))
   }
@@ -108,7 +108,7 @@ if (zone.gen.stacks) {
 ```{r zone-gen-diff-stacks, fig.height=z.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if(has.multiple.scenarios){
-  source('source_scripts/compare/c_p_zone_gen_stacks.Rmd')
+  source('source_scripts/compare/c_p_zone_gen_stacks.R')
 } else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
