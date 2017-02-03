@@ -3,10 +3,8 @@ if ( typeof(interval.line.flow) == 'character' ) {
     print('INPUT ERROR: interval.line.flow not correct. Cannot run this section')
 } else {
 
-  if (!exists('line.flows')) {
-    # Call the query function to get line flows for the lines selected in the query function.
-    line.flows = tryCatch( interval_line_flows(interval.line.flow), error=function(cond) {return('ERROR: line_flows query not returning correct results.')})
-  }
+  # Call the query function to get line flows for the lines selected in the query function.
+  line.flows = tryCatch( interval_line_flows(interval.line.flow), error=function(cond) {return('ERROR: line_flows query not returning correct results.')})
   
   # Check for errors in the query function. If theres an error don't continue.
   if ( typeof(line.flows)=='character' ) { 
