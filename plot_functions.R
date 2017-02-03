@@ -133,11 +133,11 @@ gen_diff_stack_plot <- function(gen.data, load.data=NULL, filters=NULL){
   p1 = ggplot() +
           geom_bar(data = dat.pos, aes(x = scenario, y = TWh, fill=Type), stat="identity", position="stack" ) +
           geom_bar(data = dat.neg, aes(x = scenario, y = TWh, fill=Type), stat="identity", position="stack" ) +
-          scale_fill_manual(values = gen.color, guide = guide_legend(reverse = TRUE))+
+          scale_fill_manual(values = gen.color, limits=gen.order)+
           scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
           labs(y="Difference in Generation (TWh)", x=NULL)+
           # scale_y_continuous(breaks=seq.py, expand=c(0,0), label=comma)+
-          guides(color = guide_legend(order=1), fill = guide_legend(order=2, reverse=TRUE))+
+          guides(color = guide_legend(order=1), fill = guide_legend(order=2))+
                theme(    legend.key      = element_rect(color="grey80", size = 0.8), 
                          legend.key.size = grid::unit(1.0, "lines"),
                          legend.text     = element_text(size=text.plot), 
