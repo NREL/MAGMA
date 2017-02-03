@@ -21,25 +21,26 @@ gen.region.zone  = 'Examples/RTS-2016/gen_name_mapping_WECC_RTS.csv'
 # Run code to create HTML
 #------------------------------------------------------------------------------|
 setwd(magma.dir)
-library(data.table)
-
-# Load inputs
-inputs = read.csv(file.path(input.csv))
-inputs[inputs==""]=NA
-inputs = data.table(inputs)
 
 # Sourcing the setup file and required functions
 source(file.path('query_functions.R'))
 source(file.path('plot_functions.R'))
+
+# Read CSV file with all inputs
+inputs = read.csv(file.path(input.csv))
+inputs[inputs==""]=NA
+
+# Either query data from database or load existing data
 source(file.path('setup_plexosAnalysis.R'))
 if (query.data){
-    source(file.path('setup_dataQueries.R'))
+  source(file.path('setup_dataQueries.R'), echo=TRUE)
 } else{
-    load(load.data)
+  load(load.data)
 }
-render(input=file.path('HTML_output.Rmd'), c("html_document"),
+
+render(input=file.path('HTML_output.Rmd'), c("html_document"), 
        output_file=output.name, output_dir = file.path(output.dir,''))
 
 if (save.data){
-	save(list=ls(), file=file.path(output.dir,save.data.name))
+  save(list=ls(), file=file.path(output.dir,save.data.name))
 }

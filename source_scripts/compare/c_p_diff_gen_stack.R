@@ -6,13 +6,8 @@ if (total.gen.stack){
   } else if ( typeof(total.avail.cap) == 'character' ) { 
     print('INPUT ERROR: total.avail.cap has errors. Cannot run this section.')
   } else{
-    # # Query annual generation by type.
-    # yr.gen.scen = tryCatch( gen_by_type(total.generation, total.avail.cap), 
-    #                    error = function(cond) { return('ERROR: gen_by_type function not returning correct results.') } )
-    # curt.by.type = tryCatch( curt_by_type(total.generation, total.avail.cap),
-    #                          error = function(cond) { return('ERROR: curt_by_type function not returning correct results.') } )
-    # yr.gen = rbind(yr.gen, curt.by.type[,.(Type='Curtailment', GWh=sum(Curtailment)), by=scenario])
-    yr.gen.scen <- yr.gen
+    
+    yr.gen.scen <- copy(yr.gen)
     
     # If the query doesn't work, print an error. Else continue.
     if ( typeof(yr.gen.scen)=='character' ) {
