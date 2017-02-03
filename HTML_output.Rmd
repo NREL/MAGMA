@@ -1185,42 +1185,45 @@ source('source_scripts/compare/c_p_revenue.R')
 ## 33-34. Generation comparison by Generator Type
 ```{r generation-comparison, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Check if this section was selected to run in the input file
-if (compare.dispatch.region | compare.dispatch.zone) {
-  if (length(da.rt.types)>0){
-    source('source_scripts/compare/c_d_gen_comparison.R') # Call this R script which created the data needed for plotting.
-    
-    # As long as the file exists (previous source found the R script) this loop runs
-    if ( exists('compare.plot.data') ) {
-      # Check to see if the right data is ready for plotting.
-      if ( typeof(compare.plot.data)=='character' ) {
-        print('ERROR: cap_committed function not returning correct results.')
-      } else {
-        
-        # Check if zonal DA-RT plots were selected in input file. If so create a plot for each zone
-        if (compare.dispatch.zone) {
-          comp.zone.types = unique(compare.plot.data[Type%in%da.rt.types&!Zone%in%ignore.zones,.(Type,Zone)])
-          comp.gen.zone = mapply(function(t,z){ knit_expand(file = 'source_scripts/compare/c_p_key_period_gen_comparison_zone.Rmd', 
-                                                            type.name = t, zone.name = z) },
-                                 comp.zone.types$Type, comp.zone.types$Zone)
-          comp.gen.zone = knit_child(text = unlist(comp.gen.zone))
-        } else {comp.gen.zone = 'Section not run according to input file.'}
-        
-        # Create a plot for each region.
-        if (compare.dispatch.region) {  
-          comp.region.types = unique(compare.plot.data[Type%in%da.rt.types&!Region%in%ignore.zones,.(Type,Region)])
-          comp.gen.region = mapply(function(t,r){ knit_expand(file = 'source_scripts/compare/c_p_key_period_gen_comparison_region.Rmd', 
-                                                              type.name = t, region.name = r) },
-                                   comp.region.types$Type, comp.region.types$Region)
-          comp.gen.region = knit_child(text = unlist(comp.gen.region))
-        } else {comp.gen.region = 'Section not run according to input file.'}
-      }
-    } else { comp.gen.zone   = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'
-             comp.gen.region = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'}
-  }else {   comp.gen.zone = 'You didnt specify generation types for DA-RT plots. Plots cannot be created.'
-          comp.gen.region = 'You didnt specify generation types for DA-RT plots. Plots cannot be created.' }
-} else { comp.gen.zone   = 'Section not run according to input file.'
-         comp.gen.region = 'Section not run according to input file.' }
+if (has.multiple.scenario){
+  # Check if this section was selected to run in the input file
+  if (compare.dispatch.region | compare.dispatch.zone) {
+    if (length(da.rt.types)>0){
+      source('source_scripts/compare/c_d_gen_comparison.R') # Call this R script which created the data needed for plotting.
+      
+      # As long as the file exists (previous source found the R script) this loop runs
+      if ( exists('compare.plot.data') ) {
+        # Check to see if the right data is ready for plotting.
+        if ( typeof(compare.plot.data)=='character' ) {
+          print('ERROR: cap_committed function not returning correct results.')
+        } else {
+          
+          # Check if zonal DA-RT plots were selected in input file. If so create a plot for each zone
+          if (compare.dispatch.zone) {
+            comp.zone.types = unique(compare.plot.data[Type%in%da.rt.types&!Zone%in%ignore.zones,.(Type,Zone)])
+            comp.gen.zone = mapply(function(t,z){ knit_expand(file = 'source_scripts/compare/c_p_key_period_gen_comparison_zone.Rmd', 
+                                                              type.name = t, zone.name = z) },
+                                   comp.zone.types$Type, comp.zone.types$Zone)
+            comp.gen.zone = knit_child(text = unlist(comp.gen.zone))
+          } else {comp.gen.zone = 'Section not run according to input file.'}
+          
+          # Create a plot for each region.
+          if (compare.dispatch.region) {  
+            comp.region.types = unique(compare.plot.data[Type%in%da.rt.types&!Region%in%ignore.zones,.(Type,Region)])
+            comp.gen.region = mapply(function(t,r){ knit_expand(file = 'source_scripts/compare/c_p_key_period_gen_comparison_region.Rmd', 
+                                                                type.name = t, region.name = r) },
+                                     comp.region.types$Type, comp.region.types$Region)
+            comp.gen.region = knit_child(text = unlist(comp.gen.region))
+          } else {comp.gen.region = 'Section not run according to input file.'}
+        }
+      } else { comp.gen.zone   = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'
+               comp.gen.region = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'}
+    }else {   comp.gen.zone = 'You didnt specify generation types for DA-RT plots. Plots cannot be created.'
+            comp.gen.region = 'You didnt specify generation types for DA-RT plots. Plots cannot be created.' }
+  } else { comp.gen.zone   = 'Section not run according to input file.'
+           comp.gen.region = 'Section not run according to input file.' }
+} else{comp.gen.zone   = "You only have one scenario. Skipping Difference plots"
+       comp.gen.region = "You only have one scenario. Skipping Difference plots"}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
