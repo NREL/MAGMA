@@ -1,6 +1,6 @@
 # Basic code to pick key weeks
 
-db = plexos_open("P:/Projects/CHP/Final Base Runs 20161205/Base RT")
+db = plexos_open(db.loc[grepl('noDR',db.loc)&grepl('base',db.loc)])
 int.gen = data.table(query_interval(db,'Generator','Generation',c("name","category")))
 int.gen[, Type:=gen.type.mapping[name]]
 

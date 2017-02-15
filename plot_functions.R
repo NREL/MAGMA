@@ -90,7 +90,7 @@ gen_stack_plot <- function(gen.data, load.data=NULL, filters=NULL, x_col='scenar
 }
 
 
-gen_diff_stack_plot <- function(gen.data, load.data=NULL, filters=NULL){
+gen_diff_stack_plot <- function(gen.data, load.data=NULL, filters=NULL, x_col='scenario'){
   # Creates a difference in total generation stack plot
   # Assumes data has been processed according to XXX
   # Filters are other things you might want to plot over
@@ -131,8 +131,8 @@ gen_diff_stack_plot <- function(gen.data, load.data=NULL, filters=NULL){
 
   # Create plot
   p1 = ggplot() +
-          geom_bar(data = dat.pos, aes(x = scenario, y = TWh, fill=Type), stat="identity", position="stack" ) +
-          geom_bar(data = dat.neg, aes(x = scenario, y = TWh, fill=Type), stat="identity", position="stack" ) +
+          geom_bar(data = dat.pos, aes_string(x = x_col, y = 'TWh', fill='Type'), stat="identity", position="stack" ) +
+          geom_bar(data = dat.neg, aes_string(x = x_col, y = 'TWh', fill='Type'), stat="identity", position="stack" ) +
           scale_fill_manual(values = gen.color, limits=gen.order)+
           scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
           labs(y="Difference in Generation (TWh)", x=NULL)+

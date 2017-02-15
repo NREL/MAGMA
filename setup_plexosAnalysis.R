@@ -222,10 +222,10 @@ if (length(db.day.ahead.loc)==0 | !exists('db.day.ahead.loc')) { db.day.ahead.lo
 # -----------------------------------------------------------------------
 # Process databases if needed
 # -----------------------------------------------------------------------
-run.rplx=F
 run.rplx.all=F
 first.missing.db=T
 for (i in 1:length(db.loc)) { 
+  run.rplx=F
   if(length(list.files(pattern = "\\.zip$",path=db.loc[i]))!=0 ) {
     if(length(list.files(pattern = "\\.db$",path=db.loc[i]))==0) {
       message(paste0('The .db file is absent from ',db.loc[i]))
@@ -368,7 +368,8 @@ if ( use.gen.type.csv & length(gen.type.csv.loc>0) ) {
         message("Generator Type mapping not provided. Will use PLEXOS categories")
         gen.type.mapping = setNames(gen.cat.plexos$category, gen.cat.plexos$name)
     }
-  if (length(gen.type.mapping)==0) { message('\nIf not using generator name to type mapping CSV, you must specify PLEXOS categories and desired generation type in input csv file.') }
+  if (length(gen.type.mapping)==0) { message(paste('\nIf not using generator name to type mapping CSV, \n',
+                                             'you must specify PLEXOS categories and desired generation type in input csv file.')) }
 }
 
 # -----------------------------------------------------------------------

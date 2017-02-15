@@ -820,7 +820,7 @@ if(has.multiple.scenarios){
       print('INPUT ERROR: total.reserve.provision or total.reserve.shortage has errors. Cannot run this section')
     } else{
       # Call the query function to get annual reserve amounts.
-      annual.reserves.diff = tryCatch( annual_reserves_diff(), 
+      annual.reserves.diff = tryCatch( annual_reserves_diff(annual.reserves), 
                                        error = function(cond) { return('ERROR: annual_reserves function not returning correct results.') })
       if(typeof(annual.reserves.diff)!='character') { 
         res.prov.diff.table = dcast.data.table(annual.reserves.diff,Type~scenario,value.var="Provisions (GWh)")

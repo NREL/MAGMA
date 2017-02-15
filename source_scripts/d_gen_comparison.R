@@ -1,5 +1,6 @@
 # Query interval generation data 
-int.gen = tryCatch( interval_generation(interval.region.load, interval.zone.load, interval.generation, interval.avail.cap), error = function(cond) { return('ERROR') } )
+int.gen = tryCatch( interval_generation(interval.region.load, interval.zone.load, interval.region.ue,interval.zone.ue, 
+                                        interval.generation, interval.avail.cap), error = function(cond) { return('ERROR') } )
 
 # If there is a problem with the query return an error, else create the plots.
 if ( typeof(int.gen)=='character' ) { 
