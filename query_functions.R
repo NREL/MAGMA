@@ -551,8 +551,8 @@ revenue_calculator = function(interval.generation, interval.pump.load, interval.
     setkey(interval.pump.load,name)
   }
   # Add region and zone by matching generator name in the region and zone mapping file. 
-  gen.data = gen.type.zone.region[interval.generation[property=='Generation', .(scenario,name,time,value)]]
-  pump.data = gen.type.zone.region[interval.pump.load[property=='Pump Load', .(scenario,name,time,value)]]
+  gen.data = gen.type.zone.region[interval.generation[, .(scenario,name,time,value)]]
+  pump.data = gen.type.zone.region[interval.pump.load[, .(scenario,name,time,value)]]
   res.data = gen.type.zone.region[interval.gen.reserve.provision[property=='Provision', 
                                                                  .(scenario,name,parent,time,value)]]
   #Merge prices onto generation, pump and reserve data
