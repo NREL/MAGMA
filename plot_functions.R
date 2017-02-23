@@ -186,17 +186,17 @@ dispatch_plot <- function(gen.data, load.data, filters=NULL){
           scale_color_manual(name='', values=c("Load"="grey40"))+
           scale_x_datetime(breaks = date_breaks(width = "1 day"), labels = date_format("%b %d\n%I %p"), expand = c(0, 0))+
           scale_y_continuous(breaks=seq.py.t, limits=c(0, max(seq.py.t)), expand=c(0,0))+
-          theme(legend.key = element_rect(color = "grey80", size = 0.4),
-                legend.key.size = grid::unit(0.9, "lines"), 
-                legend.text = element_text(size=text.plot/1.1),
-                strip.text=element_text(size=rel(0.7)),
-                axis.text=element_text(size=text.plot/1.2), 
-                axis.title=element_text(size=text.plot, face=2), 
-                axis.title.x=element_text(vjust=-0.3),
+          theme(legend.key       = element_rect(color = "grey80", size = 0.4),
+                legend.key.size  = grid::unit(0.9, "lines"), 
+                legend.text      = element_text(size=text.plot/1.1),
+                strip.text       = element_text(size=text.plot),
+                axis.text        = element_text(size=text.plot/1.2), 
+                axis.title       = element_text(size=text.plot, face=2), 
+                axis.title.x     = element_text(vjust=-0.3),
                 panel.grid.major = element_line(colour = "grey85"),
                 panel.grid.minor = element_line(colour = "grey93"),
-                panel.spacing = unit(2,'lines'),
-                aspect.ratio = 0.5)
+                panel.spacing    = unit(2,'lines'),
+                aspect.ratio     = 0.5)
   if(load.data[, .(value=abs(diff(value))), by=agg.filters][,sum(value)]>0){
     if(!'Unserved Energy' %in% gen.color){
       warning("You have unserved energy and don't have a color for it. Adding it as bright pink.")
@@ -263,13 +263,13 @@ price_duration_curve <- function(price.data, filters, color=NULL){
 }
 
 
-line_plot <- function(plot.data, filters, x.col, y.col, y.lab, color=NULL, linesize=2){
+line_plot <- function(plot.data, filters, x.col, y.col, y.lab, color=NULL,linetype=NULL, linesize=2){
   # Create line plots over time
 
   seq.py = pretty_axes(plot.data, filters = filters, col = y.col)
   # Create plot
   p.1 = ggplot(plot.data)+
-           geom_line(aes_string(x=x.col, y=y.col, color=color), size = linesize)+    
+           geom_line(aes_string(x=x.col, y=y.col, color=color, linetype=linetype), size = linesize)+    
            labs(y=y.lab, x=NULL)+
            scale_y_continuous(breaks=seq.py, limits=c(min(seq.py), max(seq.py)), expand=c(0,0))+
            theme( legend.key =       element_rect(color = "grey80", size = 0.4),
@@ -294,7 +294,7 @@ commitment_dispatch_plot <- function(plot.data){
   # Assign the order which the generation types will appear in the plot.
   plot.data[, Type := factor(Type, levels=rev(gen.order))]
   # Make sure plot axes are high enough
-  blank_data = plot.data[, .(ylim=sum(value)/1000*1.06), by=.(time,Type,data,scenario)]
+  blank_data = plot.data[, .(ylim=sum(value)/1000*1.06), by=.(time,Type,data,scenario,Period)]
     
     # Create plot
   p = ggplot()+
