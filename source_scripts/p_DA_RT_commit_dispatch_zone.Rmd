@@ -18,7 +18,7 @@ if ( !z.name %in% ignore.zones ) {
                             by=.(scenario, Zone, time, Type, Period, data)]
   
   # Check that there is actually generation data to plot, otherwise don't make a plot.
-  if ( plot.data[, sum(value)]>0 ) {
+  if ( plot.data[, sum(value, na.rm=TRUE)]>0 ) {
 
     p = commitment_dispatch_plot(plot.data)
     print(p+facet_grid(Type~scenario, scales="free_y")+theme(panel.spacing.x = unit(2,'lines')))
