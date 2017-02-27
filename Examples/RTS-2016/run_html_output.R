@@ -8,7 +8,7 @@ db.loc           = '<Location of solution file>'
 output.dir       = 'Examples/RTS-2016/reports'
 fig.path.name    = 'Examples/RTS-2016/plots/'
 output.name      = 'HTML_output_RTS_year.html'
-db.day.ahead.loc = '<Location of day ahead solution file>'
+db.day.ahead.loc = '<Location of day ahead solution file (if not using one, should be NULL)>'
 query.data       = TRUE
 save.data        = FALSE
 load.data        = '<Name of file to load if query.data=FALSE >'
