@@ -43,6 +43,7 @@ if (query.data){
 } else{
     load(load.data)
 }
+
 render(input=file.path('HTML_output.Rmd'), c("html_document"),    
        output_file=output.name, output_dir = file.path(output.dir,''))
 

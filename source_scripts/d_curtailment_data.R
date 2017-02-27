@@ -36,8 +36,7 @@ if (daily.curtailment) {
       p.daily.type = p.daily.type + facet_wrap(~Type,ncol=1,scales='free') + scale_color_brewer(palette='Set1')
       
       # Calculate diffs
-      daily.curt[, scenario:=as.character(scenario)]
-      diff.daily.curt = daily.curt[, .(scenario, Curtailment = Curtailment - Curtailment[scenario==ref.scenario]), 
+      diff.daily.curt = daily.curt[, .(scenario, Curtailment = Curtailment - Curtailment[as.character(scenario)==ref.scenario]), 
                                    by=.(time,Type)]
       
       p.daily.type.diff = line_plot(diff.daily.curt, filters=c('scenario','time','Type'), x.col='time',
@@ -61,8 +60,7 @@ if (daily.curtailment) {
       p.daily = p.daily + scale_color_brewer(palette='Set1')
       
       # Calculate diffs
-      daily.curt.tot[, scenario:=as.character(scenario)]
-      diff.daily.curt = daily.curt[, .(scenario, Curtailment = Curtailment - Curtailment[scenario==ref.scenario]), by=.(time)]
+      diff.daily.curt = daily.curt[, .(scenario, Curtailment = Curtailment - Curtailment[as.character(scenario)==ref.scenario]), by=.(time)]
       
       p.daily.diff = line_plot(diff.daily.curt, filters=c('scenario','time'), x.col='time', y.col='Curtailment', 
                      y.lab='Difference in Curtailment (MWh)', color='scenario', linesize=1.2)
@@ -121,8 +119,7 @@ if (interval.curtailment) {
       p.int.type = p.int.type + facet_wrap(~Type,ncol=1,scales='free')
       
       # Calculate diffs
-      avg.curt[, scenario:=as.character(scenario)]
-      diff.curt = avg.curt[, .(scenario, Curtailment_GWh = Curtailment_GWh - Curtailment_GWh[scenario==ref.scenario]), by=.(time,Type)]
+      diff.curt = avg.curt[, .(scenario, Curtailment_GWh = Curtailment_GWh - Curtailment_GWh[as.character(scenario)==ref.scenario]), by=.(time,Type)]
       
       p.int.type.diff = line_plot(diff.curt, filters=c('scenario','time','Type'), x.col='time', y.col='Curtailment_GWh',
                      y.lab='Difference in Curtailment (GWh)', color='scenario')
@@ -143,8 +140,7 @@ if (interval.curtailment) {
       p.int = p.int
       
       # Calculate diffs
-      avg.curt.tot[, scenario:=as.character(scenario)]
-      diff.curt = avg.curt.tot[, .(scenario, Curtailment_GWh = Curtailment_GWh - Curtailment_GWh[scenario==ref.scenario]), by=.(time)]
+      diff.curt = avg.curt.tot[, .(scenario, Curtailment_GWh = Curtailment_GWh - Curtailment_GWh[as.character(scenario)==ref.scenario]), by=.(time)]
       
       p.int.diff = line_plot(diff.curt, filters=c('scenario','time'), x.col='time', y.col='Curtailment_GWh',
                      y.lab='Difference in Curtailment (GWh)', color='scenario')

@@ -27,16 +27,18 @@ if (revenue.plots) {
       p = ggplot(total.revenue)+
         geom_bar(aes(scenario,revenue/10^6,fill=Revenue_Type), stat='identity')+
         geom_errorbar(data = net.revenue, aes(x = scenario, ymin=revenue/10^6, ymax=revenue/10^6,linetype=Revenue_Type), 
-                      size=0.75) +
+                        size=0.75) +
         ylab("Total Revenue, Million $") + xlab("Scenario")+
         scale_fill_manual(values=c('dodgerblue2','goldenrod1','firebrick1'),name='Revenue Type')+
         scale_linetype_manual(values='longdash',name='')+
         facet_wrap(~Type,ncol=3,scales='free') +
-        theme(    legend.key      = element_rect(color="grey80", size = 0.8),
+        theme(    aspect.ratio    = 1.5,
+                  legend.key      = element_rect(color="grey80", size = 0.8),
                   legend.key.size = grid::unit(1.0, "lines"),
                   legend.text     = element_text(size=text.plot),
                   legend.title    = element_blank(),
                   axis.text       = element_text(size=text.plot/1.2),
+                  axis.text.x     = element_text(angle = -30, hjust = 0),
                   axis.title      = element_text(size=text.plot, face=2),
                   axis.title.y    = element_text(vjust=1.2),
                   strip.text      = element_text(size = text.plot),

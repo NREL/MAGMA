@@ -163,7 +163,7 @@ if ( revenue.plots ) {
   interval.pump.load   = tryCatch( interval_pump_load(db), error = function(cond) { return('ERROR') } ) 
   if (exists('interval.pump.load')) { 
     if (typeof(interval.pump.load)=='character') { 
-      message('\nMissing interval generator generation data from solution .db file.')
+      message('\nMissing interval generator pump load data from solution .db file.')
     }
   }
 }

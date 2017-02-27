@@ -14,15 +14,7 @@ gen_by_type = function(total.generation, total.avail.cap) {
   setkey(total.avail.cap,'name')
   
   # Filter out generation and available capacity data and add generation type by matching generator name. 
-  yr.gen = total.generation[property == 'Generation',][, Type:=gen.type.mapping[name] ][,.(scenario,Type,property,value)]
-  
-  avail = total.avail.cap[property == 'Available Energy',][, Type:=gen.type.mapping[name] ][,.(scenario,Type,property,value)]
-  avail = avail[Type %in% re.types,.(value=sum(value)),by=.(scenario,Type,property)]
-  avail[,property:=NULL]
-  
-  # Pull out generation data for types used in curtailment calculation.
-  re.gen = yr.gen[Type %in% re.types, .(value=sum(value)),by=.(scenario,Type,property)]
-  re.gen[,property:=NULL]
+  yr.gen = total.generation[, Type:=gen.type.mapping[name] ][,.(scenario,Type,property,value)]
 
   # Sum up generation by type
   yr.gen = yr.gen[,.(GWh=sum(value)),by=.(scenario,Type)]
@@ -552,11 +544,15 @@ revenue_calculator = function(interval.generation, interval.pump.load, interval.
   gen.type.zone.region = region.zone.mapping[, Type:=gen.type.mapping[name]]
   setkey(gen.type.zone.region,name)
   setkey(interval.generation,name)
-  setkey(interval.pump.load,name)
   setkey(interval.gen.reserve.provision,name)
+  if(typeof(interval.pump.load)=='character'){
+    interval.pump.load = interval.generation[,.(scenario,property='Pump Load',name,value=0,time,category,Type)]
+  }else{
+    setkey(interval.pump.load,name)
+  }
   # Add region and zone by matching generator name in the region and zone mapping file. 
-  gen.data = gen.type.zone.region[interval.generation[property=='Generation', .(scenario,name,time,value)]]
-  pump.data = gen.type.zone.region[interval.pump.load[property=='Pump Load', .(scenario,name,time,value)]]
+  gen.data = gen.type.zone.region[interval.generation[, .(scenario,name,time,value)]]
+  pump.data = gen.type.zone.region[interval.pump.load[, .(scenario,name,time,value)]]
   res.data = gen.type.zone.region[interval.gen.reserve.provision[property=='Provision', 
                                                                  .(scenario,name,parent,time,value)]]
   #Merge prices onto generation, pump and reserve data
@@ -602,8 +598,7 @@ gen_diff_by_type = function(total.generation, total.avail.cap) {
   yr.gen = yr.gen[all.combos]
   yr.gen[is.na(GWh), GWh:=0]
   
-  yr.gen[, scenario:=as.character(scenario)]
-  gen.diff = yr.gen[, GWh:=GWh-GWh[scenario==ref.scenario], by=.(Type)]
+  gen.diff = yr.gen[, GWh:=GWh-GWh[as.character(scenario)==ref.scenario], by=.(Type)]
   
   return(gen.diff)
 }
@@ -653,11 +648,10 @@ zone_gen_diff = function(total.generation, total.avail.cap) {
 curtailment_diff = function(yr.curt) {
   
   curt.diff = yr.curt[, .(scenario, Type, `Available Energy`, Generation, Curtailment)]
-  curt.diff[,scenario:=as.character(scenario)]
   curt.diff[, ':=' (scenario=scenario, Type=Type, 
-                    `Available Energy` = (`Available Energy` - `Available Energy`[scenario==ref.scenario]),
-                    Generation = (Generation - Generation[scenario==ref.scenario]),
-                    Curtailment = (Curtailment - Curtailment[scenario==ref.scenario])), by=Type]
+                    `Available Energy` = (`Available Energy` - `Available Energy`[as.character(scenario)==ref.scenario]),
+                    Generation = (Generation - Generation[as.character(scenario)==ref.scenario]),
+                    Curtailment = (Curtailment - Curtailment[as.character(scenario)==ref.scenario])), by=Type]
   return(curt.diff)
 }
 
@@ -670,8 +664,7 @@ costs_diff = function(total.emissions.cost, total.fuel.cost, total.ss.cost, tota
   
   cost.table = tryCatch( costs(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom.cost), 
                          error = function(cond) { return('ERROR: costs function not returning correct results.') })
-  cost.table[, scenario := as.character(scenario)]
-  cost.diff = cost.table[, .(scenario, Cost = Cost - Cost[scenario == ref.scenario]), by=.(Type)]
+  cost.diff = cost.table[, .(scenario, Cost = Cost - Cost[as.character(scenario)==ref.scenario]), by=.(Type)]
 
   return(cost.diff)
 }
@@ -759,11 +752,11 @@ capacity_factor_diff = function() {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Calculate difference in total reserve provision and shortage for each scenario
 
-annual_reserves_diff = function() {
+annual_reserves_diff = function(annual.reserves) {
   
-  annual.reserves[,scenario:=as.character(scenario)]
-  annual.reserves.diff = annual.reserves[, .(scenario, `Provisions (GWh)` = (`Provisions (GWh)` - `Provisions (GWh)`[scenario==ref.scenario]), 
-                                             `Shortage (GWh)` = (`Shortage (GWh)` - `Shortage (GWh)`[scenario==ref.scenario])), by=.(Type)]
+  annual.reserves.diff = annual.reserves[, .(scenario, 
+                                             `Provisions (GWh)` = `Provisions (GWh)` - `Provisions (GWh)`[as.character(scenario)==ref.scenario], 
+                                             `Shortage (GWh)` = `Shortage (GWh)` - `Shortage (GWh)`[as.character(scenario)==ref.scenario]), by=.(Type)]
   return(data.table(annual.reserves.diff))
 }
 

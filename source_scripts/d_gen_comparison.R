@@ -1,7 +1,6 @@
-# Check to see if interval generation data already exists. If it doesn't call that query function.
-if( !exists('int.gen') ) {
-  int.gen = tryCatch( interval_generation(interval.region.load, interval.zone.load, interval.generation, interval.avail.cap), error = function(cond) { return('ERROR') } )
-}
+# Query interval generation data 
+int.gen = tryCatch( interval_generation(interval.region.load, interval.zone.load, interval.region.ue,interval.zone.ue, 
+                                        interval.generation, interval.avail.cap), error = function(cond) { return('ERROR') } )
 
 # If there is a problem with the query return an error, else create the plots.
 if ( typeof(int.gen)=='character' ) { 

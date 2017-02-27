@@ -3,10 +3,8 @@ if ( typeof(interval.interface.flow) == 'character' ) {
     print('INPUT ERROR: interval.interface.flow not correct. Cannot run this section')
 } else {
 
-  if (!exists('interface.flows')) {
-    # Call the query function to get interface flows for the interfaces selected in the query function.
-    interface.flows = tryCatch( interval_interface_flows(interval.interface.flow), error=function(cond) {return('ERROR: interface_flows query not returning correct results.')})
-  }
+  # Call the query function to get interface flows for the interfaces selected in the query function.
+  interface.flows = tryCatch( interval_interface_flows(interval.interface.flow), error=function(cond) {return('ERROR: interface_flows query not returning correct results.')})
   
   # Check for errors in the query function. If theres an error don't continue.
   if ( typeof(interface.flows)=='character' ) { 
