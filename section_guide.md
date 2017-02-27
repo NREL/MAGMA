@@ -14,15 +14,25 @@
 12. Annual generation table
 13. Annual curtailment table
 14. Annual cost table
-15. Region and zone flow table
+15. Region and zone info table
 16. Interface flow table
 17. Interface flow plot
 18. Key period interface flow plot
-19. Annual reserves table
-20. Reserves plot
-21. Reserve provision stack, by reserve region
-22. Region and zone generation table
-23. Capacity factor table
-24. Price duration curve
-25. Zonal committment and dispatch plots
-26. Regional committment and dispatch plots
+19. Line flow table
+20. Line flow plot
+21. Key period line flow plot
+22. Annual reserves provisions table
+23. Annual reserves shortage table
+24. Average interval reserves provisions
+25. Reserve provisions by generation type
+26. Region and zone generation table
+27. Capacity factors
+28. Region price duration curves
+29. Reserve price duration curves
+30. Zone DA-RT committment dispatch plots
+31. Region DA-RT committment dispatch plots
+32. Revenue by generator types
+33. Generation comparison by generation type in zones
+34. Generation comparison by generation type in regions
+35. Model run times
+36. Installed capacity
