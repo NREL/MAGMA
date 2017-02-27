@@ -19,11 +19,12 @@ This package creates figures and an HTML file with all of those figures for plex
 1. If you have trouble with the render function, make sure the "rmarkdown" package is installed. If there are issues locating or sourcing files, make sure the appropriate working directories and paths are setup correctly.
 2. You can choose to run individual chunks or the entire package. This is setup in the input_data.csv file. Running the entire package could take a long time, particularly for large solution files and if the solution file has to be processed by rplexos (done the first time MAGMA is run).
 3. The name of your database file must start with "Model".
-4. Report any problems or issues to Matt O'Connell at NREL. matthew.oconnell@nrel.gov 
+4. Report any problems or issues to Matt O'Connell or Brady Stoll at NREL. matthew.oconnell@nrel.gov or Brady.Stoll@nrel.gov
 
 ##### input_data.csv columns:
 1. ref.scenario
-	+ Name of reference scenario if comparing multiple solution files. Only used if more than one database is provided
+	+ Name of reference scenario if comparing multiple solution files. Only used if more than one database is provided.
+	Scenario name must be the name of the folder where the solution file is contained. Each different scenario's solution must be in its own individual folder. 
 2. PLEXOS.Gen.Category
 	+ Categories in PLEXOS database. This must contain all the categories in your PLEXOS database.
 	+ Only required if "use.gen.type.csv" or "Using.Gen.Type.Mapping.CSV" is FALSE.
@@ -46,41 +47,25 @@ This package creates figures and an HTML file with all of those figures for plex
 	+ Corresponding start time for each of the periods in 9.
 11. End.Time
 	+ Corresponding end time for each of the periods in 9. 
-12. Sections.to.Run
-	+ Sections (chunks) of the HTML_output.Rmd file to run.
-13. Ignore.Zones
+12. Ignore.Zones
  	+ Zones to exclude from plots
-14. Ignore.Regions
+13. Ignore.Regions
 	+ Regions to exclude from plots
-15. Interfaces.for.Flows
+14. Interfaces.for.Flows
 	+ Specific interfaces to show flow data for
 	+ If all interfaces are desired, list 'ALL' as only entry
-16. Lines.for.Flows
+15. Lines.for.Flows
 	+ Specific lines to show flow data for
 	+ If all lines are desired, list 'ALL' as only entry
+16. Sections.to.Run
+	+ Sections (chunks) of the HTML_output.Rmd file to run.
 17. Region.Order
 	+ Optional column specifying a certain order for Regions to appear in your plots. 
 	+ Defaults to alphabetical
 18. Zone.Order
 	+ Optional column specifying a certain order for Zones to appear in your plots. 
 	+ Defaults to alphabetical
-19. Using.Gen.Type.Mapping.CSV
-	+ If usings a CSV file to assign generation type by generator name, this should be TRUE, else it should be FALSE. Column names should be "name" and "Type"
-	+ If you don't do it this way, it will assign generation type by PLEXOS category.
-	+ This variable may be set in run_html_output.R as "use.gen.type.csv"
-20. reassign.zones
-	+ If you want to recategorize zones (what regions make up what zones) this must be TRUE. Otherwise it can be FALSE and the default PLEXOS zones will be used. 
-	+ This variable may be set in run_html_output.R as "reassign.zones"
-5. Gen.Region.Zone.Mapping.Filename
-	+ CSV file which assigns a Region and Zone to each generator name. 
-	+ Column names for generator name, region, and zone must be "name", "Region", "Zone". This can also be the same file you use to assign generation type.
-	+ Only needed for region and zone dispatch stacks.
-	+ This variable may be set in run_html_output.R as "gen.region.zone"
-6. CSV.Gen.Type.File.Location
-	+ Location of CSV file to assign generation type by generator name, if using this (Using.Gen.Type.Mapping.CSV == TRUE).
-	+ Column names for generator name and type must be "name", and "Type". This can also be the same file you use to assign region and zone.
-	+ If "Using.Gen.Type.Mapping.CSV" is FALSE, this field can be left blank.
-	+ This variable may be set in run_html_output.R as "gen.type.csv.loc"
+
 
 ## Required PLEXOS outputs
 
