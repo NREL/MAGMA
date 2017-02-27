@@ -139,7 +139,7 @@ if (region.gen.stacks) {
       region.load = r.load[!Region %in% ignore.regions, ] # Remove load data from regions being ignored
       setkey(region.load,Region)
       setkey(rz.unique,Region)
-      region.load = rz.unique[region.load][!Zone %in% ignore.zones, ] # ignored regions removed above
+      region.load = rz.unique[region.load, mult="first"][!Zone %in% ignore.zones, ] # ignored regions removed above
       region.load = region.load[complete.cases(region.load),]
       plot.load = region.load
       

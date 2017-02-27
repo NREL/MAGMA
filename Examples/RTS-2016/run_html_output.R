@@ -4,11 +4,11 @@
 #------------------------------------------------------------------------------|
 magma.dir        = paste0(dirname(sys.frame(1)$ofile), '../../..')
 input.csv        = 'Examples/RTS-2016/input_data_rts.csv'
-db.loc           = 'Examples/RTS-2016/solution'
+db.loc           = '<Location of solution file>'
 output.dir       = 'Examples/RTS-2016/reports'
 fig.path.name    = 'Examples/RTS-2016/plots/'
 output.name      = 'HTML_output_RTS_year.html'
-db.day.ahead.loc = NULL
+db.day.ahead.loc = '<Location of day ahead solution file>'
 query.data       = TRUE
 save.data        = FALSE
 load.data        = '<Name of file to load if query.data=FALSE >'
@@ -38,7 +38,7 @@ if (query.data){
   load(load.data)
 }
 
-render(input=file.path('HTML_output.Rmd'), c("html_document"), 
+render(input=file.path('HTML_output.Rmd'), c("html_document"),
        output_file=output.name, output_dir = file.path(output.dir,''))
 
 if (save.data){
