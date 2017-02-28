@@ -55,31 +55,34 @@
 
 ## Required PLEXOS outputs in report for each section to run:
 
-1. **Total Generation Stack**
+####1 **Total Generation Stack**
  + **Total:** 
  + Generator - generation, available energy
  + Region - load
-2. **Zone Generation Stacks**
+####2 **Zone Generation Stacks**
  + **Total:**
  + Generator - generation, available energy
  + Zone - load
-3. **Regional Generation Stacks**
+3 **Regional Generation Stacks**
  + **Total:**
  + Generator - generation, available energy
  + Region - load
-4. **Individual Region Generation Stacks**
+4 **Individual Region Generation Stacks**
  + **Total:** 
  + Generator - generation, available energy
  + Region - load
-5. - 7. **Specific Period Time Series Dispatch Plots**
+5-7 **Specific Period Time Series Dispatch Plots**
  + **Interval:**
  + Generator - generation, available capacity, units generating
  + Region - load, unserved energy
  + Zone - load, unserved energy
-8. - 11. **Curtailment Plots**
+8-11 **Curtailment Plots**
  + **Interval:**
  + Generator - generation, available capacity, units generating
-12. **Total Generation Table**
+
+
+
+1. **Total Generation Table**
  + **Total:**
  + Generator - generation, available energy
 13. **Total Curtailment Table**
