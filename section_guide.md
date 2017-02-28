@@ -1,57 +1,57 @@
 # This guide shows what section corresponds to each number in the input file. Below you can find what individal outputs need to be reported by PLEXOS for that section to successfully run.
 
-1. Total database generation stack
- + 1.1 Total generation difference
-2. Total generation by zone stack
- + 2.1 Total generation difference by zone
-3. Total generation by region stack
- + 3.1 Total generation difference by region
-4. Individual region, total generation stacks
-5. Total database specific period generation dispatch plots
-6. Zone specific period generation dispatch plots
-7. Region specific period generation dispatch plots
-8. Average curtailment in each day
- + 8.1 Average daily curtailment difference
-9. Average curtailment in each day, by type
- + 9.1 Average daily curtailment difference by type
-10. Average curtailment in each interval
- + 10.1 Average interval curtailment difference
-11. Average curtailment in each interval, by type
+1. **Total Database Generation Stack**
+ + 1.1 Total Generation Difference
+2. **Total Generation by Zone Stack**
+ + 2.1 Total Generation Difference by Zone
+3. **Total Generation by Region Stack**
+ + 3.1 Total Generation Difference by Region
+4. **Individual Region, Total Generation Stacks**
+5. **Total Database Specific Period Generation Dispatch Plots**
+6. **Zone Specific Period Generation Dispatch Plots**
+7. **Region Specific Period Generation Dispatch Plots**
+8. **Average Curtailment in each day**
+ + 8.1 Average Daily Curtailment Difference
+9. **Average Curtailment in each day, by Type**
+ + 9.1 Average Daily curtailment Difference by Type
+10. **Average curtailment in each interval**
+ + 10.1 Average Interval Curtailment Difference
+11. **Average curtailment in each interval, by type**
  + 11.1 Average intervail curtailment difference by type
-12. Total generation table
+12. **Total generation table**
  + 12.1 Total generation difference table
-13. Total curtailment table
+13. **Total curtailment table**
  + 13.1 Total curtailment difference table
-14. Total cost table
+14. **Total cost table**
  + 14.1 Total cost difference table
-15. Region and zone info table
+15. **Region and zone info table**
  + 15.1 Region and zone difference table
-16. Total interface flow
-17. Average interval and daily interface flow
+16. **Total interface flow**
+17. **Average interval and daily interface flow**
  + 17.1 Average interval and daily interface flow difference
-18. Specific period interface flow plot
-19. Total line flow
-20. Average interval and daily line flow
-21. Specific period line flow
-22. Total reserve provision
+18. **Specific period interface flow plot**
+19. **Total line flow**
+20. **Average interval and daily line flow**
+21. **Specific period line flow**
+22. **Total reserve provision**
  + 22.1 Total reserve provision difference
-23. Total reserve shortage
+23. **Total reserve shortage**
  + 23.1 Total reserve shortage difference
-24. Average interval and daily reserve provision
+24. **Average interval and daily reserve provision**
   + 24.1 Average interval and daily reserve provision difference
-25. Reserve provision by generation type
+25. **Reserve provision by generation type**
   + 25.1 Difference in reserve provision by generation type
-26. Region and Zone generation
-27. Capacity factors
-28. Region price duration curves
-29. Reserve price duration curves
-30. Day Ahead - Real Time Committment and Dispatch Plots by Zone
-31. Day Ahead - Real Time Committment and Dispatch Plots by Region
-32. Revenue by generator type
-33. Generation comparison by generator type in each zone
-34. Generation comparison by generator type in each region
-35. Model Run Times
-36. Installed Capacity
+26. **Region and Zone generation**
+27. **Capacity factors**
+28. **Region price duration curves**
+29. **Reserve price duration curves**
+30. **Day Ahead - Real Time Committment and Dispatch Plots by Zone**
+31. **Day Ahead - Real Time Committment and Dispatch Plots by Region**
+32. **Revenue by generator type**
+33. **Generation comparison by generator type in each zone**
+34. **Generation comparison by generator type in each region**
+35. **Model Run Times**
+36. **Installed Capacity**
 
 ## Required PLEXOS outputs in report for each section to run:
 
