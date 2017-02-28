@@ -69,9 +69,9 @@ This package creates figures and an HTML file with all of those figures for plex
 
 ## Required PLEXOS outputs
 
-PLEXOS must report the following data in order for all scripts to work. If you try to run a section and are missing the required data you will get an error telling you what PLEXOS output data is missing.
+PLEXOS must report the following data in order for all of the scripts to work. If you try to run a section and are missing the required data you will get an error telling you what PLEXOS output data is missing (or that the query had an error). The section_guide.md file specifies what outputs are required for each individual section. The below list is if every section was run (this can take a long time for larger databases).
 
-### Annual
+### Total
 ##### Generator:
  + Generation
  + Available Energy
@@ -97,7 +97,13 @@ PLEXOS must report the following data in order for all scripts to work. If you t
  + Provision
  + Shortage
 
+##### Reserve.Generator:
+ + Provision
+
 ##### Interface
+ + Flow
+
+##### Line
  + Flow
 
 ### Interval
@@ -105,16 +111,27 @@ PLEXOS must report the following data in order for all scripts to work. If you t
  + Generation
  + Available Capacity
  + Units Generating
+ + Pump Load
 
 ##### Region:
  + Load
  + Price
-
+ + Unserved Energy
+ 
 ##### Zone:
  + Load
- 
+ + Price
+ + Unserved Energy
+
 ##### Reserve:
+ + Provision
+ + Price
+ 
+##### Reserve.Generator:
  + Provision
 
 ##### Interface
+ + Flow
+
+##### Line 
  + Flow
