@@ -1,6 +1,6 @@
 # This guide shows what section corresponds to each number in the input file. Below you can find what individal outputs need to be reported by PLEXOS for that section to successfully run.
 
-1. **Total Database Generation Stack**
+1. Total Database Generation Stack**
  + 1.1 Total Generation Difference
 2. **Total Generation by Zone Stack**
  + 2.1 Total Generation Difference by Zone
@@ -14,104 +14,104 @@
  + 8.1 Average Daily Curtailment Difference
 9. **Average Curtailment in each day, by Type**
  + 9.1 Average Daily curtailment Difference by Type
-10. **Average curtailment in each interval**
+10. **Average curtailment in each Interval**
  + 10.1 Average Interval Curtailment Difference
-11. **Average curtailment in each interval, by type**
- + 11.1 Average intervail curtailment difference by type
-12. **Total generation table**
- + 12.1 Total generation difference table
-13. **Total curtailment table**
- + 13.1 Total curtailment difference table
-14. **Total cost table**
- + 14.1 Total cost difference table
-15. **Region and zone info table**
- + 15.1 Region and zone difference table
-16. **Total interface flow**
-17. **Average interval and daily interface flow**
- + 17.1 Average interval and daily interface flow difference
-18. **Specific period interface flow plot**
-19. **Total line flow**
-20. **Average interval and daily line flow**
-21. **Specific period line flow**
-22. **Total reserve provision**
- + 22.1 Total reserve provision difference
-23. **Total reserve shortage**
- + 23.1 Total reserve shortage difference
-24. **Average interval and daily reserve provision**
-  + 24.1 Average interval and daily reserve provision difference
-25. **Reserve provision by generation type**
-  + 25.1 Difference in reserve provision by generation type
-26. **Region and Zone generation**
-27. **Capacity factors**
-28. **Region price duration curves**
-29. **Reserve price duration curves**
+11. **Average Curtailment in each Interval, by Type**
+ + 11.1 Average Intervail Curtailment Difference by Type
+12. **Total Generation Table**
+ + 12.1 Total Generation Difference Table
+13. **Total Curtailment Table**
+ + 13.1 Total Curtailment Difference Table
+14. **Total Cost Table**
+ + 14.1 Total Cost Difference Table
+15. **Region and Zone Info Table**
+ + 15.1 Region and Zone Difference Table
+16. **Total Interface Flow**
+17. **Average Interval and Daily Interface Flow**
+ + 17.1 Average Interval and Daily Interface Flow Difference
+18. **Specific Period Interface Flow Plot**
+19. **Total Line Flow**
+20. **Average Interval and Daily Line Flow**
+21. **Specific Period Line Flow**
+22. **Total Reserve Provision**
+ + 22.1 Total Reserve Provision Difference
+23. **Total Reserve Shortage**
+ + 23.1 Total Reserve Shortage Difference
+24. **Average Interval and Daily Reserve Provision**
+  + 24.1 Average Interval and Daily Reserve Provision Difference
+25. **Reserve Provision by Generation Type**
+  + 25.1 Difference in Reserve Provision by Generation Type
+26. **Region and Zone Generation**
+27. **Capacity Factors**
+28. **Region Price Duration Curves**
+29. **Reserve Price Duration Curves**
 30. **Day Ahead - Real Time Committment and Dispatch Plots by Zone**
 31. **Day Ahead - Real Time Committment and Dispatch Plots by Region**
-32. **Revenue by generator type**
-33. **Generation comparison by generator type in each zone**
-34. **Generation comparison by generator type in each region**
+32. **Revenue by Generator Type**
+33. **Generation Comparison by Generator Type in Each Zone**
+34. **Generation Comparison by Generator Type in Each Region**
 35. **Model Run Times**
 36. **Installed Capacity**
 
 ## Required PLEXOS outputs in report for each section to run:
 
-1. Total Generation Stack
- + Total: 
+1. **Total Generation Stack**
+ + **Total:** 
  + Generator - generation, available energy
  + Region - load
-2. Zone Generation Stacks
- + Total: 
+2. **Zone Generation Stacks**
+ + **Total:**
  + Generator - generation, available energy
  + Zone - load
-3. Regional Generation Stacks
- + Total: 
+3. **Regional Generation Stacks**
+ + **Total:**
  + Generator - generation, available energy
  + Region - load
-4. Individual Region Generation Stacks
- + Total: 
+4. **Individual Region Generation Stacks**
+ + **Total:** 
  + Generator - generation, available energy
  + Region - load
-5. - 7. Specific Period Time Series Dispatch Plots
- + Interval: 
+5. - 7. **Specific Period Time Series Dispatch Plots**
+ + **Interval:**
  + Generator - generation, available capacity, units generating
  + Region - load, unserved energy
  + Zone - load, unserved energy
-8. - 11. Curtailment Plots
- + Interval:
+8. - 11. **Curtailment Plots**
+ + **Interval:**
  + Generator - generation, available capacity, units generating
-12. Total Generation Table
- + Total:
+12. **Total Generation Table**
+ + **Total:**
  + Generator - generation, available energy
-13. Total Curtailment Table
- + Total:
+13. **Total Curtailment Table**
+ + **Total:**
  + Generator - generation, available energy
-14. Total Cost Table
- + Total:
+14. **Total Cost Table**
+ + **Total:**
  + Generator - emissions cost, fuel cost, start and shutdown cost, VO&M cost
-15. Region and Zone Info
- + Total:
+15. **Region and Zone Info**
+ + **Total:**
  + Region - load, imports, exports, unserved energy
  + Zone - load, imports, exports, unserved energy
-16. Total Interface Flow
- + Total:
+16. **Total Interface Flow**
+ + **Total:**
  + Interface - flow
-17. Average Daily and Interval Interface Flow
- + Interval:
+17. **Average Daily and Interval Interface Flow**
+ + **Interval:**
  + Interface - flow
-18. Specific Period Interface Flow Plot
- + Interval:
+18. **Specific Period Interface Flow Plot**
+ + **Interval:**
  + Interface - flow
-19. Line Flow Table
- + Total:
+19. **Line Flow Table**
+ + **Total:**
  + Line - flow
-20. Average Daily and Interval Line Flow
- + Interval:
+20. **Average Daily and Interval Line Flow**
+ + **Interval:**
  + Line - flow
-21. Specific Period Line Flow Plot
- + Interval:
+21. **Specific Period Line Flow Plot**
+ + **Interval:**
  + Line - flow
-22. Total Reserves Provision
- + Total:
+22. **Total Reserves Provision**
+ + **Total:**
  + Reserves - provision, shortage
 23. Total Reserves Shortage
  + Total:
