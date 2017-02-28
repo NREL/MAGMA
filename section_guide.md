@@ -1,4 +1,4 @@
-# This guide shows what section corresponds to each number in the input file. Below you can find what individal outputs needs to be reported by PLEXOS for that section to successfully run.
+# This guide shows what section corresponds to each number in the input file. Below you can find what individal outputs need to be reported by PLEXOS for that section to successfully run.
 
 1. Total database generation stack
  + 1.1 Total generation difference
