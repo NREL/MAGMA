@@ -139,13 +139,12 @@ if (region.gen.stacks) {
       region.load = r.load[!Region %in% ignore.regions, ] # Remove load data from regions being ignored
       setkey(region.load,Region)
       setkey(rz.unique,Region)
-      region.load = rz.unique[region.load, mult="first"][!Zone %in% ignore.zones, ] # ignored regions removed above
       region.load = region.load[complete.cases(region.load),]
       plot.load = region.load
       
       # Create and plot data
-      p1 <- gen_stack_plot(r.z.gen[(!Zone %in% ignore.zones & !Region %in% ignore.regions),],
-                           load.data = plot.load[(!Zone %in% ignore.zones & !Region %in% ignore.regions),],
+      p1 <- gen_stack_plot(r.z.gen[(!Region %in% ignore.regions),],
+                           load.data = plot.load[(!Region %in% ignore.regions),],
                            filters = c('Region'))
       print(p1[[1]] + facet_wrap(~Region, scales = 'free', ncol=3) + 
         theme(aspect.ratio = 2.0, axis.text.x = element_text(angle = -30, hjust = 0)))
@@ -533,7 +532,7 @@ if (region.zone.flow.table) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (region.zone.flow.table) {
   if ( (reassign.zones & typeof(total.region.load)=='character' & typeof(total.region.imports)=='character' & 
-         typeof(total.region.exports)=='character' & typeof(total.region.ue)=='character') | 
+         typeof(total.region.exports)=='character' & typeof(total.region.ue)=='character') | !reassign.zones &
        (typeof(total.zone.load)=='character' & typeof(total.zone.imports)=='character' & 
                typeof(total.zone.exports)=='character' & typeof(total.zone.ue)=='character') ) {
     print('INPUT ERROR: all of total.region.load, total.region.imports, 
@@ -562,7 +561,7 @@ if (region.zone.flow.table) {
 if(has.multiple.scenarios){
   if (region.zone.flow.table) {
     if ( (reassign.zones & typeof(total.region.load)=='character' & typeof(total.region.imports)=='character' & 
-          typeof(total.region.exports)=='character' & typeof(total.region.ue)=='character') | 
+          typeof(total.region.exports)=='character' & typeof(total.region.ue)=='character') | !reassign.zones &
          (typeof(total.zone.load)=='character' & typeof(total.zone.imports)=='character' & 
           typeof(total.zone.exports)=='character' & typeof(total.zone.ue)=='character') ) {
       print('INPUT ERROR: all of total.region.load, total.region.imports, 
