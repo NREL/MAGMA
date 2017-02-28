@@ -1,6 +1,6 @@
 # This guide shows what section corresponds to each number in the input file. Below you can find what individal outputs need to be reported by PLEXOS for that section to successfully run.
 
-1. Total Database Generation Stack**
+1. **Total Database Generation Stack**
  + 1.1 Total Generation Difference
 2. **Total Generation by Zone Stack**
  + 2.1 Total Generation Difference by Zone
@@ -113,49 +113,49 @@
 22. **Total Reserves Provision**
  + **Total:**
  + Reserves - provision, shortage
-23. Total Reserves Shortage
- + Total:
+23. **Total Reserves Shortage**
+ + **Total:**
  + Reserves - provision, shortage
-24. Average Daily and Interval Reserves Provision
- + Interval:
+24. **Average Daily and Interval Reserves Provision**
+ + **Interval:**
  + Reserves - provision
-25. Reserves Provision by Generator Type
- + Total:
+25. **Reserves Provision by Generator Type**
+ + **Total:**
  + Reserve.Generator - Provision
-26. Region and Zone Generation
- + Total:
+26. **Region and Zone Generation**
+ + **Total:**
  + Generator - generation, available energy
  + Region - load
  + Zone - load
-27. Capacity Factors
- + Total:
+27. **Capacity Factors**
+ + **Total:**
  + Generator - installed capacity
-28. Region Price Duration Curves
- + Interval:
+28. **Region Price Duration Curves**
+ + **Interval:**
  + Region - price
-29. Reserves Price Duration Curves
- + Interval:
+29. **Reserves Price Duration Curves**
+ + **Interval:**
  + Reserves - price
-30. - 31. Day Ahead to Real Time Committment and Dispatch Plots
- + Interval:
+30. - 31. **Day Ahead to Real Time Committment and Dispatch Plots**
+ + **Interval:**
  + Generator - generation, available capacity, units generating
  + Region - load, unserved energy
  + Zone - load, unserved energy
-32. Revenue by Generator Type
- + Interval:
+32. **Revenue by Generator Type**
+ + **Interval:**
  + Generator - generation, pump load
  + Region - rice
  + Reserves - price
  + Reserve.Generator - provision
-33. - 34. Generation Comparison by Generator Type
- + Interval:
+33. - 34. **Generation Comparison by Generator Type**
+ + **Interval:**
  + Generator - generation, available capacity, units generating
  + Region - load, unserved energy
  + Zone - load, unserved energy
-35. Model Run Times
+35. **Model Run Times**
  + Information contained in log file
-36. Installed Capacity
- + Total:
+36. **Installed Capacity**
+ + **Total:**
  + Generator - installed capacity
 
 
