@@ -1,6 +1,6 @@
 ---
 title: "Multi-area Grid Metrics Analyzer"
-author: "Created by: National Renewable Energy Laboratory (NREL)"
+author: "Created by: `r Sys.info()['user']`"
 date: "`r format(Sys.time(), '%d %B %Y')`"
 output: 
   html_document: 
@@ -12,15 +12,32 @@ output:
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Set up default options for chunks, turn off error or warning messages.
 knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, include=TRUE,
-                      fig.path=fig.path.name, dev='png')
+                      fig.path=fig.path.name, dev='png', fig.width=12)
 
-# Set dynamic height for figure in regional generation chunk
-if (exists('zone.names')) { 
-  f.height = max(( length(zone.names) %/% 3 + length(zone.names) %% 3 ) * 5, 5)
-} else { f.height = 5 }
-if (exists('reserve.names')) { 
-  res.height = max(( length(reserve.names) %/% 3 + length(reserve.names) %% 3 ) * 5, 5)
-} else { res.height = 5 }
+# Set dynamic height for figures
+if (exists('zone.names')) { z.height = ( length(zone.names[!zone.names%in%ignore.zones]) %/% 3 + 
+                                           length(zone.names[!zone.names%in%ignore.zones]) %% 3 ) * 3
+  } else { z.height = 5 }
+if (exists('region.names')) { r.height = ( length(region.names[!region.names%in%ignore.regions]) %/% 3 + 
+                                             length(region.names[!region.names%in%ignore.regions]) %% 3 ) * 5
+  } else {r.height = 5 }
+if (exists('region.names')) { r.height2 = ( length(region.names[!region.names%in%ignore.regions]) %/% 3 + 
+                                             length(region.names[!region.names%in%ignore.regions]) %% 3 ) * 3
+  } else {r.height2 = 3 }
+if (exists('reserve.names')) { res.height = ( length(reserve.names) %/% 3 + length(reserve.names) %% 3 ) * 5
+  } else { res.height = 5 }
+if (exists('reserve.names')) { res.height2 = ( length(reserve.names) %/% 3 + length(reserve.names) %% 3 ) * 3
+  } else { res.height2 = 3 }
+if (exists('interfaces')) { 
+    i.height = ifelse(typeof(interfaces)=='character', 5, ( length(interfaces) ) * 5)
+  } else { i.height = 5 }
+if (exists('lines')) {
+    l.height = ifelse(typeof(lines)=='character', 5, ( length(lines) ) * 5)
+  } else { l.height = 5 }
+s.height = ( length(db.loc) ) * 4
+s.width = ( length(db.loc) %/% 3 + length(db.loc) %% 3 ) * 10
+p.height = ( length(period.names) %/% 2 + length(period.names) %% 2 ) * 5
+t.height = ( length(re.types) ) * 5
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -33,23 +50,117 @@ if (exists('reserve.names')) {
 ## 1. Total Generation
 ```{r total-gen-stack}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_total_gen_stack.R')
+if (total.gen.stack){
+  if ( typeof(total.generation)=='character' ) {
+    print('INPUT ERROR: total.generation has errors. Cannot run this section.')
+  } else if ( typeof(total.avail.cap) == 'character' ) { 
+    print('INPUT ERROR: total.avail.cap has errors. Cannot run this section.')
+  } else{
+    # Query annual generation by type and curtailment.
+    yr.gen = tryCatch( gen_by_type(total.generation, total.avail.cap), 
+                       error = function(cond) { return('ERROR: gen_by_type function not returning correct results.') } )
+    curt.by.type = tryCatch( curt_by_type(total.generation, total.avail.cap),
+                             error = function(cond) { return('ERROR: curt_by_type function not returning correct results.') } )
+    yr.gen = rbind(yr.gen, curt.by.type[,.(Type='Curtailment', GWh=sum(Curtailment)), by=scenario])
+    
+    # Create plot
+    plot.data = gen_stack_plot(yr.gen, load.data = r.load)
+    print(plot.data[[1]] + theme(aspect.ratio = 2.0,axis.text.x = element_text(angle = -30, hjust = 0)) +
+          scale_y_continuous(breaks=plot.data[[2]], limits=c(min(plot.data[[2]]), max(plot.data[[2]])), 
+                             expand=c(0,0), label=comma))
+  }
+} else { print('Section not run according to input file.')}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## 1.1. Generation Differences
+```{r gen-diff-stack}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(has.multiple.scenarios){
+  source('source_scripts/p_diff_gen_stack.R')
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
 ***
 ## 2. Zonal Generation
-```{r zone-gen-stacks, fig.width=10}
+```{r zone-gen-stacks, fig.width=10, fig.height=z.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_zone_gen_stacks.R')
+if (zone.gen.stacks) {
+  if ( typeof(total.generation)=='character' ) {
+    print('INPUT ERROR: total.generation has errors. Cannot run this section.')
+  } else if ( typeof(total.avail.cap) == 'character' ) { 
+    print('INPUT ERROR: total.avail.cap has errors. Cannot run this section.')
+  } else{ 
+    # Query region and zonal generation
+    r.z.gen = tryCatch( region_zone_gen(total.generation, total.avail.cap), 
+                        error = function(cond) { return('ERROR') } )  
+    # Create plot
+    plot.data = gen_stack_plot(r.z.gen[!Zone %in% ignore.zones, ],
+                               load.data = z.load[!Zone %in% ignore.zones, ], 
+                               filters = 'Zone', x_col='scenario')
+    print(plot.data[[1]] + facet_wrap(~Zone, scales = 'free', ncol=3)+
+      theme(aspect.ratio = 2.0, axis.text.x = element_text(angle = -30, hjust = 0)))
+  }
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## 2.1. Zonal Generation Differences
+```{r zone-gen-diff-stacks, fig.height=z.height}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(has.multiple.scenarios){
+  source('source_scripts/p_zone_gen_stacks.R')
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
 ***
 ## 3. Regional Generation
-```{r region-gen-stacks, resize.height=T, fig.height=f.height, fig.width=10}
+```{r region-gen-stacks, resize.height=T, fig.height=r.height, fig.width=12}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_region_gen_stacks.R')
+# Check if this section was selected run in the input file
+if (region.gen.stacks) {
+  if ( typeof(total.generation)=='character' ) {
+    print('INPUT ERROR: total.generation has errors. Cannot run this section.')
+  } else if ( typeof(total.avail.cap) == 'character' ) { 
+    print('INPUT ERROR: total.avail.cap has errors. Cannot run this section.')
+  } else{
+    # Query region and zonal generation
+    r.z.gen = tryCatch( region_zone_gen(total.generation, total.avail.cap), error = function(cond) { return('ERROR') } )
+    # Check if region_zone_gen query worked and create plot of regional gen, else return an error.
+    if ( typeof(r.z.gen)=='character' ) {
+      print('ERROR: region_zone_gen function not returning correct results.')
+    } else if ( typeof(r.load) == 'character' ) {
+      print('ERROR: region_load function not returning correct results.')
+    } else {
+      region.load = r.load[!Region %in% ignore.regions, ] # Remove load data from regions being ignored
+      setkey(region.load,Region)
+      setkey(rz.unique,Region)
+      region.load = region.load[complete.cases(region.load),]
+      plot.load = region.load
+      
+      # Create and plot data
+      p1 <- gen_stack_plot(r.z.gen[(!Region %in% ignore.regions),],
+                           load.data = plot.load[(!Region %in% ignore.regions),],
+                           filters = c('Region'))
+      print(p1[[1]] + facet_wrap(~Region, scales = 'free', ncol=3) + 
+        theme(aspect.ratio = 2.0, axis.text.x = element_text(angle = -30, hjust = 0)))
+    }
+  }
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## 3.1. Regional Generation Differences
+```{r region-gen-diff-stacks, fig.height=r.height, fig.width=12}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(has.multiple.scenarios){
+  source('source_scripts/p_region_gen_stacks.R')
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -114,7 +225,7 @@ if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.di
           
         # Create data if zonal dispatch stacks were selected in input file.
         if (key.period.dispatch.zone.log) {
-            plot.zones = zone.names[!zone.names %in% ignore.zones]
+            plot.zones = levels(zone.names)[!levels(zone.names) %in% ignore.zones]
             key.plots.zone = mapply(function(p,z){knit_expand(file = 'source_scripts/p_key_period_dispatch_zone.Rmd', 
                                                               period.name = p, zone.name = z)},
                                     rep(period.names,length(plot.zones)), rep(plot.zones,each=n.periods))
@@ -123,7 +234,7 @@ if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.di
           
         # Create data if regional dispatch stacks were selected in input file.
         if (key.period.dispatch.region.log) {
-          plot.regions = region.names[!region.names %in% ignore.regions]
+          plot.regions = levels(region.names)[!levels(region.names) %in% ignore.regions]
           key.plots.region = mapply(function(p,r){knit_expand(file = 'source_scripts/p_key_period_dispatch_region.Rmd', 
                                                               period.name = p, region.name = r)},
                                     rep(period.names,length(plot.regions)), rep(plot.regions,each=n.periods))
@@ -155,41 +266,80 @@ if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.di
 
 ***
 ## 8-11. Curtailment
+```{r curtailment-data, include=FALSE}
+source("source_scripts/d_curtailment_data.R")
+```
 ***
 ### 8. Average Daily Curtailment
-```{r yearly-curtailment}
+```{r yearly-curtailment, fig.height=6}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_daily_curtailment.R')
+print(p.daily)
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+### 8.1. Average Daily Curtailment Differences
+```{r yearly-curtailment-diff, fig.height=6}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(has.multiple.scenarios){
+  print(p.daily.diff)
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
 ***
 ### 9. Average Daily Curtailment by Type
-```{r yearly-curtailment-by-type}
+```{r yearly-curtailment-by-type, fig.height=t.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_daily_curtailment_type.R')
+print(p.daily.type)
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+### 9.1. Average Daily Curtailment Differences by Type
+```{r yearly-curtailment-by-type-diff, fig.height=t.height}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(has.multiple.scenarios){
+  print(p.daily.type.diff)
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
 ***
 ### 10. Average Interval Curtailment
-```{r daily-curtailment}
+```{r daily-curtailment, fig.height=6}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_interval_curtailment.R')
+print(p.int)
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+### 10.1. Average Interval Curtailment Differences
+```{r daily-curtailment-diff, fig.height=6}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(has.multiple.scenarios){
+  print(p.int.diff)
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
 ***
 ### 11. Average Interval Curtailment by Type
-```{r daily-curtailment-by-type}
+```{r daily-curtailment-by-type, fig.height=t.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_interval_curtailment_type.R')
+print(p.int.type)
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+### 11.1. Average Interval Curtailment Differences by Type
+```{r daily-curtailment-by-type-diff, fig.height=t.height}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(has.multiple.scenarios){
+  print(p.int.type.diff)
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
 ***
 ## 12. Total Gen
-```{r annual-generation-table}
+```{r annual-generation-table, fig.width=10}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (annual.generation.table){
   if ( typeof(total.generation)=='character' | typeof(total.avail.cap) == 'character' ) {
@@ -202,30 +352,76 @@ if (annual.generation.table){
     yr.gen[, Type := factor(Type, levels = c(gen.order))] 
     setorder(yr.gen,Type)
     
-    # Separate out curtailment from generation
-    curt = yr.gen[Type=='Curtailment', ]
     yr.gen = yr.gen[Type!='Curtailment', ]
     
-    # Calculate the percent generation of each type, and percent curtailment
-    yr.gen[, Total:=sum(GWh)]
+    # Calculate the percent generation of each type
+    yr.gen[, Total:=sum(GWh), by=.(scenario)]
     yr.gen[, Percent:=GWh/Total*100]
     yr.gen[, Total:=NULL]
-    curt[, Total:=GWh+yr.gen[Type %in% re.types, sum(GWh)] ]
-    curt[, Percent:=GWh/Total*100]
-    curt[, Total:=NULL]
+
+    # recast so scenarios are columns
+    yr.gen.val = dcast(yr.gen, Type~scenario, value.var='GWh')
     
-    # combine back into one table. 
-    yr.gen = rbindlist(list(yr.gen, yr.gen[,.(Type='Total',GWh=sum(GWh),Percent=sum(Percent)), by=.(scenario)], curt))
-    row.names(yr.gen) = NULL
-    kable(yr.gen, format.args = list(big.mark = ','), digits=2) 
+    kable(yr.gen.val, format.args = list(big.mark = ','), digits=2) 
+    
+  }
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+#### Percent of Total Generation
+```{r annual-percent-generation-table, fig.width=10}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (annual.generation.table){
+  if ( typeof(total.generation)=='character' | typeof(total.avail.cap) == 'character' ) {
+    print('INPUT ERROR: total.generation or total.avail.cap has errors. Cannot run this section.')
+  } else {
+    if ( typeof(yr.gen)=='character' ) {
+      yr.gen.percent = 'ERROR: gen_by_type function not returning correct results'
+    } else {
+
+    # recast so scenarios are columns
+    yr.gen.percent = dcast(yr.gen, Type~scenario, value.var='Percent')
+
+    kable(yr.gen.percent, format.args = list(big.mark = ','), digits=2) 
+
+    }
   }
 } else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
 ***
+## 12.1 Total Gen Difference
+#### GWh Generation Difference
+```{r annual-generation-diff-table, fig.width=10}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(has.multiple.scenarios){
+  if (annual.generation.table){
+    if ( typeof(total.generation)=='character' | typeof(total.avail.cap) == 'character' ) {
+      print('INPUT ERROR: total.generation or total.avail.cap has errors. Cannot run this section.')
+    } else {
+      # Run the difference function.
+      yr.gen.diff = tryCatch(gen_diff_by_type(total.generation, total.avail.cap), 
+                             error = function(cond) { return('ERROR: gen_diff_by_type function not returning correct results') } ) 
+      # Set the order level that generatino type will be displayed.
+      yr.gen.diff[, Type := factor(Type, levels = c(gen.order))] 
+      setorder(yr.gen.diff,Type)
+      
+      # recast so scenarios are columns
+      yr.gen.diff = dcast(yr.gen.diff, Type~scenario, value.var='GWh')
+      
+      kable(yr.gen.diff, format.args = list(big.mark = ','), digits=2) 
+      
+    }
+  } else { print('Section not run according to input file.') }
+} else{print("You only have one scenario. Skipping Difference plots")}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
 ## 13. Total Curtailment (GWh)
-```{r annual-curtailment-table}
+```{r annual-curtailment-table, fig.width=12}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (annual.curtailment.table){
   if ( typeof(total.generation)=='character' | typeof(total.avail.cap) == 'character' ) {
@@ -252,22 +448,59 @@ if (annual.curtailment.table){
 ```
 
 ***
-## 14. Total Costs
+### 13.1. Total Curtailment Difference
+```{r yearly-curtailment-diff-plot}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(has.multiple.scenarios){
+  if (annual.curtailment.table) {
+    if ( typeof(total.generation)=='character' ) {
+      print('ERROR: total.generation has errors. Cannot run this section.')
+    } else if ( typeof(total.avail.cap) == 'character' ) { 
+      print('ERROR: total.avail.cap has errors. Cannot run this section.')
+    } else{
+      # Run the cost query function
+      curt.diff = tryCatch( curtailment_diff(yr.curt), 
+                            error = function(cond) { return('ERROR: curtailment diff function not returning correct results.') })
+      kable(curt.diff, format.args = list(big.mark = ','), digits=2)
+    }
+  } else { print('Section not run according to input file.') }
+} else{print("You only have one scenario. Skipping Difference plots")}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## 14. Total Costs (MM$)
 ```{r annual-cost-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
 if (annual.cost.table) {
-  if ( typeof(total.emissions.cost)=='character' | typeof(total.fuel.cost)=='character' | 
-       typeof(total.ss.cost)=='character' | typeof(total.vom.cost)=='character' ) {
-    print('INPUT ERROR: at least one of total.emissions cost, total.fuel.cost, 
-           total.ss.cost, or total.vom.cost has errors. Cannot run this section.')
+  if ( typeof(total.emissions.cost)=='character' & typeof(total.fuel.cost)=='character' & 
+       typeof(total.ss.cost)=='character' & typeof(total.vom.cost)=='character' ) {
+    print('INPUT ERROR: all of total.emissions cost, total.fuel.cost, 
+           total.ss.cost, and total.vom.cost has errors. Cannot run this section.')
   } else{
     # Run the cost query function
     cost.table = tryCatch( costs(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom.cost), 
                            error = function(cond) { return('ERROR: costs function not returning correct results.') })
-    kable(cost.table, format.args = list(big.mark = ','))
+    kable(dcast(cost.table, Type~scenario, value.var='Cost'), format.args = list(big.mark = ','))
   }
 } else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## 14.1. Total Cost Differences
+```{r annual-cost-difference-table}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(has.multiple.scenarios){
+  # Check if this section was selected to run in the input file
+  if (annual.cost.table) {
+    # Run the cost query function
+    cost.diff.table = tryCatch( costs_diff(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom.cost), 
+                                error = function(cond) { return('ERROR: costs function not returning correct results.') })
+    kable(dcast.data.table(cost.diff.table, Type~scenario, value.var = 'Cost'), format.args = list(big.mark = ',')) 
+  } else { print('Section not run according to input file.') }
+} else{ print("You only have one scenario. Skipping Difference plots") }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -276,10 +509,10 @@ if (annual.cost.table) {
 ``` {r region-flow-tables, results = 'asis'}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (region.zone.flow.table) {
-  if ( typeof(total.region.load)=='character' | typeof(total.region.imports)=='character' | 
-       typeof(total.region.exports)=='character' | typeof(total.region.ue)=='character' ) {
-    print('INPUT ERROR: at least one of total.region.load, total.region.imports, 
-           total.region.exports, or total.region.ue has errors. Cannot run this section.')
+  if ( typeof(total.region.load)=='character' & typeof(total.region.imports)=='character' & 
+       typeof(total.region.exports)=='character' & typeof(total.region.ue)=='character' ) {
+    print('INPUT ERROR: total.region.load, total.region.imports, 
+           total.region.exports, and total.region.ue have errors. Cannot run this section.')
   } else{
     # Query region and zone stats.
     r.stats = tryCatch( region_stats(total.region.load, total.region.imports, total.region.exports, total.region.ue), 
@@ -298,13 +531,13 @@ if (region.zone.flow.table) {
 ``` {r zone-flow-tables, results = 'asis'}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (region.zone.flow.table) {
-  if ( (typeof(total.region.load)=='character' | typeof(total.region.imports)=='character' | 
-         typeof(total.region.exports)=='character' | typeof(total.region.ue)=='character') & 
-       (typeof(total.zone.load)=='character' | typeof(total.zone.imports)=='character' | 
-               typeof(total.zone.exports)=='character' | typeof(total.zone.ue)=='character') ) {
-    print('INPUT ERROR: at least one of total.region.load, total.region.imports, 
-           total.region.exports, or total.region.ue, or total.zone.load, total.zone.imports, 
-           total.zone.exports, or total.zone.ue has errors. Cannot run this section.')
+  if ( (reassign.zones & typeof(total.region.load)=='character' & typeof(total.region.imports)=='character' & 
+         typeof(total.region.exports)=='character' & typeof(total.region.ue)=='character') | !reassign.zones &
+       (typeof(total.zone.load)=='character' & typeof(total.zone.imports)=='character' & 
+               typeof(total.zone.exports)=='character' & typeof(total.zone.ue)=='character') ) {
+    print('INPUT ERROR: all of total.region.load, total.region.imports, 
+           total.region.exports, and total.region.ue, or total.zone.load, total.zone.imports, 
+           total.zone.exports, and total.zone.ue have errors. Cannot run this section.')
   } else{
     # Query region and zone stats.
     z.stats = tryCatch( zone_stats(total.region.load, total.region.imports, total.region.exports, total.region.ue, 
@@ -322,7 +555,43 @@ if (region.zone.flow.table) {
 ```
 
 ***
-## 16. Interface Flow Table
+## 15.1. Region and Zone Differences (GWh)
+``` {r region-zone-flow-diff-tables}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(has.multiple.scenarios){
+  if (region.zone.flow.table) {
+    if ( (reassign.zones & typeof(total.region.load)=='character' & typeof(total.region.imports)=='character' & 
+          typeof(total.region.exports)=='character' & typeof(total.region.ue)=='character') | !reassign.zones &
+         (typeof(total.zone.load)=='character' & typeof(total.zone.imports)=='character' & 
+          typeof(total.zone.exports)=='character' & typeof(total.zone.ue)=='character') ) {
+      print('INPUT ERROR: all of total.region.load, total.region.imports, 
+           total.region.exports, and total.region.ue, or total.zone.load, total.zone.imports, 
+           total.zone.exports, and total.zone.ue have errors. Cannot run this section.')
+    } else{
+      # Query region and zone stats.
+      z.stats = tryCatch( zone_stats(total.region.load, total.region.imports, total.region.exports, total.region.ue, 
+                                     total.zone.load, total.zone.imports, total.zone.exports, total.zone.ue), 
+                          error = function(cond) { return('ERROR: zone_stats function not returning correct results.') })
+      # Set names if data exists
+      if ( !typeof(z.stats)=='character' ) { 
+        z.diff.stats = z.stats[,.(scenario, Exports=Exports-Exports[scenario==ref.scenario],
+                                  Imports=Imports-Imports[scenario==ref.scenario],
+                                  Load=Load-Load[scenario==ref.scenario],
+                                  `Unserved Energy`=`Unserved Energy`-`Unserved Energy`[scenario==ref.scenario]), 
+                               by=.(name)]
+        setnames(z.diff.stats, 'name', 'Zone Name')
+        z.diff.stats=z.diff.stats[scenario!=ref.scenario]
+      } else{ print("ERROR: region_stats not returning correct results")}
+      # Print data. Will print error message if errors
+      kable(z.diff.stats[!`Zone Name` %in% ignore.zones], format.args = list(big.mark = ','), digits=2)
+    }
+  } else { print('Section not run according to input file.') }
+} else{print("You only have one scenario. Skipping Difference plots")}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## 16. Total Interface Flow (GWh)
 ```{r interface-flow-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
@@ -343,10 +612,44 @@ if(interface.flow.table) {
 ```
 
 ***
-## 17. Interface Flow Plots
-```{r interface-flow-plots, resize.width=T, fig.width=10}
+```{r interface-plots-data, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_interface_flow.R')
+source('source_scripts/d_interface_data.R')
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+***
+## 17. Average Interval Interface Flow
+```{r interface-interval-flow-plots, resize.width=T, fig.width=10, fig.height=i.height}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+print(p.int.interface)
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## Average Daily Interface Flow
+```{r interface-daily-flow-plots, resize.width=T, fig.width=10, fig.height=i.height}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+print(p.daily.interface)
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## 17.1. Difference in Average Interval Interface Flow
+```{r interface-interval-diff-flow-plots, resize.width=T, fig.width=10, fig.height=i.height}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(has.multiple.scenarios){
+  print(p.int.interface.diff)
+} else{print("You only have one scenario. Skipping Difference plots")}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## Difference in Average Daily Interface Flow
+```{r interface-daily-diff-flow-plots, resize.width=T, fig.width=10, fig.height=i.height}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(has.multiple.scenarios){
+  print(p.daily.interface.diff)
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
@@ -368,6 +671,7 @@ if (key.period.interface.flow.plots) {
           print('ERROR: interval_interface_flows function not returning correct results.')
         } else {        
           # Create data for each plot for the interesting periods
+          figure.height = i.height
           key.plots = lapply(period.names, function(p){
                              knit_expand(file = 'source_scripts/p_key_period_interface_flow.Rmd', period.name = p)
                              }) 
@@ -384,9 +688,107 @@ if (key.period.interface.flow.plots) {
 `r key.period.interface.flow`
 
 ***
-## 19-21. Reserves
+## 19. Line Flow Table
+```{r line-flow-table}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Check if this section was selected to run in the input file
+if(line.flow.table) {
+  if (length(lines)>0) {
+    if (typeof(total.line.flow)=='character'){
+      print('INPUT ERROR: total.line.flow has errors. Cannot run this section')
+    } else{
+      # Call the query function to get line flows for the lines selected in the input file.
+      line.flows = tryCatch( annual_line_flows(total.line.flow), 
+                             error=function(cond) {return('ERROR: line_flows query not returning correct results.')})
+      # Print data 
+      kable(line.flows, digits=3)
+    }
+  } else { print('No lines specified. No line data will be shown.')}
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
 ***
-### 19. Annual Reserve Provisions and Shortage
+```{r line-plots-data, include=FALSE}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+source('source_scripts/d_line_data.R')
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+***
+## 20. Average Interval Line Flow
+```{r line-interval-flow-plots, resize.width=T, fig.width=10, fig.height=l.height}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+print(p.int.line)
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## Average Daily Line Flow
+```{r line-daily-flow-plots, resize.width=T, fig.width=10, fig.height=l.height}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+print(p.daily.line)
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## 20.1. Difference in Average Interval Line Flow
+```{r line-interval-diff-flow-plots, resize.width=T, fig.width=10, fig.height=l.height}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(has.multiple.scenarios){
+  print(p.int.line.diff)
+} else{print("You only have one scenario. Skipping Difference plots")}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## Difference in Average Daily Line Flow
+```{r line-daily-diff-flow-plots, resize.width=T, fig.width=10, fig.height=l.height}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(has.multiple.scenarios){
+  print(p.daily.line.diff)
+} else{print("You only have one scenario. Skipping Difference plots")}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## 21. Specified Period Line Flow Plot
+```{r key-period-line-flow-plots, include=FALSE}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (key.period.line.flow.plots) {
+  if (length(lines)>0) {
+    if (length(period.names)>0) {
+      
+      # Pull out line flow data for only specified periods in input file
+      source('source_scripts/d_key_period_line_flow.R')
+      
+      # As long as the file exists (previous source found the R script) this loop runs
+      if ( exists('plot.flows') ) {
+        # Check to see if the right data is ready for plotting.
+        if ( typeof(plot.flows)=='character' ) {
+          print('ERROR: interval_line_flows function not returning correct results.')
+        } else {        
+          # Create data for each plot for the interesting periods
+          figure.height = l.height
+          key.plots = lapply(period.names, function(p){
+            knit_expand(file = 'source_scripts/p_key_period_line_flow.Rmd', period.name = p)
+          }) 
+          # Reconstruct the plot data into a format that will be output into the HTML below
+          key.period.line.flow = knit_child(text = unlist(key.plots))
+          
+        }
+      } else { key.period.line.flow = 'Problem sourcing or running d_key_period_line_flow.R.' }
+    } else { key.period.line.flow = 'You didnt specify key periods. Cannot run this section.'}
+  } else { key.period.line.flow = 'No lines specified. No line data will be shown.'}
+} else { key.period.line.flow = 'Section not run according to input file.' }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+`r key.period.line.flow`
+
+
+***
+## 22-25. Reserves
+***
+### 22. Total Reserve Provision (GW)
 ```{r annual-reserves-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
@@ -398,11 +800,8 @@ if(annual.reserves.table) {
     annual.reserves = tryCatch( annual_reserves(total.reserve.provision, total.reserve.shortage), 
                                 error = function(cond) { return('ERROR: annual_reserves function not returning correct results.') })
     if(typeof(annual.reserves)!='character') { 
-      if(length(unique(annual.reserves$scenario))>1){
-        kable(annual.reserves, format.args = list(big.mark = ',')) 
-      } else{
-        kable(annual.reserves[, .(Type, `Provisions (GWh)`, `Shortage (GWh)`)], format.args = list(big.mark = ',')) 
-      }
+      res.prov.table = dcast.data.table(annual.reserves,Type~scenario,value.var="Provisions (GWh)")
+      kable(res.prov.table, format.args = list(big.mark = ','))
     } else { print('ERROR: annual_reserves is not returning correct results.')}
   }
 } else { print('Section not run according to input file.') }
@@ -410,23 +809,219 @@ if(annual.reserves.table) {
 ```
 
 ***
-### 20. Average Interval and Daily Reserve Provisions
-```{r reserves-plots}
+### 22.1 Total Reserve Provision Difference (GW)
+```{r annual-reserves-diff-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/p_reserves.R')
+if(has.multiple.scenarios){
+  # Check if this section was selected to run in the input file
+  if(annual.reserves.table) {
+    if (typeof(total.reserve.provision)=='character' | typeof(total.reserve.shortage)=='character'){
+      print('INPUT ERROR: total.reserve.provision or total.reserve.shortage has errors. Cannot run this section')
+    } else{
+      # Call the query function to get annual reserve amounts.
+      annual.reserves.diff = tryCatch( annual_reserves_diff(annual.reserves), 
+                                       error = function(cond) { return('ERROR: annual_reserves function not returning correct results.') })
+      if(typeof(annual.reserves.diff)!='character') { 
+        res.prov.diff.table = dcast.data.table(annual.reserves.diff,Type~scenario,value.var="Provisions (GWh)")
+        kable(res.prov.diff.table, format.args = list(big.mark = ','))
+      } else { print('ERROR: annual_reserves_diff is not returning correct results.')}
+    }
+  } else { print('Section not run according to input file.') }
+} else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
 ***
-### 21. Reserve Provisions by generator type
-```{r reserves-stacks, fig.height=res.height, fig.width=10}
+### 23. Total Reserve Shortage (GW)
+```{r annual-reserves-short-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source("source_scripts/p_reserves_stack.R")
+# Check if this section was selected to run in the input file
+if (annual.res.short.table) {
+  # Run the cost query function
+  res.short.table = tryCatch( annual_reserves(total.reserve.provision, total.reserve.shortage), 
+                              error = function(cond) { return('ERROR: reserve function not returning correct results.') })
+  if (!typeof(res.short.table)=='character') { res.short.table = dcast.data.table(res.short.table,Type~scenario,value.var="Shortage (GWh)") }
+  kable(res.short.table, format.args = list(big.mark = ','))
+} else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
 ***
-## 22. Region and Zone Generation (GWh)
+### 23.1 Total Reserve Shortage Difference (GW)
+```{r annual-reserves-short-diff-table}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(has.multiple.scenarios){
+  # Check if this section was selected to run in the input file
+  if (annual.res.short.table) {
+    # Run the cost query function
+    res.short.diff.table = tryCatch( annual_reserves_diff(), 
+                                     error = function(cond) { return('ERROR: reserve function not returning correct results.') })
+    res.short.diff.table = dcast.data.table(annual.reserves.diff,Type~scenario,value.var="Shortage (GWh)")
+    kable(res.short.diff.table, format.args = list(big.mark = ','))
+  } else { print('Section not run according to input file.') }
+} else{print("You only have one scenario. Skipping Difference plots")}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+```{r reserves-plots-data, include=FALSE}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Check if this section was selected to run in the input file
+if(reserves.plots) {
+  if (typeof(interval.reserve.provision)=='character'){
+      p.int.res = 'INPUT ERROR: interval.reserve.provision has errors. Cannot run this section'
+      p.int.res.diff = 'INPUT ERROR: interval.reserve.provision has errors. Cannot run this section'
+      p.daily.res = 'INPUT ERROR: interval.reserve.provision has errors. Cannot run this section'
+      p.daily.res.diff = 'INPUT ERROR: interval.reserve.provision has errors. Cannot run this section'
+    } else{
+    # Reserves interval data query
+    r = tryCatch( interval_reserves(interval.reserve.provision), error = function(cond) { return('ERROR') })
+    
+    if ( typeof(r)=='character' ) { 
+      p.int.res = 'ERROR: interval_reserves function not returning correct results.'
+      p.int.res.diff = 'ERROR: interval_reserves function not returning correct results.'
+      p.daily.res = 'ERROR: interval_reserves function not returning correct results.'
+      p.daily.res.diff = 'ERROR: interval_reserves function not returning correct results.'
+    } else {
+      
+      # Average reserve provision at each interval
+      int.avg = r[, .(Provision = mean(provision)/1000), by = .(interval,scenario)]
+      int.avg[, hour := floor((interval-1)*(3600*24/intervals.per.day)/3600)]
+      int.avg[, minute := floor(((interval-1)*(3600*24/intervals.per.day)/3600-hour)/60)]
+      int.avg[, second := floor((((interval-1)*(3600*24/intervals.per.day)/3600-hour)/60-minute)/60)]
+      int.avg[, time := as.POSIXct(paste(hour,minute,second, sep=":"),'UTC',format="%H:%M:%S")]
+    
+      # Creating interval reserves provisions plot
+      p.int.res = line_plot(int.avg, c('interval','scenario'),'time', 'Provision', 'Reserve Provision (GWh)',color='scenario')
+      p.int.res = p.int.res + scale_x_datetime(breaks = date_breaks(width = "2 hour"), 
+                                   labels = date_format("%H:%M"), expand = c(0, 0), timezone='UTC')
+
+      # Difference plot
+      int.avg.diff = int.avg[, .(scenario, Provision=Provision-Provision[as.character(scenario)==ref.scenario]),
+                             by=.(time,interval)]
+      p.int.res.diff = line_plot(int.avg.diff, c('interval','scenario'),'time', 'Provision', 'Reserve Provision (GWh)',color='scenario')
+      p.int.res.diff = p.int.res.diff + scale_x_datetime(breaks = date_breaks(width = "2 hour"), 
+                                   labels = date_format("%H:%M"), expand = c(0, 0), timezone='UTC')
+    
+      # Calculating the daily hourly average
+      dy.avg = r[, .(Provision = mean(provision)/1000), by = .(day,scenario)]
+      dy.avg[, time := as.POSIXct(as.character(day+1),format='%j')]
+    
+      # Creating average daily reserves provisions plot
+      p.daily.res = line_plot(dy.avg, c('day','scenario'),'time', 'Provision', 'Reserve Provision (GWh)',color='scenario')
+      if (nrow(dy.avg)/length(db.loc) > 30) {
+        p.daily.res = p.daily.res + scale_x_datetime(breaks = date_breaks(width = "1 month"), 
+                                     labels = date_format("%b %d"), expand = c(0, 0), timezone='UTC')
+      }
+      # Difference plot
+      dy.avg.diff = dy.avg[, .(scenario, Provision=Provision-Provision[as.character(scenario)==ref.scenario]),
+                           by=.(time,day)]
+      p.daily.res.diff = line_plot(dy.avg.diff, c('day','scenario'),'time', 'Provision', 'Reserve Provision (GWh)',color='scenario')
+      if (nrow(dy.avg)/length(db.loc) > 30) {
+        p.daily.res.diff = p.daily.res.diff + scale_x_datetime(breaks = date_breaks(width = "1 month"), 
+                                     labels = date_format("%b %d"), expand = c(0, 0), timezone='UTC')
+      }
+    }
+  }
+} else { 
+  p.int.res = 'Section not run according to input file.'
+  p.int.res.diff = 'Section not run according to input file.'
+  p.daily.res = 'Section not run according to input file.'
+  p.daily.res.diff = 'Section not run according to input file.'
+}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+***
+### 24. Average Interval Reserve Provisions
+```{r reserves-plots-int}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+print(p.int.res)
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+### Average Daily Reserve Provisions
+```{r reserves-plots-daily}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+print(p.daily.res)
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+### 24.1. Difference in Average Interval Reserve Provisions
+```{r reserves-plots-int-diff}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(has.multiple.scenarios){
+  print(p.int.res.diff)
+} else{print("You only have one scenario. Skipping Difference plots")}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+### Difference in Average Daily Reserve Provisions
+```{r reserves-plots-daily-diff}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(has.multiple.scenarios){
+  print(p.daily.res.diff)
+} else{print("You only have one scenario. Skipping Difference plots")}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+### 25. Reserve Provisions by generator type
+```{r reserves-stacks, fig.height=res.height, fig.width=12}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Check if this section was selected to run in the input file
+if(reserve.stack) {
+  if (typeof(total.gen.res)=='character'){
+      print('INPUT ERROR: total.gen.res has errors. Cannot run this section')
+    } else{
+    # Query annual reserves provision by type.
+    yr.res.scen = tryCatch( annual_reserves_provision(total.gen.res), error = function(cond) { return('ERROR') })
+    
+    if ( typeof(yr.res.scen)=='character' ) { 
+      print('ERROR: annual_reserves_provision function not returning correct results.')
+    } else {
+      # Create plot
+      plot.data = gen_stack_plot(yr.res.scen, filters = c('Reserve','scenario'))
+      print(plot.data[[1]] + facet_wrap(~Reserve,ncol=3,scales='free') + 
+              theme(aspect.ratio = 2.0, axis.text.x = element_text(angle = -30, hjust = 0)))
+    }
+  }
+} else { print('Section not run according to input file.') }
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+### 25.1. Difference in Reserve Provisions by generator type
+```{r reserves-stacks-diff, fig.height=res.height, fig.width=12}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(has.multiple.scenarios){
+  # Check if this section was selected to run in the input file
+  if(reserve.stack) {
+    if (typeof(total.gen.res)=='character'){
+      print('INPUT ERROR: total.gen.res has errors. Cannot run this section')
+    } else{
+      # Query annual reserves provision by type.
+      yr.res.scen = tryCatch( annual_reserves_provision(total.gen.res), error = function(cond) { return('ERROR') })
+      
+      if ( typeof(yr.res.scen)=='character' ) { 
+        print('ERROR: annual_reserves_provision function not returning correct results.')
+      } else {
+        yr.res.scen.diff = yr.res.scen[,.(scenario, GWh=GWh-GWh[scenario==ref.scenario]),by=.(Type,Reserve)]
+        plot.data = gen_diff_stack_plot(yr.res.scen.diff, filters = c('Reserve','scenario'))
+        # Create plot
+        print(plot.data[[1]] + facet_wrap(~Reserve,ncol=3,scales='free') + 
+                theme(aspect.ratio = 2.0, axis.text.x = element_text(angle = -30, hjust = 0)))
+      }
+    }
+  } else { print('Section not run according to input file.') }
+} else{print("You only have one scenario. Skipping Difference plots")}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+
+***
+## 26. Region and Zone Generation (GWh)
 ```{r region-gen-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (region.zone.gen.table) {
@@ -442,12 +1037,12 @@ if (region.zone.gen.table) {
       r.z.gen[, Type := factor(Type, levels = gen.order)] # Reassign the order which the generation type will be displayed.
       
       # Sum regional generation by type
-      r.gen.table = r.z.gen[!Region %in% ignore.regions, .(GWh = sum(GWh)), by=.(Region, Type)] %>%
-        dcast.data.table(Region~Type, value.var = 'GWh')
+      r.gen.table = r.z.gen[!Region %in% ignore.regions, .(GWh = sum(GWh)), by=.(Region, Type, scenario)] %>%
+        dcast.data.table(Region+scenario~Type, value.var = 'GWh')
       r.gen.table[is.na(r.gen.table)] = 0
-      region.load = r.load[!Region %in% ignore.regions, .(Region, Load = value)]
-      setkey(region.load,Region)
-      setkey(r.gen.table,Region)
+      region.load = r.load[!Region %in% ignore.regions, .(Region, scenario, Load = value)]
+      setkey(region.load,Region,scenario)
+      setkey(r.gen.table,Region,scenario)
       r.gen.table = r.gen.table[region.load]
     }
     # Print results
@@ -471,12 +1066,12 @@ if (region.zone.gen.table) {
       r.z.gen[, Type := factor(Type, levels = gen.order)] # Reassign the order which the generation type will be displayed.
       
       # Sum zonal generation by type
-      z.gen.table = r.z.gen[!Zone %in% ignore.zones, .(GWh = sum(GWh)), by=.(Zone, Type)] %>%
-        dcast.data.table(Zone~Type, value.var = 'GWh')
+      z.gen.table = r.z.gen[!Zone %in% ignore.zones, .(GWh = sum(GWh)), by=.(Zone, Type, scenario)] %>%
+        dcast.data.table(Zone+scenario~Type, value.var = 'GWh')
       z.gen.table[is.na(z.gen.table)] = 0
-      zone.load = z.load[!Zone %in% ignore.zones, .(Zone, Load = value)]
-      setkey(zone.load,Zone)
-      setkey(z.gen.table,Zone)
+      zone.load = z.load[!Zone %in% ignore.zones, .(Zone, scenario, Load = value)]
+      setkey(zone.load,Zone,scenario)
+      setkey(z.gen.table,Zone,scenario)
       z.gen.table = z.gen.table[zone.load]
     }
     # Print results
@@ -487,7 +1082,7 @@ if (region.zone.gen.table) {
 ```
 
 ***
-## 23. Capacity Factors
+## 27. Capacity Factors
 ```{r capacity-factor-table}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if(capacity.factor.table) {
@@ -497,28 +1092,40 @@ if(capacity.factor.table) {
     # Call the query function to get capacity factor.
     cf = tryCatch( capacity_factor(total.generation, total.installed.cap), 
                    error = function(cond) { return('ERROR: capacity_factor function not returning correct results.') })
-    kable(cf, format.args = list(big.mark = ','), digits=2)
+    if(length(unique(cf$scenario))>1){
+        kable(cf, format.args = list(big.mark = ','), digits=2)
+      } else{
+        kable(cf[, .(Type, `MaxCap (GWh)`, `Gen (GWh)`, `Capacity Factor (%)`)], format.args = list(big.mark = ',')) 
+      }
   }
 } else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
 ***
-## 24. Region Price Duration Curves
-```{r price-duration-curve, fig.width = 10}
+## 28. Region Price Duration Curves
+```{r price-duration-curve, fig.width = 15, fig.height=r.height2}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/p_price_duration_curve.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
 ***
-## 25-26. DA-RT Committment and Dispatch Plots
+## 29. Reserve Price Duration Curves
+```{r res-price-duration-curve, fig.width = 15, fig.height=res.height2}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+source('source_scripts/p_res_price_duration_curve.R')
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## 30-31. DA-RT Committment and Dispatch Plots
 ```{r committment-dispatch, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
 if (commit.dispatch.region | commit.dispatch.zone) {
   if (length(da.rt.types)>0) {
-  source('source_scripts/d_DA_RT_commit_dispatch.R') # Call this R script which created the data needed for plotting.
+    source('source_scripts/d_DA_RT_commit_dispatch.R') # Call this R script which created the data needed for plotting.
   
     # As long as the file exists (previous source found the R script) this loop runs
     if ( exists('plot.data.all') ) {
@@ -528,7 +1135,7 @@ if (commit.dispatch.region | commit.dispatch.zone) {
       } else {
         # Check if zonal DA-RT plots were selected in input file. If so create a plot for each zone
         if (commit.dispatch.zone) {
-          plot.zones = zone.names[!zone.names %in% ignore.zones]
+          plot.zones = levels(zone.names)[!levels(zone.names) %in% ignore.zones]
           da.rt.zone = mapply(function(p,z){knit_expand(file = 'source_scripts/p_DA_RT_commit_dispatch_zone.Rmd', 
                                                         period.name = p, zone.name = z)},
                               rep(period.names,length(plot.zones)), rep(plot.zones,each=n.periods))
@@ -537,7 +1144,7 @@ if (commit.dispatch.region | commit.dispatch.zone) {
         
         # Check if regional DA-RT plots were selected in input file. If so create a plot for each region
         if (commit.dispatch.region) {  
-          plot.regions = region.names[!region.names %in% ignore.regions]
+          plot.regions = levels(region.names)[!levels(region.names) %in% ignore.regions]
           da.rt.region = mapply(function(p,r){knit_expand(file = 'source_scripts/p_DA_RT_commit_dispatch_region.Rmd', 
                                                           period.name = p, region.name = r)},
                                 rep(period.names,length(plot.regions)), rep(plot.regions,each=n.periods))
@@ -559,8 +1166,110 @@ if (commit.dispatch.region | commit.dispatch.zone) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
-### 25. Zones
+### 30. Zones
 `r da.rt.zone`
 
-### 26. Regions
+### 31. Regions
 `r da.rt.region`
+
+***
+## 32. Revenue by Generator Type
+```{r revenue-plots, fig.width = 12, fig.height=r.height}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+source('source_scripts/p_revenue.R')
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## 33-34. Generation comparison by Generator Type
+```{r generation-comparison, include=FALSE}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (has.multiple.scenarios){
+  # Check if this section was selected to run in the input file
+  if (compare.dispatch.region | compare.dispatch.zone) {
+    if (length(da.rt.types)>0){
+      source('source_scripts/d_gen_comparison.R') # Call this R script which created the data needed for plotting.
+      
+      # As long as the file exists (previous source found the R script) this loop runs
+      if ( exists('compare.plot.data') ) {
+        # Check to see if the right data is ready for plotting.
+        if ( typeof(compare.plot.data)=='character' ) {
+          print('ERROR: interval_generation function not returning correct results.')
+        } else {
+          
+          # Check if zonal DA-RT plots were selected in input file. If so create a plot for each zone
+          if (compare.dispatch.zone) {
+            comp.zone.types = unique(compare.plot.data[Type%in%da.rt.types&!Zone%in%ignore.zones,.(Type,Zone)])
+            comp.gen.zone = mapply(function(t,z){ knit_expand(file = 'source_scripts/p_key_period_gen_comparison_zone.Rmd', 
+                                                              type.name = t, zone.name = z) },
+                                   comp.zone.types$Type, comp.zone.types$Zone)
+            comp.gen.zone = knit_child(text = unlist(comp.gen.zone))
+          } else {comp.gen.zone = 'Section not run according to input file.'}
+          
+          # Create a plot for each region.
+          if (compare.dispatch.region) {  
+            comp.region.types = unique(compare.plot.data[Type%in%da.rt.types&!Region%in%ignore.zones,.(Type,Region)])
+            comp.gen.region = mapply(function(t,r){ knit_expand(file = 'source_scripts/p_key_period_gen_comparison_region.Rmd', 
+                                                                type.name = t, region.name = r) },
+                                     comp.region.types$Type, comp.region.types$Region)
+            comp.gen.region = knit_child(text = unlist(comp.gen.region))
+          } else {comp.gen.region = 'Section not run according to input file.'}
+        }
+      } else { comp.gen.zone   = 'Problem sourcing or running d_gen_comparison.R.'
+               comp.gen.region = 'Problem sourcing or running d_gen_comparison.R.'}
+    }else {   comp.gen.zone = 'You didnt specify generation types for DA-RT plots. Plots cannot be created.'
+            comp.gen.region = 'You didnt specify generation types for DA-RT plots. Plots cannot be created.' }
+  } else { comp.gen.zone   = 'Section not run according to input file.'
+           comp.gen.region = 'Section not run according to input file.' }
+} else{comp.gen.zone   = "You only have one scenario. Skipping Difference plots"
+       comp.gen.region = "You only have one scenario. Skipping Difference plots"}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+### 33. Zones
+`r comp.gen.zone`
+
+### 34. Regions
+`r comp.gen.region`
+
+***
+## 35. Model Run Times
+```{r model-run-times}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(runtime.table) {
+  if ( typeof(phase.runtime)=='character' ) {
+    print('INPUT ERROR: phase.runtime has errors. Cannot run this section.')
+  } else{
+    if(length(unique(phase.runtime$scenario))>1){
+        kable(dcast(phase.runtime,phase~scenario,value.var='time'), format.args = list(big.mark = ','), digits=2)
+      } else{
+        kable(phase.runtime, format.args = list(big.mark = ',')) 
+      }
+  }
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## 36. Installed Capacity
+```{r installed-capacity}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(installed.cap.plot) {
+  if ( typeof(total.installed.cap)=='character' ) {
+    print('INPUT ERROR: total.installed.cap has errors. Cannot run this section.')
+  } else{
+    # Add type
+    total.installed.cap[, Type:=gen.type.mapping[name] ]
+    total.installed.cap[, GWh:=value] # Changing this so we can use gen_stack_plot
+    # Create plot
+    plot.data = gen_stack_plot(total.installed.cap)
+    print(plot.data[[1]] + theme(aspect.ratio = 2.0, axis.text.x = element_text(angle = -30, hjust = 0)) +
+          scale_y_continuous(breaks=plot.data[[2]], limits=c(min(plot.data[[2]]), max(plot.data[[2]])), 
+                             expand=c(0,0), label=comma) + 
+            ylab("Installed Capacity, GW"))
+  }
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+

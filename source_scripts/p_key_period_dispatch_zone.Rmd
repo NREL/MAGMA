@@ -1,24 +1,23 @@
 
-```{r key-period-dispatch-zone-{{period.name}}-{{zone.name}}, results='asis', include=TRUE}
+```{r key-period-dispatch-scen-zone-{{period.name}}-{{zone.name}}, results='asis', include=TRUE}
 p.name = '{{period.name}}' # Assign key period name
 z.name = '{{zone.name}}' # Assign zone name
 cat("### ", p.name, ': ', z.name) # Print key period and zone name above plot
 text.plot=11
 figure.width = 9
-figure.height = 6
+figure.height = s.height
 ```
 
-```{r key-period-dispatch-plots-zone-{{period.name}}-{{zone.name}}, fig.width=figure.width, fig.height=figure.height, include=TRUE}
+```{r key-period-dispatch-scen-plots-zone-{{period.name}}-{{zone.name}}, fig.width=figure.width, fig.height=figure.height, include=TRUE}
+
+if (length(gen.type.zone[Period==p.name & Zone==z.name, value])>0 & sum(gen.type.zone[Period==p.name & Zone==z.name, value])>0 ) {
+  p = dispatch_plot(gen.type.zone[Period==p.name & Zone==z.name, ], 
+                    gen.load.zone[Period==p.name & Zone==z.name, ], filters = 'scenario')
+  print( p + facet_wrap(~scenario, ncol=1) )
+} else{ print('No generation found for this period and zone.') }
   
-stack.data = gen.type.zone[Period==p.name & Zone==z.name, ]
-# Make plot if data exists for this zone
-if (length(stack.data[, value])>0 & sum(stack.data[, value])>0 ) {
-  p1 = dispatch_plot(stack.data, gen.load.zone[Period==p.name & Zone==z.name, ])
-  print(p1)
-} else { print('No generation found for this period and zone.')}
 
 ```
-
 
 
 

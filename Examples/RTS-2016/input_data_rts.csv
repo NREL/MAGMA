@@ -1,0 +1,15 @@
+PLEXOS.Gen.Category,PLEXOS.Desired.Type,Gen.Type,Plot.Color,Gen.Order,Renewable.Types.for.Curtailment,DA.RT.Plot.Types,Key.Periods,Start.Time,End.Time,Ignore.Zones,Ignore.Regions,Interfaces.for.Flows,Lines.for.Flows,Sections.to.Run
+Curtailment,Curtailment,Curtailment,red,Curtailment,PV,Hydro,Winter Week,1/1/2024,1/7/2024,,,,113_316_1,1
+PV,PV,PV,goldenrod1,PV,RTPV,Coal,Spring Week,4/1/2024,4/7/2024,,,,,2
+RTPV,RTPV,RTPV,goldenrod,RTPV,Wind,NG/CC,Summer Week,7/1/2024,7/7/2024,,,,,3
+Wind,Wind,Wind,steelblue3,Wind,,NG/CT,Fall Week,10/1/2024,10/7/2024,,,,,
+SynchCond,SynchCond,SynchCond,khaki1,SynchCond,,,,,,,,,,
+Oil/CT,Oil/CT,Oil/CT,lightpink2,Oil/CT,,,,,,,,,,
+Oil/Steam,Oil/Steam,Oil/Steam,orchid4,Oil/Steam,,,,,,,,,,
+NG/CT,NG/CT,NG/CT,lightpink,NG/CT,,,,,,,,,,
+NG/CC,NG/CC,NG/CC,darkolivegreen4,NG/CC,,,,,,,,,,
+Hydro,Hydro,Hydro,lightblue,Hydro,,,,,,,,,,
+Coal/Steam,Coal/Steam,Coal/Steam,gray20,Coal/Steam,,,,,,,,,,
+Nuclear,Nuclear,Nuclear,firebrick,Nuclear,,,,,,,,,,
+,,CSP,darkorange2,,,,,,,,,,,
+,,CSP-TES,darkorange2,,,,,,,,,,,

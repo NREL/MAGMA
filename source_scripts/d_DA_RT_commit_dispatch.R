@@ -2,18 +2,20 @@
 committed.cap = tryCatch( cap_committed(interval.da.committment), error = function(cond) { return('ERROR')})
 avail.cap.rt = tryCatch( cap_committed(interval.avail.cap), error = function(cond) { return('ERROR')})
 
-# Check to see if interval generation data already exists. If it doesn't call that query function.
-if( !exists('int.gen') ) {
-  int.gen = tryCatch( interval_generation(interval.region.load, interval.zone.load, interval.generation, interval.avail.cap), error = function(cond) { return('ERROR') } )
-}
+# Query interval generation data.
+int.gen = tryCatch( interval_generation(interval.region.load, interval.zone.load, interval.region.ue, 
+                                        interval.zone.ue, interval.generation, interval.avail.cap), 
+                    error = function(cond) { return('ERROR') } )
 
 # If there is a problem with the query return an error, else create the plots.
-if ( typeof(committed.cap)=='character' | typeof(int.gen)=='character' | typeof(avail.cap.rt)=='character' ) { 
-  print('ERROR: daily_curtailment or cap_committed function not returning correct results.')
+if ( typeof(committed.cap)=='character' | typeof(avail.cap.rt)=='character' ) { 
+  print('ERROR: cap_committed function not returning correct results.')
+} else if ( typeof(int.gen)=='character' ) { 
+  print('ERROR: interval_generation function not returning correct results.')
 } else {
   
   # Remove unneccessary data values and rename the data for plotting. This is interval generation data in the real time.
-  da.rt.data = int.gen[!Type%in%c("Curtailment","Load"), ]
+  da.rt.data = int.gen[!Type%in%c("Curtailment","Load","Served Load"), ]
   
   # Prep data for merging
   setnames(avail.cap.rt,'committed.cap','value')

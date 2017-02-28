@@ -39,7 +39,7 @@ gen_stack_plot <- function(gen.data, load.data=NULL, filters=NULL, x_col='scenar
   gen.data[, Type := factor(Type, levels = c(gen.order))]
   if(any(is.na(gen.data$Type))) {
     print("ERROR: gen.order doesn't contain all of the gen types: FIX YOUR INPUT DATA CSV")
-    print(sprintf("Missing types are: %s", gen.data[is.na(Type), category]))
+    print(sprintf("Missing types are: %s", gen.data[is.na(Type), ]))
   }
   
   if(is.null(filters)){
@@ -51,7 +51,7 @@ gen_stack_plot <- function(gen.data, load.data=NULL, filters=NULL, x_col='scenar
   
   # Group by type and convert GWh to TWh
   gen.plot = gen.data[, .(TWh = sum(GWh)/1000), by=agg.filters]
-  setorder(gen.plot,Type)
+  setorderv(gen.plot,c('Type',filters,x_col))
   
   if(!is.null(load.data)){
     tot.load = load.data[, .(TWh = sum(value)/1000), by=load.filters]
@@ -66,31 +66,31 @@ gen_stack_plot <- function(gen.data, load.data=NULL, filters=NULL, x_col='scenar
   p1 = ggplot() +
     geom_bar(data = gen.plot, aes_string(x = x_col, y = 'TWh', fill='Type'), stat="identity", position="stack" ) +
     scale_color_manual(name='', values=c("grey40"), labels=c("Load"))+
-    scale_fill_manual('', values = gen.color, limits=rev(gen.order))+     
+    scale_fill_manual('', values = gen.color)+     
     labs(y="Generation (TWh)", x=NULL)+
     guides(color = guide_legend(order=1), fill = guide_legend(order=2))+
-    theme(    legend.key =      element_rect(color="grey80", size = 0.8),
+    theme(    legend.key      = element_rect(color="grey80", size = 0.8),
               legend.key.size = grid::unit(1.0, "lines"),
-              legend.text =     element_text(size=text.plot),
-              legend.title =    element_blank(),
-              #                         text = element_text(family="Arial"),
-              axis.text =       element_text(size=text.plot/1.2),
-              # axis.text.x =   element_text(face=2),
-              axis.title =      element_text(size=text.plot, face=2),
-              axis.title.y =    element_text(vjust=1.2),
-              panel.margin =    unit(1.5, "lines"))
+              legend.text     = element_text(size=text.plot),
+              legend.title    = element_blank(),
+              axis.text       = element_text(size=text.plot/1.2),
+              # axis.text.x   = element_text(face=2),
+              axis.title      = element_text(size=text.plot, face=2),
+              axis.title.y    = element_text(vjust=1.2),
+              strip.text      = element_text(size = text.plot),
+              panel.spacing   = unit(1.5, "lines"))
   
   # Add something for if load only ??
   # Add error bar line for load if provided
   if(!is.null(load.data)){
-    p1 = p1 + geom_errorbar(data = tot.load, aes_string(x = x_col, y='TWh', ymin='TWh', ymax='TWh', color='variable'), 
+    p1 = p1 + geom_errorbar(data = tot.load, aes_string(x = x_col, ymin='TWh', ymax='TWh', color='variable'), 
                             size=0.45, linetype='longdash')
   }
   return(list(p1,seq.py))
 }
 
 
-gen_diff_stack_plot <- function(gen.data, load.data, filters=NULL){
+gen_diff_stack_plot <- function(gen.data, load.data=NULL, filters=NULL, x_col='scenario'){
   # Creates a difference in total generation stack plot
   # Assumes data has been processed according to XXX
   # Filters are other things you might want to plot over
@@ -113,87 +113,116 @@ gen_diff_stack_plot <- function(gen.data, load.data, filters=NULL){
                         .(TWh = sum(GWh)/1000), by=agg.filters]
   dat.neg = gen.data[GWh<0 & scenario!=ref.scenario, 
                         .(TWh = sum(GWh)/1000), by=agg.filters]
-  setorder(dat.pos,Type)
-  setorder(dat.neg,Type)
+  setorderv(dat.pos,c('Type',filters,'TWh'))
+  setorderv(dat.neg,c('Type',filters,'TWh'))
 
   # gen.sum is just used to set the maximum height on the plot, see pretty() fcn below
   gen.sum = rbindlist(list(dat.pos[, .(TWh = sum(TWh)), by=load.filters], 
-                           dat.neg[, .(TWh = sum(TWh)), by=load.filters]))  
-  seq.py = pretty_axes(gen.sum)
+                           dat.neg[, .(TWh = sum(TWh)), by=load.filters]))
+  gen.sum[,value := TWh]
+  seq.py = pretty_axes(gen.sum,filters = c(filters,'TWh'))
 
   # Calculate difference in load
-  load.scen = load.data[, .(value = sum(value)/1000), by=load.filters]
-  load.scen[, scenario:=as.character(scenario)]
-  diff.load = load.scen[, .(scenario, TWh = value-value[scenario==ref.scenario]), by=load.diff.filters]
-  diff.load = diff.load[scenario!=ref.scenario, ]
+  if(!is.null(load.data)){  
+    load.scen = load.data[, .(value = sum(value)/1000), by=load.filters]
+    diff.load = load.scen[, .(scenario, TWh = value-value[as.character(scenario)==ref.scenario]), by=load.diff.filters]
+    diff.load = diff.load[scenario!=ref.scenario, ]
+  }
 
   # Create plot
   p1 = ggplot() +
-          geom_bar(data = dat.pos, aes(x = scenario, y = TWh, fill=Type), stat="identity", position="stack" ) +
-          geom_bar(data = dat.neg, aes(x = scenario, y = TWh, fill=Type), stat="identity", position="stack" ) +
-          geom_errorbar(data = diff.load, aes(x = scenario, ymin=TWh, ymax=TWh, color='load'), 
-                        size=0.45, linetype='longdash')+
-          scale_fill_manual(values = gen.color, guide = guide_legend(reverse = TRUE))+
+          geom_bar(data = dat.pos, aes_string(x = x_col, y = 'TWh', fill='Type'), stat="identity", position="stack" ) +
+          geom_bar(data = dat.neg, aes_string(x = x_col, y = 'TWh', fill='Type'), stat="identity", position="stack" ) +
+          scale_fill_manual(values = gen.color, limits=gen.order)+
           scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
           labs(y="Difference in Generation (TWh)", x=NULL)+
           # scale_y_continuous(breaks=seq.py, expand=c(0,0), label=comma)+
-          guides(color = guide_legend(order=1), fill = guide_legend(order=2, reverse=TRUE))+
-               theme(    legend.key =      element_rect(color="grey80", size = 0.8), 
+          guides(color = guide_legend(order=1), fill = guide_legend(order=2))+
+               theme(    legend.key      = element_rect(color="grey80", size = 0.8), 
                          legend.key.size = grid::unit(1.0, "lines"),
-                         legend.text =     element_text(size=text.plot), 
-                         legend.title =    element_blank(),
-                 #                         text = element_text(family="Arial"),
-                         axis.text =       element_text(size=text.plot/1.2), 
-                         axis.text.x =     element_text(angle=-20, hjust=0),
-                         axis.title =      element_text(size=text.plot, face=2), 
-                         axis.title.y =    element_text(vjust=1.2), 
-                         panel.margin =    unit(1.5, "lines"),
-                         aspect.ratio =    2.5/length(unique(dat.pos$scenario)))
+                         legend.text     = element_text(size=text.plot), 
+                         legend.title    = element_blank(),
+                         axis.text       = element_text(size=text.plot/1.2), 
+                 #        axis.text.x     = element_text(angle=-20, hjust=0),
+                         axis.title      = element_text(size=text.plot, face=2), 
+                         axis.title.y    = element_text(vjust=1.2), 
+                         panel.spacing   = unit(1.5, "lines"),
+                         strip.text      = element_text(size = text.plot),
+                         aspect.ratio    = 2.5/length(unique(dat.pos$scenario)))
+
+  # Add error bar line for load if provided
+  if(!is.null(load.data)){
+    p1 = p1 + geom_errorbar(data = diff.load, aes(x = scenario, ymin=TWh, ymax=TWh, color='load'), 
+                            size=0.45, linetype='longdash')
+  }
   return(list(p1,seq.py))
 }
 
 
-dispatch_plot <- function(gen.data, load.data){
+dispatch_plot <- function(gen.data, load.data, filters=NULL){
   # Make dispatch plot
 
   # Get axis limits
   gen.data[, value:=value/1000]
   load.data[, value:=value/1000]
-  seq.py.t = pretty_axes(gen.data, load.data, filters = 'time')
+
+  # Create list of filters to separate data by
+  if(is.null(filters)){
+    agg.filters = "time"
+  }else{
+    agg.filters = c("time",filters)
+  }
+  seq.py.t = pretty_axes(gen.data, load.data[Type=='Load'], filters = agg.filters)
+  
+  setorderv(gen.data,c('Type',filters))
 
   # Plot
-  p1 = ggplot(gen.data, aes(time, value, group=Type, fill=Type, order=as.numeric(Type)), color="black")+
-          geom_area(color=NA)+
-          geom_line(position="stack", size=0.3)+
-          labs(y="Generation (GWh)", x=NULL)+
-          geom_line(data=load.data, linetype="longdash", aes(color="load"),size=0.8)+
-          scale_fill_manual("",values = gen.color, limits=rev(gen.order))+
-          scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
+  p1 = ggplot(gen.data, color="black")+
+          geom_area(aes(time, value, group=Type, fill=Type), color=NA)+
+          geom_line(aes(time, value, group=Type), position="stack", size=0.3)+
+          labs(y="Generation (GW)", x=NULL)+
+          geom_line(data=load.data[Type=='Load'], linetype="longdash", aes(time, value, color=Type),size=0.8)+
+          scale_fill_manual("",values = gen.color, limits=gen.order)+
+          scale_color_manual(name='', values=c("Load"="grey40"))+
           scale_x_datetime(breaks = date_breaks(width = "1 day"), labels = date_format("%b %d\n%I %p"), expand = c(0, 0))+
           scale_y_continuous(breaks=seq.py.t, limits=c(0, max(seq.py.t)), expand=c(0,0))+
-          theme(legend.key = element_rect(color = "grey80", size = 0.4),
-                legend.key.size = grid::unit(0.9, "lines"), 
-                legend.text = element_text(size=text.plot/1.1),
-                strip.text=element_text(size=rel(0.7)),
-                axis.text=element_text(size=text.plot/1.2), 
-                axis.title=element_text(size=text.plot, face=2), 
-                axis.title.x=element_text(vjust=-0.3),
+          theme(legend.key       = element_rect(color = "grey80", size = 0.4),
+                legend.key.size  = grid::unit(0.9, "lines"), 
+                legend.text      = element_text(size=text.plot/1.1),
+                strip.text       = element_text(size=text.plot),
+                axis.text        = element_text(size=text.plot/1.2), 
+                axis.title       = element_text(size=text.plot, face=2), 
+                axis.title.x     = element_text(vjust=-0.3),
                 panel.grid.major = element_line(colour = "grey85"),
                 panel.grid.minor = element_line(colour = "grey93"),
-                aspect.ratio = 0.5)
+                panel.spacing    = unit(2,'lines'),
+                aspect.ratio     = 0.5)
+  if(load.data[, .(value=abs(diff(value))), by=agg.filters][,sum(value)]>0){
+    if(!'Unserved Energy' %in% gen.color){
+      warning("You have unserved energy and don't have a color for it. Adding it as bright pink.")
+      if(!'Unserved Energy' %in% gen.order){
+        warning("You also don't have unserved energy in your generation order. Adding it last.")
+        p1 <- p1 + scale_fill_manual("",values = c(gen.color,setNames('maroon1','Unserved Energy')), limits=c('Unserved Energy',gen.order))
+      } else{
+        p1 <- p1 + scale_fill_manual("",values = c(gen.color,setNames('maroon1','Unserved Energy')), limits=gen.order)
+      }
+    }
+    p1 <- p1 + geom_ribbon(data=dcast.data.table(load.data,...~Type,value.var='value'),
+                           aes(time, ymin=`Served Load`, ymax=Load, fill='Unserved Energy')) +
+               scale_color_manual(name='', values=c("Load"="grey80","Served Load"="grey40"))
+  }
 
   return(p1)
 }
 
 
-interface_plot <- function(flow.data, x_col = 'time'){
+interface_plot <- function(flow.data, x_col = 'time',color='interface', interfaces = interfaces){
   # Make plots of interface flows
 
-  flow.data[, name := factor(name, levels = interfaces)]
   flow.data[, value := value/1000]
 
   # Create plot of interval zone interface flow
-  p1 = ggplot(flow.data, aes_string(x=x_col, y='value', color='name', group='name'))+
+  p1 = ggplot(flow.data, aes_string(x=x_col, y='value', color=color))+
          geom_line(size=1.2)+
          geom_hline(yintercept=0, color="black", size=0.3)+
          scale_color_manual("", values = scen.pal)+
@@ -201,11 +230,11 @@ interface_plot <- function(flow.data, x_col = 'time'){
          theme(legend.key = element_rect(NULL),
                legend.text = element_text(size=text.plot),
                text=element_text(size=text.plot),
-               strip.text=element_text(face="bold", size=rel(1)),
+               strip.text=element_text(face="bold", size=text.plot),
                axis.text=element_text(face=2, size=text.plot/1),
                axis.title=element_text(size=text.plot, face=2.3),
                # legend.position=c(0.80, 0.12),
-               panel.margin = unit(0.35, "lines"))
+               panel.spacing = unit(0.35, "lines"))
   return(p1)
 }
 
@@ -213,7 +242,6 @@ interface_plot <- function(flow.data, x_col = 'time'){
 price_duration_curve <- function(price.data, filters, color=NULL){
   # Create plots of price duration curves
   price.data[, interval := rank(-value,ties.method="random"), by=filters]
-  setnames(price.data,'name','area')
 
   # Create Plot
   p.1 = ggplot(price.data)+
@@ -222,39 +250,39 @@ price_duration_curve <- function(price.data, filters, color=NULL){
            theme( legend.key =       element_rect(color = "grey80", size = 0.4),
                   legend.key.size =  grid::unit(0.9, "lines"), 
                   legend.text =      element_text(size=text.plot/1.1),
-                  strip.text =       element_text(size=rel(0.7)),
                   axis.text =        element_text(size=text.plot/1.2), 
                   axis.title =       element_text(size=text.plot, face=2), 
                   axis.title.x =     element_text(vjust=-0.3),
+                  strip.text =       element_text(size = text.plot/1.1),
                   panel.grid.major = element_line(colour = "grey85"),
                   panel.grid.minor = element_line(colour = "grey93"),
-                  aspect.ratio =     0.65,
-                  panel.margin =     unit(1.0, "lines") )
+                  panel.spacing =     unit(1.0, "lines"),
+                  aspect.ratio =     .65)
 
   return(p.1)
 }
 
 
-line_plot <- function(plot.data, filters, x.col, y.col, y.lab, color=NULL){
+line_plot <- function(plot.data, filters, x.col, y.col, y.lab, color=NULL,linetype=NULL, linesize=2){
   # Create line plots over time
 
   seq.py = pretty_axes(plot.data, filters = filters, col = y.col)
   # Create plot
   p.1 = ggplot(plot.data)+
-           geom_line(aes_string(x=x.col, y=y.col, color=color), size = 2)+    
+           geom_line(aes_string(x=x.col, y=y.col, color=color, linetype=linetype), size = linesize)+    
            labs(y=y.lab, x=NULL)+
-           scale_y_continuous(breaks=seq.py, limits=c(0, max(seq.py)), expand=c(0,0))+
+           scale_y_continuous(breaks=seq.py, limits=c(min(seq.py), max(seq.py)), expand=c(0,0))+
            theme( legend.key =       element_rect(color = "grey80", size = 0.4),
                   legend.key.size =  grid::unit(0.9, "lines"), 
                   legend.text =      element_text(size=text.plot/1.1),
-                  strip.text =       element_text(size=rel(0.7)),
                   axis.text =        element_text(size=text.plot/1.2), 
                   axis.title =       element_text(size=text.plot, face=2), 
                   axis.title.x =     element_text(vjust=-0.3),
+                  strip.text       = element_text(size = text.plot),
                   panel.grid.major = element_line(colour = "grey85"),
                   panel.grid.minor = element_line(colour = "grey93"),
                   aspect.ratio =     0.5,
-                  panel.margin =     unit(1.0, "lines") )
+                  panel.spacing =     unit(1.0, "lines") )
   return(p.1)
 }
 
@@ -266,7 +294,7 @@ commitment_dispatch_plot <- function(plot.data){
   # Assign the order which the generation types will appear in the plot.
   plot.data[, Type := factor(Type, levels=rev(gen.order))]
   # Make sure plot axes are high enough
-  blank_data = plot.data[, .(ylim=sum(value)/1000*1.06), by=.(time,Type,data)]
+  blank_data = plot.data[, .(ylim=sum(value)/1000*1.06), by=.(time,Type,data,scenario,Period)]
     
     # Create plot
   p = ggplot()+
@@ -295,7 +323,7 @@ commitment_dispatch_plot <- function(plot.data){
                axis.title=element_text(size=text.plot, face=2),
                panel.grid.major = element_line(colour = "grey85"),
                panel.grid.minor = element_line(colour = "grey93"),
-               panel.margin = unit(0.45, "lines"))
+               panel.spacing = unit(0.45, "lines"))
   return(p)
 }
 

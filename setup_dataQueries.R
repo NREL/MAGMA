@@ -46,7 +46,7 @@ if ( reserve.stack ) {
   if (typeof(total.gen.res)=='character') { message('\nMissing total generator reserve provision data from solution .db file.')}
 }
 
-if ( capacity.factor.table ) {
+if ( capacity.factor.table | installed.cap.plot ) {
   # Total installed capacity
   total.installed.cap  = tryCatch( total_installed_cap(db), error = function(cond) { return('ERROR') } ) 
   if (typeof(total.installed.cap)=='character') { message('\nMissing total generator installed capacity data from solution .db file.')}
@@ -76,8 +76,8 @@ if ( region.zone.flow.table | total.gen.stack | region.gen.stacks | zone.gen.sta
   z.load             = tryCatch( zone_load(total.region.load, total.zone.load), error = function(cond) { return('ERROR') } ) 
   # Assign zone names based on PLEXOS regions or region to zone mapping file. 
   zone.names         = tryCatch( unique(z.load$Zone), error = function(cond) { return('ERROR') } ) 
-  if (typeof(total.zone.load)=='character') { 
-    message('\nMissing total zone load data from solution .db file. Ok if reassign zones is TRUE and region data is found.')
+  if (typeof(total.zone.load)=='character' & !reassign.zones) { 
+    message('\nMissing total zone load data from solution .db file.')
   }
   if( length(unique(rz.unique$Zone))!=length(zone.names) ) { 
     message('\nWarning: Number of zones in generation to region/zone mapping file different than number of zones from zone load query! Check zone.names object.') 
@@ -98,13 +98,13 @@ if ( region.zone.flow.table ) {
 
   # Total zone imports.
   total.zone.imports = tryCatch( total_zone_imports(db), error = function(cond) { return('ERROR') } ) 
-  if (typeof(total.zone.imports)=='character') { 
-    message('\nMissing total zone imports data from solution .db file. Ok if reassign zones is TRUE and region data is found.')}
+  if (typeof(total.zone.imports)=='character' & !reassign.zones) { 
+    message('\nMissing total zone imports data from solution .db file.')}
 
   # Total zone exports
   total.zone.exports = tryCatch( total_zone_exports(db), error = function(cond) { return('ERROR') } ) 
-  if (typeof(total.zone.exports)=='character') { 
-    message('\nMissing total zone exports data from solution .db file. Ok if reassign zones is TRUE and region data is found.')}
+  if (typeof(total.zone.exports)=='character' & !reassign.zones) { 
+    message('\nMissing total zone exports data from solution .db file.')}
 
   # Total zone unserved energy.
   total.zone.ue      = tryCatch( total_zone_ue(db), error = function(cond) { return('ERROR') } ) 
@@ -127,6 +127,13 @@ if ( interface.flow.table ) {
   if (typeof(total.interface.flow)=='character') { message('\nMissing total interface flow data from solution .db file.')}
 }
 
+if ( line.flow.table ) {
+  # Total line flow for each selected line
+  total.line.flow = tryCatch( total_line_flow(db), error = function(cond) { return('ERROR') } ) 
+  if (typeof(total.line.flow)=='character') { message('\nMissing total line flow data from solution .db file.')}
+}
+
+
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Interval level queries
@@ -134,7 +141,7 @@ if ( interface.flow.table ) {
 
 if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period.dispatch.zone.log |
      daily.curtailment  | daily.curtailment.type | interval.curtailment | interval.curtailment.type | 
-     commit.dispatch.zone | commit.dispatch.region ) {
+     commit.dispatch.zone | commit.dispatch.region | revenue.plots ) {
   # Interval level generation for each generator.
   interval.generation   = tryCatch( interval_gen(db), error = function(cond) { return('ERROR') } ) 
   # Interval level available capacity for each generator.
@@ -149,6 +156,16 @@ if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period
       message('\nMissing interval generator available capacity or units generating data from solution .db file.')
       }
     }
+}
+
+if ( revenue.plots ) {
+  # Interval level pump load for each generator.
+  interval.pump.load   = tryCatch( interval_pump_load(db), error = function(cond) { return('ERROR') } ) 
+  if (exists('interval.pump.load')) { 
+    if (typeof(interval.pump.load)=='character') { 
+      message('\nMissing interval generator pump load data from solution .db file.')
+    }
+  }
 }
 
 if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period.dispatch.zone.log |
@@ -169,12 +186,39 @@ if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period
     }
 }
 
+if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period.dispatch.zone.log ){
+  # interval level region ue.
+  interval.region.ue  = tryCatch( interval_region_ue(db), error = function(cond) { return('ERROR') } )
+  # Interval level zone ue 
+  interval.zone.ue    = tryCatch( interval_zone_ue(db), error = function(cond) { return('ERROR') } ) 
+  if (exists('interval.region.ue')) { 
+    if (typeof(interval.region.ue)=='character') { 
+      message('\nMissing interval region ue data from solution .db file.')
+      }
+    }
+  if (exists('interval.zone.ue')) { 
+    if (typeof(interval.zone.ue)=='character') { 
+      message('\nMissing interval zone ue data from solution .db file.')
+      }
+    }
+}
+
 if ( interface.flow.plots | key.period.interface.flow.plots ) {
   # Interval level interface flow for selected interfaces.
   interval.interface.flow = tryCatch( interval_interface_flow(db), error = function(cond) { return('ERROR') } ) 
   if (exists('interval.interface.flow')) { 
     if (typeof(interval.interface.flow)=='character') { 
       message('\nMissing interval interface flow data from solution .db file.')
+    }
+  }
+}
+
+if ( line.flow.plots | key.period.line.flow.plots ) {
+  # Interval level line flow for selected lines.
+  interval.line.flow = tryCatch( interval_line_flow(db), error = function(cond) { return('ERROR') } ) 
+  if (exists('interval.line.flow')) { 
+    if (typeof(interval.line.flow)=='character') { 
+      message('\nMissing interval line flow data from solution .db file.')
     }
   }
 }
@@ -189,12 +233,32 @@ if ( annual.reserves.table | reserves.plots ) {
   }
 }
 
-if ( price.duration.curve & !exists('interval.region.price') ) {
+if ( revenue.plots ) {
+  # Interval level reserve provision
+  interval.gen.reserve.provision = tryCatch( interval_gen_reserve_provision(db), error = function(cond) { return('ERROR') } ) 
+  if (exists('interval.reserve.provision')) { 
+    if (typeof(interval.gen.reserve.provision)=='character') { 
+      message('\nMissing interval reserve provision data from solution .db file.')
+    }
+  }
+}
+
+if ( (price.duration.curve | revenue.plots) ) {
   # Interval level region price. This is only called if one logical is true and it doesn't already exist.
   interval.region.price = tryCatch( interval_region_price(db), error = function(cond) { return('ERROR') } ) 
   if (exists('interval.region.price')) { 
     if (typeof(interval.region.price)=='character') { 
       message('\nMissing interval region price data from solution .db file.')
+    }
+  }
+}
+
+if ( (res.price.duration.curve | revenue.plots) ) {
+  # Interval level reserve price. This is only called if one logical is true and it doesn't already exist.
+  interval.reserve.price = tryCatch( interval_reserve_price(db), error = function(cond) { return('ERROR') } ) 
+  if (exists('interval.reserve.price')) { 
+    if (typeof(interval.reserve.price)=='character') { 
+      message('\nMissing interval reserve price data from solution .db file.')
     }
   }
 }
@@ -208,3 +272,19 @@ if ( commit.dispatch.zone | commit.dispatch.region ) {
     }
   }
 }
+
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Model and database queries
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if ( runtime.table ) {
+  # Interval level day ahead generator available capacity.
+  phase.runtime = tryCatch( phase_runtime(db), error = function(cond) { return('ERROR') } ) 
+  if (exists('interval.runtime')) { 
+    if (typeof(interval.runtime)=='character') { 
+      message('\nMissing interval run times from solution .db file.')
+    }
+  }
+}
+
