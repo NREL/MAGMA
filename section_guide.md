@@ -153,7 +153,8 @@
  + Region - rice
  + Reserves - price
  + Reserve.Generator - provision
-33. - 34. **Generation Comparison by Generator Type**
+33. **Generation Comparison by Generator Type**
+34. **Generation Comparison by Generator Type**
  + **Interval:**
  + Generator - generation, available capacity, units generating
  + Region - load, unserved energy
