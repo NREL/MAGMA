@@ -1194,7 +1194,7 @@ if (has.multiple.scenarios){
       if ( exists('compare.plot.data') ) {
         # Check to see if the right data is ready for plotting.
         if ( typeof(compare.plot.data)=='character' ) {
-          print('ERROR: cap_committed function not returning correct results.')
+          print('ERROR: interval_generation function not returning correct results.')
         } else {
           
           # Check if zonal DA-RT plots were selected in input file. If so create a plot for each zone
@@ -1215,8 +1215,8 @@ if (has.multiple.scenarios){
             comp.gen.region = knit_child(text = unlist(comp.gen.region))
           } else {comp.gen.region = 'Section not run according to input file.'}
         }
-      } else { comp.gen.zone   = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'
-               comp.gen.region = 'Problem sourcing or running d_DA_RT_commit_dispatch.R.'}
+      } else { comp.gen.zone   = 'Problem sourcing or running d_gen_comparison.R.'
+               comp.gen.region = 'Problem sourcing or running d_gen_comparison.R.'}
     }else {   comp.gen.zone = 'You didnt specify generation types for DA-RT plots. Plots cannot be created.'
             comp.gen.region = 'You didnt specify generation types for DA-RT plots. Plots cannot be created.' }
   } else { comp.gen.zone   = 'Section not run according to input file.'
