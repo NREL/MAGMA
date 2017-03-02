@@ -1259,7 +1259,7 @@ if(installed.cap.plot) {
     print('INPUT ERROR: total.installed.cap has errors. Cannot run this section.')
   } else{
     # Add type
-    total.installed.cap[, Type:=gen.type.mapping[name] ]
+    total.installed.cap[, Type:=gen.type.mapping[as.character(name)] ]
     total.installed.cap[, GWh:=value] # Changing this so we can use gen_stack_plot
     # Create plot
     plot.data = gen_stack_plot(total.installed.cap)

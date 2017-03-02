@@ -14,7 +14,7 @@ gen_by_type = function(total.generation, total.avail.cap) {
   setkey(total.avail.cap,'name')
   
   # Filter out generation and available capacity data and add generation type by matching generator name. 
-  yr.gen = total.generation[, Type:=gen.type.mapping[name] ][,.(scenario,Type,property,value)]
+  yr.gen = total.generation[, Type:=gen.type.mapping[as.character(name)] ][,.(scenario,Type,property,value)]
 
   # Sum up generation by type
   yr.gen = yr.gen[,.(GWh=sum(value)),by=.(scenario,Type)]
@@ -31,7 +31,7 @@ region_zone_gen = function(total.generation, total.avail.cap) {
   
   setkey(total.generation,'name')
   setkey(total.avail.cap,'name')
-  gen.type.zone.region = region.zone.mapping[, Type:=gen.type.mapping[name]]
+  gen.type.zone.region = region.zone.mapping[, Type:=gen.type.mapping[as.character(name)]]
   
   # Filter out generation and available capacity data and add generation type by matching generator name.
   # Also add region and zone by matching generator name in the region and zone mapping file. 
@@ -70,7 +70,7 @@ region_zone_gen = function(total.generation, total.avail.cap) {
 
 interval_generation = function(interval.region.load, interval.zone.load, interval.region.ue, interval.zone.ue, interval.generation, interval.avail.cap) {
 
-  gen.type.zone.region = region.zone.mapping[, Type:=gen.type.mapping[name]]
+  gen.type.zone.region = region.zone.mapping[, Type:=gen.type.mapping[as.character(name)]]
   setkey(interval.generation,name)
   setkey(interval.avail.cap,name)
   
@@ -152,7 +152,7 @@ cap_by_type = function(total.installed.capacity) {
   setkey(total.installed.capacity,'name')
 
   # Add generation type by matching generator name. 
-  yr.cap = total.installed.capacity[, Type:=gen.type.mapping[name] ][,.(scenario,Type,property,value)]
+  yr.cap = total.installed.capacity[, Type:=gen.type.mapping[as.character(name)] ][,.(scenario,Type,property,value)]
   
   # Sum up generation by type
   yr.cap = yr.cap[,.(GW=sum(value)),by=.(scenario,Type)]
@@ -168,7 +168,7 @@ cap_by_type = function(total.installed.capacity) {
 region_zone_cap = function(total.installed.capacity) {
   
   setkey(total.installed.capacity,'name')
-  gen.type.zone.region = region.zone.mapping[, Type:=gen.type.mapping[name]]
+  gen.type.zone.region = region.zone.mapping[, Type:=gen.type.mapping[as.character(name)]]
   
   # Add generation type by matching generator name.
   # Also add region and zone by matching generator name in the region and zone mapping file. 
@@ -189,10 +189,10 @@ capacity_factor = function(total.generation, total.installed.cap) {
   setkey(total.generation,name,scenario)
   
   # Pull out installed capacity and generation and match them to generation type by generator name. 
-  mc = total.installed.cap[, Type:=gen.type.mapping[name] ]
+  mc = total.installed.cap[, Type:=gen.type.mapping[as.character(name)] ]
   try(setnames(mc,'value', 'MaxCap (GWh)'),silent=T)
   
-  gen = total.generation[, Type:=gen.type.mapping[name] ]
+  gen = total.generation[, Type:=gen.type.mapping[as.character(name)] ]
   try(setnames(gen,'value', 'Gen (GWh)'),silent=T)
   
   mc[, Type := factor(Type, levels = rev(c(gen.order)))]
@@ -225,7 +225,7 @@ cap_committed = function(interval.da.committment) {
     spatialcol = "Zone"    
   }
 
-  gen.type.zone.region = region.zone.mapping[, Type:=gen.type.mapping[name]]
+  gen.type.zone.region = region.zone.mapping[, Type:=gen.type.mapping[as.character(name)]]
   setkey(interval.da.committment,name)
   
   # Query available capacity at the interval level, add generation type and region and zone by matching mapping file with generator names.
@@ -247,12 +247,12 @@ curt_by_type = function(total.generation, total.avail.cap) {
   
   # Filter out generation and available capacity data for RE types
   # and add generation type by matching generator name. 
-  yr.gen = total.generation[property == 'Generation',][, Type:=gen.type.mapping[name] ][,.(scenario,Type,property,value)]
+  yr.gen = total.generation[property == 'Generation',][, Type:=gen.type.mapping[as.character(name)] ][,.(scenario,Type,property,value)]
   re.gen = yr.gen[Type %in% re.types, .(value=sum(value)),by=.(scenario,Type,property)]
   re.gen[,property:=NULL]
   setnames(re.gen,'value','Generation')
   
-  avail = total.avail.cap[property == 'Available Energy',][, Type:=gen.type.mapping[name] ][,.(scenario,Type,property,value)]
+  avail = total.avail.cap[property == 'Available Energy',][, Type:=gen.type.mapping[as.character(name)] ][,.(scenario,Type,property,value)]
   avail = avail[Type %in% re.types,.(value=sum(value)),by=.(scenario,Type,property)]
   avail[,property:=NULL]
   setnames(avail,'value','Available Energy')
@@ -276,8 +276,8 @@ total_curtailment = function(interval.generation, interval.avail.cap) {
   setkey(interval.avail.cap,name)
   
   # Separate generation and available capacity data by type for each interval.
-  c.gen = interval.generation[, Type:=gen.type.mapping[name] ][Type %in% re.types,.(value=sum(value)),by=.(scenario, time, Type)]
-  c.avail = interval.avail.cap[, Type:=gen.type.mapping[name] ][Type %in% re.types,.(value=sum(value)),by=.(scenario, time, Type)]
+  c.gen = interval.generation[, Type:=gen.type.mapping[as.character(name)] ][Type %in% re.types,.(value=sum(value)),by=.(scenario, time, Type)]
+  c.avail = interval.avail.cap[, Type:=gen.type.mapping[as.character(name)] ][Type %in% re.types,.(value=sum(value)),by=.(scenario, time, Type)]
 
   if (typeof(c.avail)=='double' & typeof(c.gen)=='double') {
     curt.tot = c.avail - c.gen
@@ -358,7 +358,7 @@ annual_reserves = function(total.reserve.provision, total.reserve.shortage) {
 annual_reserves_provision = function(total.gen.res) {
   
   setkey(total.gen.res, name)
-  yr.gen.res = total.gen.res[property == 'Provision', Type:=gen.type.mapping[name] ]
+  yr.gen.res = total.gen.res[property == 'Provision', Type:=gen.type.mapping[as.character(name)] ]
   yr.gen.res = yr.gen.res[, .(GWh = sum(value)), by=.(scenario,parent,Type)]
   setnames(yr.gen.res,"parent","Reserve")
   
@@ -382,7 +382,7 @@ interval_reserves = function(interval.reserve.provision) {
 interval_reserves_provision = function(interval.gen.res) {
   
   setkey(interval.gen.res, name)
-  int.gen.res = interval.gen.res[property == 'Provision', Type:=gen.type.mapping[name] ]
+  int.gen.res = interval.gen.res[property == 'Provision', Type:=gen.type.mapping[as.character(name)] ]
   int.gen.res = int.gen.res[, .(GWh = sum(value)), by=.(scenario,name,parent,Type)]
   setnames(int.gen.res,"parent","Reserve")
   
@@ -541,7 +541,7 @@ zone_load = function(total.region.load, total.zone.load) {
 revenue_calculator = function(interval.generation, interval.pump.load, interval.region.price,
                               interval.gen.reserve.provision,interval.reserve.price){
   
-  gen.type.zone.region = region.zone.mapping[, Type:=gen.type.mapping[name]]
+  gen.type.zone.region = region.zone.mapping[, Type:=gen.type.mapping[as.character(name)]]
   setkey(gen.type.zone.region,name)
   setkey(interval.generation,name)
   setkey(interval.gen.reserve.provision,name)
