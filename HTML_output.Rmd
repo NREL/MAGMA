@@ -41,7 +41,6 @@ s.height = ( length(db.loc) ) * 4
 s.width = ( length(db.loc) %/% 3 + length(db.loc) %% 3 ) * 10
 p.height = ( length(period.names) %/% 2 + length(period.names) %% 2 ) * 5
 t.height = ( length(re.types) ) * 5
-currency = "$"
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
