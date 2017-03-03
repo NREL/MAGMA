@@ -33,7 +33,10 @@ if (exists('interfaces')) {
   } else { i.height = 5 }
 if (exists('lines')) {
     l.height = ifelse(typeof(lines)=='character', 5, ( length(lines) ) * 5)
-  } else { l.height = 5 }
+} else { l.height = 5 }
+if (!exists('wrap.cols')){
+  wrap.cols = 3 #number of facet columns for wrapping
+}
 s.height = ( length(db.loc) ) * 4
 s.width = ( length(db.loc) %/% 3 + length(db.loc) %% 3 ) * 10
 p.height = ( length(period.names) %/% 2 + length(period.names) %% 2 ) * 5
@@ -66,7 +69,7 @@ if (total.gen.stack){
     
     # Create plot
     plot.data = gen_stack_plot(yr.gen, load.data = r.load)
-    print(plot.data[[1]] + theme(aspect.ratio = 2.0,axis.text.x = element_text(angle = -30, hjust = 0)) +
+    print(plot.data[[1]] + theme(aspect.ratio = 2.5/length(unique(yr.gen$scenario)),axis.text.x = element_text(angle = -30, hjust = 0)) +
           scale_y_continuous(breaks=plot.data[[2]], limits=c(min(plot.data[[2]]), max(plot.data[[2]])), 
                              expand=c(0,0), label=comma))
   }
@@ -101,8 +104,8 @@ if (zone.gen.stacks) {
     plot.data = gen_stack_plot(r.z.gen[!Zone %in% ignore.zones, ],
                                load.data = z.load[!Zone %in% ignore.zones, ], 
                                filters = 'Zone', x_col='scenario')
-    print(plot.data[[1]] + facet_wrap(~Zone, scales = 'free', ncol=3)+
-      theme(aspect.ratio = 2.0, axis.text.x = element_text(angle = -30, hjust = 0)))
+    print(plot.data[[1]] + facet_wrap(~Zone, scales = 'free', ncol=)+
+      theme(aspect.ratio = 2.5/length(unique(r.z.gen$scenario)), axis.text.x = element_text(angle = -30, hjust = 0)))
   }
 } else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -148,7 +151,7 @@ if (region.gen.stacks) {
                            load.data = plot.load[(!Region %in% ignore.regions),],
                            filters = c('Region'))
       print(p1[[1]] + facet_wrap(~Region, scales = 'free', ncol=3) + 
-        theme(aspect.ratio = 2.0, axis.text.x = element_text(angle = -30, hjust = 0)))
+        theme(aspect.ratio = 2.5/length(unique(r.z.gen$scenario)), axis.text.x = element_text(angle = -30, hjust = 0)))
     }
   }
 } else { print('Section not run according to input file.') }
@@ -1260,7 +1263,7 @@ if(installed.cap.plot) {
     print('INPUT ERROR: total.installed.cap has errors. Cannot run this section.')
   } else{
     # Add type
-    total.installed.cap[, Type:=gen.type.mapping[name] ]
+    total.installed.cap[, Type:=gen.type.mapping[as.character(name)] ]
     total.installed.cap[, GWh:=value] # Changing this so we can use gen_stack_plot
     # Create plot
     plot.data = gen_stack_plot(total.installed.cap)

@@ -20,7 +20,9 @@ inputs = data.table(inputs)
 # Set ploting parameters
 # -----------------------------------------------------------------------
 # Size for plot text
-text.plot = 11
+if(!exists('text.plot')){
+  text.plot = 14
+}
 
 # Set ggplot theme
 theme_set(theme_bw())
@@ -222,6 +224,13 @@ if (length(db.day.ahead.loc)==0 | !exists('db.day.ahead.loc')) { db.day.ahead.lo
 # -----------------------------------------------------------------------
 # Process databases if needed
 # -----------------------------------------------------------------------
+# Remove trailing / if present
+db.loc <- unlist(lapply(db.loc, function(x) { 
+  if (substr(x,nchar(x),nchar(x))=='/'){
+    substr(x,1,nchar(x)-1)
+  }else{x} 
+}))
+
 run.rplx.all=F
 first.missing.db=T
 for (i in 1:length(db.loc)) { 
@@ -267,12 +276,6 @@ if (length(scenario.names)!=length(db.loc)){
   print("Using database names as scenarios")
   scenario.names = basename(db.loc)
 }
-# Remove trailing / if present
-db.loc <- unlist(lapply(db.loc, function(x) { 
-  if (substr(x,nchar(x),nchar(x))=='/'){
-    substr(x,1,nchar(x)-1)
-  }else{x} 
-}))
   
 db.day.ahead.loc <- unlist(lapply(db.day.ahead.loc, function(x) { 
   if (substr(x,nchar(x),nchar(x))=='/'){
