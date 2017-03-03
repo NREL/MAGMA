@@ -20,7 +20,9 @@ inputs = data.table(inputs)
 # Set ploting parameters
 # -----------------------------------------------------------------------
 # Size for plot text
-text.plot = 11
+if(!exists('text.plot')){
+  text.plot = 14
+}
 
 # Set ggplot theme
 theme_set(theme_bw())

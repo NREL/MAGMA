@@ -1,3 +1,4 @@
+
 pretty_axes <- function(data1, data2=NULL, filters=NULL, col='value'){
   # Function to create well spaced axes for plots. 
   # Takes maximum of both data sets (if two are provided)
@@ -73,11 +74,11 @@ gen_stack_plot <- function(gen.data, load.data=NULL, filters=NULL, x_col='scenar
               legend.key.size = grid::unit(1.0, "lines"),
               legend.text     = element_text(size=text.plot),
               legend.title    = element_blank(),
-              axis.text       = element_text(size=text.plot/1.2),
+              axis.text       = element_text(size=text.plot/1.2,face = 'bold'),
               # axis.text.x   = element_text(face=2),
               axis.title      = element_text(size=text.plot, face=2),
               axis.title.y    = element_text(vjust=1.2),
-              strip.text      = element_text(size = text.plot),
+              strip.text      = element_text(size = text.plot,face = 'bold'),
               panel.spacing   = unit(1.5, "lines"))
   
   # Add something for if load only ??
@@ -131,24 +132,25 @@ gen_diff_stack_plot <- function(gen.data, load.data=NULL, filters=NULL, x_col='s
 
   # Create plot
   p1 = ggplot() +
-          geom_bar(data = dat.pos, aes_string(x = x_col, y = 'TWh', fill='Type'), stat="identity", position="stack" ) +
-          geom_bar(data = dat.neg, aes_string(x = x_col, y = 'TWh', fill='Type'), stat="identity", position="stack" ) +
-          scale_fill_manual(values = gen.color, limits=gen.order)+
-          scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
-          labs(y="Difference in Generation (TWh)", x=NULL)+
-          # scale_y_continuous(breaks=seq.py, expand=c(0,0), label=comma)+
-          guides(color = guide_legend(order=1), fill = guide_legend(order=2))+
-               theme(    legend.key      = element_rect(color="grey80", size = 0.8), 
-                         legend.key.size = grid::unit(1.0, "lines"),
-                         legend.text     = element_text(size=text.plot), 
-                         legend.title    = element_blank(),
-                         axis.text       = element_text(size=text.plot/1.2), 
-                 #        axis.text.x     = element_text(angle=-20, hjust=0),
-                         axis.title      = element_text(size=text.plot, face=2), 
-                         axis.title.y    = element_text(vjust=1.2), 
-                         panel.spacing   = unit(1.5, "lines"),
-                         strip.text      = element_text(size = text.plot),
-                         aspect.ratio    = 2.5/length(unique(dat.pos$scenario)))
+    geom_bar(data = dat.pos, aes_string(x = x_col, y = 'TWh', fill='Type'), stat="identity", position="stack" ) +
+    geom_bar(data = dat.neg, aes_string(x = x_col, y = 'TWh', fill='Type'), stat="identity", position="stack" ) +
+    scale_fill_manual(values = gen.color, limits=gen.order)+
+    scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
+    labs(y="Difference in Generation (TWh)", x=NULL)+
+    # scale_y_continuous(breaks=seq.py, expand=c(0,0), label=comma)+
+    guides(color = guide_legend(order=1), fill = guide_legend(order=2))+
+    theme(    legend.key      = element_rect(color="grey80", size = 0.8),
+              legend.key.size = grid::unit(1.0, "lines"),
+              legend.text     = element_text(size=text.plot,face = 'bold'),
+              legend.title    = element_blank(),
+              axis.text       = element_text(size=text.plot/1.2,face = 'bold'),
+              # axis.text.x   = element_text(face=2),
+              axis.title      = element_text(size=text.plot, face=2),
+              axis.title.y    = element_text(vjust=1.2),
+              strip.text      = element_text(size = text.plot,face = 'bold'),
+              panel.spacing   = unit(1.5, "lines"),
+              aspect.ratio    = 2.5/length(unique(dat.pos$scenario)))
+  
 
   # Add error bar line for load if provided
   if(!is.null(load.data)){
@@ -187,16 +189,17 @@ dispatch_plot <- function(gen.data, load.data, filters=NULL){
           scale_x_datetime(breaks = date_breaks(width = "1 day"), labels = date_format("%b %d\n%I %p"), expand = c(0, 0))+
           scale_y_continuous(breaks=seq.py.t, limits=c(0, max(seq.py.t)), expand=c(0,0))+
           theme(legend.key       = element_rect(color = "grey80", size = 0.4),
-                legend.key.size  = grid::unit(0.9, "lines"), 
-                legend.text      = element_text(size=text.plot/1.1),
-                strip.text       = element_text(size=text.plot),
-                axis.text        = element_text(size=text.plot/1.2), 
-                axis.title       = element_text(size=text.plot, face=2), 
+                legend.key.size  = grid::unit(0.9, "lines"),
+                legend.text      = element_text(size=text.plot/1.1,face = 'bold'),
+                strip.text       = element_text(size=text.plot,face = 'bold'),
+                axis.text        = element_text(size=text.plot/1.2,face = 'bold'),
+                axis.title       = element_text(size=text.plot, face=2),
                 axis.title.x     = element_text(vjust=-0.3),
                 panel.grid.major = element_line(colour = "grey85"),
                 panel.grid.minor = element_line(colour = "grey93"),
                 panel.spacing    = unit(2,'lines'),
                 aspect.ratio     = 0.5)
+
   if(load.data[, .(value=abs(diff(value))), by=agg.filters][,sum(value)]>0){
     if(!'Unserved Energy' %in% gen.color){
       warning("You have unserved energy and don't have a color for it. Adding it as bright pink.")
@@ -228,8 +231,8 @@ interface_plot <- function(flow.data, x_col = 'time',color='interface', interfac
          scale_color_manual("", values = scen.pal)+
          labs(y="Flow (GW)", x = '')+
          theme(legend.key = element_rect(NULL),
-               legend.text = element_text(size=text.plot),
-               text=element_text(size=text.plot),
+               legend.text = element_text(size=text.plot,face = 'bold'),
+               text=element_text(size=text.plot,face = 'bold'),
                strip.text=element_text(face="bold", size=text.plot),
                axis.text=element_text(face=2, size=text.plot/1),
                axis.title=element_text(size=text.plot, face=2.3),
@@ -248,12 +251,12 @@ price_duration_curve <- function(price.data, filters, color=NULL){
            geom_line(aes_string(x='interval', y='value', color=color), size=0.8)+  
            labs(y="Price ($/MWh)", x='Hours of Year')+
            theme( legend.key =       element_rect(color = "grey80", size = 0.4),
-                  legend.key.size =  grid::unit(0.9, "lines"), 
-                  legend.text =      element_text(size=text.plot/1.1),
-                  axis.text =        element_text(size=text.plot/1.2), 
-                  axis.title =       element_text(size=text.plot, face=2), 
+                  legend.key.size =  grid::unit(0.9, "lines"),
+                  legend.text =      element_text(size=text.plot/1.1,face = 'bold'),
+                  axis.text =        element_text(size=text.plot/1.2,face = 'bold'),
+                  axis.title =       element_text(size=text.plot, face=2),
                   axis.title.x =     element_text(vjust=-0.3),
-                  strip.text =       element_text(size = text.plot/1.1),
+                  strip.text =       element_text(size = text.plot/1.1,face = 'bold'),
                   panel.grid.major = element_line(colour = "grey85"),
                   panel.grid.minor = element_line(colour = "grey93"),
                   panel.spacing =     unit(1.0, "lines"),
@@ -273,12 +276,12 @@ line_plot <- function(plot.data, filters, x.col, y.col, y.lab, color=NULL,linety
            labs(y=y.lab, x=NULL)+
            scale_y_continuous(breaks=seq.py, limits=c(min(seq.py), max(seq.py)), expand=c(0,0))+
            theme( legend.key =       element_rect(color = "grey80", size = 0.4),
-                  legend.key.size =  grid::unit(0.9, "lines"), 
-                  legend.text =      element_text(size=text.plot/1.1),
-                  axis.text =        element_text(size=text.plot/1.2), 
-                  axis.title =       element_text(size=text.plot, face=2), 
+                  legend.key.size =  grid::unit(0.9, "lines"),
+                  legend.text =      element_text(size=text.plot/1.1,face = 'bold'),
+                  axis.text =        element_text(size=text.plot/1.2,face = 'bold'),
+                  axis.title =       element_text(size=text.plot, face=2),
                   axis.title.x =     element_text(vjust=-0.3),
-                  strip.text       = element_text(size = text.plot),
+                  strip.text       = element_text(size = text.plot,face = 'bold'),
                   panel.grid.major = element_line(colour = "grey85"),
                   panel.grid.minor = element_line(colour = "grey93"),
                   aspect.ratio =     0.5,
@@ -313,13 +316,13 @@ commitment_dispatch_plot <- function(plot.data){
          ylab("Generation or Online Capacity (GW)")+xlab(NULL)+
          #     guides(color = guide_legend(order=1), fill = guide_legend(order=2, reverse=TRUE))+
          theme(legend.key = element_rect(color = "grey70", size = 0.8),
-               legend.key.size = grid::unit(1.5, "lines"), 
-               legend.text = element_text(size=text.plot), 
-               text=element_text(size=text.plot), 
-               strip.text=element_text(face=1, 
-                                       size=rel(0.8)), 
-               axis.text.x=element_text(size=text.plot/1.8), 
-               axis.text.y=element_text(size=text.plot/1.2), 
+               legend.key.size = grid::unit(1.5, "lines"),
+               legend.text = element_text(size=text.plot,face = 'bold'),
+               text=element_text(size=text.plot,face = 'bold'),
+               strip.text=element_text(face=1,
+                                       size=rel(0.8),face = 'bold'),
+               axis.text.x=element_text(size=text.plot/1.8),
+               axis.text.y=element_text(size=text.plot/1.2),
                axis.title=element_text(size=text.plot, face=2),
                panel.grid.major = element_line(colour = "grey85"),
                panel.grid.minor = element_line(colour = "grey93"),
