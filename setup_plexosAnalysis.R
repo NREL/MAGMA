@@ -268,7 +268,7 @@ for (i in 1:length(db.loc)) {
 # -----------------------------------------------------------------------
 # Get scenario names if specified
 scenario.names = basename(db.loc)
-if ('Scenario.Name'%in%names(inputs)){
+if ('Scenario.Names'%in%names(inputs)){
   if (length(na.omit(inputs$Scenario.Name))>0){
     scenario.names = as.character(inputs$Scenario.Name[!is.na(inputs$Scenario.Name)])
   }
@@ -306,6 +306,9 @@ has.multiple.scenarios = (length(db.loc)>1)
 if (has.multiple.scenarios){
   if ('ref.scenario' %in% names(inputs)){
     ref.scenario = as.character(inputs$ref.scenario[!is.na(inputs$ref.scenario)])
+    if (length(ref.scenario)==0) {
+      ref.scenario = scenario.names[1]
+    }
     if (length(ref.scenario)>1){
       message('\nYou have more than one reference scenario. This is likely to cause problems with comparison calculations')
     } else{
