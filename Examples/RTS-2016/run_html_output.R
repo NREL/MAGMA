@@ -3,12 +3,13 @@
 # USER INPUT: set input parameters ----
 #------------------------------------------------------------------------------|
 magma.dir        = paste0(dirname(sys.frame(1)$ofile), '../../..')
-input.csv        = 'Examples/RTS-2016/input_data_rts.csv'
-db.loc           = '<Location of solution file>'
+input.csv        = 'Examples/RTS-2016/input_data.csv'
+db.loc           = c('Examples/RTS-2016/solutions/Base',
+                     'Examples/RTS-2016/solutions/NoCSP')
 output.dir       = 'Examples/RTS-2016/reports'
 fig.path.name    = 'Examples/RTS-2016/plots/'
-output.name      = 'HTML_output_RTS_year.html'
-db.day.ahead.loc = '<Location of day ahead solution file (if not using one, should be NULL)>'
+output.name      = 'HTML_output.html'
+db.day.ahead.loc = NULL
 query.data       = TRUE
 save.data        = FALSE
 load.data        = '<Name of file to load if query.data=FALSE >'
@@ -16,7 +17,7 @@ save.data.name   = '<Name of file to save data. Will save in output.dir>'
 reassign.zones   = FALSE
 use.gen.type.csv = FALSE
 gen.type.csv.loc = NULL
-gen.region.zone  = 'Examples/RTS-2016/gen_name_mapping_WECC_RTS.csv'
+gen.region.zone  = 'Examples/RTS-2016/gen_name_mapping.csv'
 #------------------------------------------------------------------------------|
 # Run code to create HTML
 #------------------------------------------------------------------------------|
