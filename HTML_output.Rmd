@@ -485,7 +485,8 @@ if (annual.cost.table) {
     # Run the cost query function
     cost.table = tryCatch( costs(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom.cost), 
                            error = function(cond) { return('ERROR: costs function not returning correct results.') })
-    kable(dcast(cost.table, Type~scenario, value.var='Cost'), format.args = list(big.mark = ','))
+    kable(dcast(cost.table, Type~scenario, 
+                value.var=names(cost.table)[grep('Cost',names(cost.table))]), format.args = list(big.mark = ','))
   }
 } else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
