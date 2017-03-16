@@ -24,6 +24,8 @@ if (exists('region.names')) { r.height = ( length(region.names[!region.names%in%
 if (exists('region.names')) { r.height2 = ( length(region.names[!region.names%in%ignore.regions]) %/% 3 + 
                                              length(region.names[!region.names%in%ignore.regions]) %% 3 ) * 3
   } else {r.height2 = 3 }
+if (exists('region.names')) { g.height = length(region.names[!region.names%in%ignore.regions]) * 5
+  } else {g.height = 5 }
 if (exists('reserve.names')) { res.height = ( length(reserve.names) %/% 3 + length(reserve.names) %% 3 ) * 5
   } else { res.height = 5 }
 if (exists('reserve.names')) { res.height2 = ( length(reserve.names) %/% 3 + length(reserve.names) %% 3 ) * 3
@@ -550,9 +552,9 @@ if (region.zone.flow.table) {
     # Set names if data exists
     if ( !typeof(z.stats)=='character' ) { 
       setnames(z.stats, 'name', 'Zone Name')
-    } else{ print("ERROR: region_stats not returning correct results")}
-    # Print data. Will print error message if errors
-    kable(z.stats[!`Zone Name` %in% ignore.zones], format.args = list(big.mark = ','), digits=2)
+      # Print data. Will print error message if errors
+      kable(z.stats[!`Zone Name` %in% ignore.zones], format.args = list(big.mark = ','), digits=2)
+    } else{ print("ERROR: zone_stats not returning correct results")}
   }
 } else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1178,7 +1180,7 @@ if (commit.dispatch.region | commit.dispatch.zone) {
 
 ***
 ## 32. Revenue by Generator Type
-```{r revenue-plots, fig.width = 12, fig.height=r.height}
+```{r revenue-plots, fig.width = 12, fig.height=g.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/p_revenue.R')
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

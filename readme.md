@@ -65,6 +65,8 @@ This package creates figures and an HTML file with all of those figures for plex
 18. Zone.Order
 	+ Optional column specifying a certain order for Zones to appear in your plots. 
 	+ Defaults to alphabetical
+19. Scenario.Names
+	+ Optional columns to specify the names of your scenarios. Default is the folder name where the solution file is contained.
 
 
 ## Required PLEXOS outputs

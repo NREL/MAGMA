@@ -7,15 +7,13 @@ if (total.gen.stack){
     print('INPUT ERROR: total.avail.cap has errors. Cannot run this section.')
   } else{
     
-    yr.gen.scen <- copy(yr.gen)
+    yr.gen.scen <- gen_diff_by_type(total.generation, total.avail.cap)
     
     # If the query doesn't work, print an error. Else continue.
     if ( typeof(yr.gen.scen)=='character' ) {
       print('ERROR: gen_by_type function not returning correct results.')
     } else {
-      # Calc diffs
-      yr.gen.scen[,GWh:=GWh-GWh[scenario==ref.scenario],by='Type']
-      
+
       # Create plot
       plot.data = gen_diff_stack_plot(yr.gen.scen, load.data = r.load)
       print(plot.data[[1]] + theme(aspect.ratio = 2.5/(length(db.loc)-1),
