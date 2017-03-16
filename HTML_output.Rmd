@@ -551,9 +551,9 @@ if (region.zone.flow.table) {
     # Set names if data exists
     if ( !typeof(z.stats)=='character' ) { 
       setnames(z.stats, 'name', 'Zone Name')
-    } else{ print("ERROR: region_stats not returning correct results")}
-    # Print data. Will print error message if errors
-    kable(z.stats[!`Zone Name` %in% ignore.zones], format.args = list(big.mark = ','), digits=2)
+      # Print data. Will print error message if errors
+      kable(z.stats[!`Zone Name` %in% ignore.zones], format.args = list(big.mark = ','), digits=2)
+    } else{ print("ERROR: zone_stats not returning correct results")}
   }
 } else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
