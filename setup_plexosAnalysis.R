@@ -267,7 +267,9 @@ for (i in 1:length(db.loc)) {
 # Open the database file ( must already have created this using rplexos ) 
 # -----------------------------------------------------------------------
 # Get scenario names if specified
-scenario.names = basename(db.loc)
+if(!exists('scenario.names')){
+  scenario.names = basename(db.loc)
+}
 if ('Scenario.Names'%in%names(inputs)){
   if (length(na.omit(inputs$Scenario.Name))>0){
     scenario.names = as.character(inputs$Scenario.Name[!is.na(inputs$Scenario.Name)])
