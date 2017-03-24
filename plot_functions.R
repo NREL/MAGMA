@@ -96,8 +96,9 @@ gen_diff_stack_plot <- function(gen.data, load.data=NULL, filters=NULL, x_col='s
   # Assumes data has been processed according to XXX
   # Filters are other things you might want to plot over
   # Returns the plot handle, so you can add additional things to that if desired
-
+  
   gen.data[, Type := factor(Type, levels = c(gen.order))]
+  gen.data[, scenario := factor(scenario,levels = unique(gen.data$scenario))]
 
   # Create list of filters to separate data by
   if(is.null(filters)){
