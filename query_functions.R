@@ -841,7 +841,7 @@ total_installed_cap = function(database) {
     total.installed.cap = data.table(query_year(database, 'Generator', 'Installed Capacity', columns = c('category', 'name')))
   } else if ("Installed Capacity" %in% properties[is_summary==0 & collection=="Generator", property]){
     total.installed.cap = data.table(query_interval(database, 'Generator', 'Installed Capacity', columns = c('category', 'name')))
-    total.installed.cap = total.installed.cap[, .(value=max(value)), by=.(scenario, property, name, category)]
+    total.installed.cap = total.installed.cap[, .(value=max(value)/1000), by=.(scenario, property, name, category)]
   }
   return(total.installed.cap[, .(value=sum(value)), by=.(scenario, property, name, category)])
 }
