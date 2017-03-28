@@ -63,12 +63,16 @@ gen_stack_plot <- function(gen.data, load.data=NULL, filters=NULL, x_col='scenar
     seq.py = pretty_axes(gen.plot[, value:=TWh ], filters=load.filters)
   }
   
+  if ( 'Reserve' %in% filters ) {
+    y.lab = "Provision (TWh)"
+  } else { y.lab = "Generation (TWh)" } 
+  
   # Create plot
   p1 = ggplot() +
     geom_bar(data = gen.plot, aes_string(x = x_col, y = 'TWh', fill='Type'), stat="identity", position="stack" ) +
     scale_color_manual(name='', values=c("grey40"), labels=c("Load"))+
     scale_fill_manual('', values = gen.color)+     
-    labs(y="Generation (TWh)", x=NULL)+
+    labs(y=y.lab, x=NULL)+
     guides(color = guide_legend(order=1), fill = guide_legend(order=2))+
     theme(    legend.key      = element_rect(color="grey80", size = 0.8),
               legend.key.size = grid::unit(1.0, "lines"),
@@ -131,13 +135,17 @@ gen_diff_stack_plot <- function(gen.data, load.data=NULL, filters=NULL, x_col='s
     diff.load = diff.load[scenario!=ref.scenario, ]
   }
 
+  if ( 'Reserve' %in% filters ) {
+    y.lab = "Difference in Provision (TWh)"
+  } else { y.lab = "Difference in Generation (TWh)" } 
+  
   # Create plot
   p1 = ggplot() +
     geom_bar(data = dat.pos, aes_string(x = x_col, y = 'TWh', fill='Type'), stat="identity", position="stack" ) +
     geom_bar(data = dat.neg, aes_string(x = x_col, y = 'TWh', fill='Type'), stat="identity", position="stack" ) +
     scale_fill_manual(values = gen.color, limits=gen.order)+
     scale_color_manual(name='', values=c("load"="grey40"), labels=c("Load"))+
-    labs(y="Difference in Generation (TWh)", x=NULL)+
+    labs(y=y.lab, x=NULL)+
     # scale_y_continuous(breaks=seq.py, expand=c(0,0), label=comma)+
     guides(color = guide_legend(order=1), fill = guide_legend(order=2))+
     theme(    legend.key      = element_rect(color="grey80", size = 0.8),
