@@ -69,7 +69,7 @@ region_zone_gen = function(total.generation, total.avail.cap) {
 # This function returns interval level generation and curtailment used for the key period time series dispatch stacks. 
 
 interval_generation = function(interval.region.load, interval.zone.load, interval.region.ue, interval.zone.ue, interval.generation, interval.avail.cap) {
-
+  
   gen.type.zone.region = region.zone.mapping[, Type:=gen.type.mapping[as.character(name)]]
   setkey(interval.generation,name)
   setkey(interval.avail.cap,name)
@@ -100,7 +100,7 @@ interval_generation = function(interval.region.load, interval.zone.load, interva
       load = rbindlist(list(load,served.load))
     }  
   }
-
+  
   setkeyv(rz.unique,spatialcol)
   setkeyv(load,spatialcol)
   load = load[rz.unique]
@@ -121,12 +121,12 @@ interval_generation = function(interval.region.load, interval.zone.load, interva
   # Pull out interval generation capacity and add generation type, region, and zone based on matching generator names.
   int.avail = gen.type.zone.region[interval.avail.cap[,.(scenario, name, time, value, category)]]
   int.avail = int.avail[,.(value=sum(value,na.rm=TRUE)),by=.(scenario,time,Region,Zone,Type)]
- 
+  
   if (all(re.types!='none_specified')){
     #  Pull out renewable data for curtilment calculations. 
     re.gen = int.gen[Type %in% re.types, ]
     setkey(re.gen,scenario,time,Region,Zone,Type)
-  
+    
     int.avail = int.avail[Type %in% re.types, ]
     setkey(int.avail,scenario,time,Region,Zone,Type)
     
@@ -136,10 +136,142 @@ interval_generation = function(interval.region.load, interval.zone.load, interva
     curtailed=curtailed[,.(Type='Curtailment',value=sum(value.x-value.y)),by=.(scenario,time,Region,Zone)]
     
     int.gen = rbindlist(list(int.gen, curtailed), use.names=TRUE)
+    
+  } 
+  
+  return(int.gen)
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Key Period Generation by Type for each region  ----
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# This function returns interval level generation and curtailment used for the key period time series dispatch stacks. 
+
+interval_region_generation = function(interval.region.load, interval.region.ue, interval.generation, interval.avail.cap) {
+
+  gen.type.region = region.zone.mapping[, Type:=gen.type.mapping[as.character(name)]]
+  setkey(interval.generation,name)
+  setkey(interval.avail.cap,name)
+  
+  # Sum load for each region.
+  load = interval.region.load[,.(value=sum(value)),by=.(scenario,time,name,property)]
+  setnames(load,"name","Region")
+  if (is.character(interval.region.ue)){
+    warning("Your region does not have interval level unserved energy. Skipping that in your dispatch plots.")
+  } else{
+    ue = interval.region.ue[, .(value = -sum(value)), by=.(scenario,time,name,property)]
+    setnames(ue,"name",'Region')
+    served.load = rbindlist(list(load,ue))[, .(property='Served Load',value=sum(value)), by=c('scenario','time','Region')]
+    load = rbindlist(list(load,served.load))
+  }  
+ 
+  r.unique = data.table(Region = unique(rz.unique$Region))
+  setkeyv(r.unique,'Region')
+  setkeyv(load,'Region')
+  load = load[r.unique]
+  setkeyv(load,c('time','Region'))
+  setnames(load,'property','Type')
+  
+  # Pull out interval generation data, and add generation type and region according to generator name. Then add load data.
+  int.gen = gen.type.region[interval.generation[,.(scenario, name, time, value, category)]]
+  int.gen = int.gen[,.(value=sum(value,na.rm=TRUE)),by=.(scenario,time,Region,Type)] 
+  setkeyv(int.gen,c('time','Region'))
+  int.gen = rbindlist(list(int.gen,load),use.names=TRUE)
+  
+  # Unsure what this was doing so I commented it out
+  # #make sure that the right regions are there...
+  # dropcol=names(rz.unique)[names(rz.unique) != 'Region']
+  # setkeyv(int.gen,'Region')
+  # int.gen = merge(int.gen[,!dropcol,with=FALSE],rz.unique,all.y=TRUE)
+  
+  # Pull out interval generation capacity and add generation type, and region based on matching generator names.
+  int.avail = gen.type.zone.region[interval.avail.cap[,.(scenario, name, time, value, category)]]
+  int.avail = int.avail[,.(value=sum(value,na.rm=TRUE)),by=.(scenario,time,Region,Type)]
+ 
+  if (all(re.types!='none_specified')){
+    #  Pull out renewable data for curtilment calculations. 
+    re.gen = int.gen[Type %in% re.types, ]
+    setkey(re.gen,scenario,time,Region,Type)
+  
+    int.avail = int.avail[Type %in% re.types, ]
+    setkey(int.avail,scenario,time,Region,Type)
+    
+    # Calculate curtailment and add it to generation and load data from above.
+    curtailed = merge(int.avail, re.gen, all=TRUE)
+    curtailed[is.na(curtailed)] = 0
+    curtailed=curtailed[,.(Type='Curtailment',value=sum(value.x-value.y)),by=.(scenario,time,Region)]
+    
+    int.gen.region = rbindlist(list(int.gen, curtailed), use.names=TRUE)
   
   } 
  
-  return(int.gen)
+  return(int.gen.region)
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Key Period Generation by Type for each zone  ----
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# This function returns interval level generation and curtailment used for the key period time series dispatch stacks. 
+
+interval_zone_generation = function(interval.zone.load, interval.zone.ue, interval.generation, interval.avail.cap) {
+  
+  gen.type.zone = region.zone.mapping[, Type:=gen.type.mapping[as.character(name)]]
+  setkey(interval.generation,name)
+  setkey(interval.avail.cap,name)
+  
+  # Sum load for each zone.
+  load = interval.zone.load[,.(value=sum(value)),by=.(scenario,time,name,property)]
+  setnames(load,"name","Zone")
+  if (is.character(interval.zone.ue)){
+    warning("Your zone does not have interval level unserved energy. Skipping that in your dispatch plots.")
+  } else{
+    ue = interval.zone.ue[, .(value = -sum(value)), by=.(scenario,time,name,property)]
+    setnames(ue,"name","Zone")
+    served.load = rbindlist(list(load,ue))[, .(property='Served Load',value=sum(value)), by=c('scenario','time',"Zone")]
+    load = rbindlist(list(load,served.load))
+  }  
+  
+  z.unique = data.table(Zone = unique(rz.unique$Zone))
+  setkeyv(z.unique,"Zone")
+  setkeyv(load,"Zone")
+  load = load[z.unique]
+  setkeyv(load,c('time',"Zone"))
+  setnames(load,'property','Type')
+  
+  # Pull out interval generation data, and add generation type and zone according to generator name. Then add load data.
+  int.gen = gen.type.zone.region[interval.generation[,.(scenario, name, time, value, category)]]
+  int.gen = int.gen[,.(value=sum(value,na.rm=TRUE)),by=.(scenario,time,Zone,Type)] 
+  setkeyv(int.gen,c('time',"Zone"))
+  int.gen = rbindlist(list(int.gen,load),use.names=TRUE)
+  
+  # Unsure what this was doing so I commented it out
+  # #make sure that the right zones and regions are there...
+  # dropcol=names(rz.unique)[names(rz.unique) != "Zone"]
+  # setkeyv(int.gen,"Zone")
+  # int.gen = merge(int.gen[,!dropcol,with=FALSE],rz.unique,all.y=TRUE)
+  
+  # Pull out interval generation capacity and add generation type and zone based on matching generator names.
+  int.avail = gen.type.zone.region[interval.avail.cap[,.(scenario, name, time, value, category)]]
+  int.avail = int.avail[,.(value=sum(value,na.rm=TRUE)),by=.(scenario,time,Zone,Type)]
+  
+  if (all(re.types!='none_specified')){
+    #  Pull out renewable data for curtilment calculations. 
+    re.gen = int.gen[Type %in% re.types, ]
+    setkey(re.gen,scenario,time,Zone,Type)
+    
+    int.avail = int.avail[Type %in% re.types, ]
+    setkey(int.avail,scenario,time,Zone,Type)
+    
+    # Calculate curtailment and add it to generation and load data from above.
+    curtailed = merge(int.avail, re.gen, all=TRUE)
+    curtailed[is.na(curtailed)] = 0
+    curtailed=curtailed[,.(Type='Curtailment',value=sum(value.x-value.y)),by=.(scenario,time,Zone)]
+    
+    int.gen.zone = rbindlist(list(int.gen, curtailed), use.names=TRUE)
+    
+  } 
+  
+  return(int.gen.zone)
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
