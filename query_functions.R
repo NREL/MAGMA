@@ -185,7 +185,7 @@ interval_region_generation = function(interval.region.load, interval.region.ue, 
   # int.gen = merge(int.gen[,!dropcol,with=FALSE],rz.unique,all.y=TRUE)
   
   # Pull out interval generation capacity and add generation type, and region based on matching generator names.
-  int.avail = gen.type.zone.region[interval.avail.cap[,.(scenario, name, time, value, category)]]
+  int.avail = gen.type.region[interval.avail.cap[,.(scenario, name, time, value, category)]]
   int.avail = int.avail[,.(value=sum(value,na.rm=TRUE)),by=.(scenario,time,Region,Type)]
  
   if (all(re.types!='none_specified')){

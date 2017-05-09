@@ -20,7 +20,7 @@ if ( typeof(interval.region.load)=='character' ) {
     # ###############################################################################
     # If the query doesn't work, return an error. 
     if ( typeof(int.gen.region)=='character' ) { 
-      key.period.gen = 'ERROR: interval_region_generation function not returning correct results.'
+      key.period.gen.region = 'ERROR: interval_region_generation function not returning correct results.'
       print('ERROR: interval_region_generation function not returning correct results.')
     } else {
       
@@ -29,29 +29,29 @@ if ( typeof(interval.region.load)=='character' ) {
       for ( i in 1:n.periods ) {
         key.period.time = seq(start.end.times[i,start], start.end.times[i,end], 
                               by = timediff)
-        key.period.gen = int.gen.region[int.gen.region$time %in% key.period.time]
-        key.period.gen[, Period := period.names[i]]
+        key.period.gen.region = int.gen.region[int.gen.region$time %in% key.period.time]
+        key.period.gen.region[, Period := period.names[i]]
         
         if ( i == 1 ) {
-          int.gen.key.periods = key.period.gen
+          int.gen.key.periods = key.period.gen.region
         } else {
-          int.gen.key.periods = rbindlist(list(int.gen.key.periods, key.period.gen))
+          int.gen.key.periods = rbindlist(list(int.gen.key.periods, key.period.gen.region))
         }
       }
 
       # Rearrange data for plotting
-      key.period.gen = int.gen.key.periods 
+      key.period.gen.region = int.gen.key.periods 
       
       # Rearrange factor levels for plotting.
-      key.period.gen[, Type := factor(Type, levels = c(gen.order, 'Load','Served Load'))]
+      key.period.gen.region[, Type := factor(Type, levels = c(gen.order, 'Load','Served Load'))]
       
       # Pull out just generation data
-      gen.type = key.period.gen[! Type %in% c('Load','Served Load'), ]
+      gen.type = key.period.gen.region[! Type %in% c('Load','Served Load'), ]
       gen.type[value<0, value:=0]
       gen.type[, Period := ordered(Period, levels = period.names)]
       
       # Pull out just load data
-      gen.load = key.period.gen[Type %in% c('Load','Served Load'), ]
+      gen.load = key.period.gen.region[Type %in% c('Load','Served Load'), ]
 
       # ###############################################################################
       # Region Data
@@ -78,7 +78,7 @@ if ( typeof(interval.region.load)=='character' ) {
     # ###############################################################################
     # If the query doesn't work, return an error. 
     if ( typeof(int.gen.zone)=='character' ) { 
-      key.period.gen = 'ERROR: interval_zone_generation function not returning correct results.'
+      key.period.gen.zone = 'ERROR: interval_zone_generation function not returning correct results.'
       print('ERROR: interval_zone_generation function not returning correct results.')
     } else {
       
@@ -87,29 +87,29 @@ if ( typeof(interval.region.load)=='character' ) {
       for ( i in 1:n.periods ) {
         key.period.time = seq(start.end.times[i,start], start.end.times[i,end], 
                               by = timediff)
-        key.period.gen = int.gen.zone[int.gen.zone$time %in% key.period.time]
-        key.period.gen[, Period := period.names[i]]
+        key.period.gen.zone = int.gen.zone[int.gen.zone$time %in% key.period.time]
+        key.period.gen.zone[, Period := period.names[i]]
         
         if ( i == 1 ) {
-          int.gen.key.periods = key.period.gen
+          int.gen.key.periods = key.period.gen.zone
         } else {
-          int.gen.key.periods = rbindlist(list(int.gen.key.periods, key.period.gen))
+          int.gen.key.periods = rbindlist(list(int.gen.key.periods, key.period.gen.zone))
         }
       }
       
       # Rearrange data for plotting
-      key.period.gen = int.gen.key.periods 
+      key.period.gen.zone = int.gen.key.periods 
       
       # Rearrange factor levels for plotting.
-      key.period.gen[, Type := factor(Type, levels = c(gen.order, 'Load','Served Load'))]
+      key.period.gen.zone[, Type := factor(Type, levels = c(gen.order, 'Load','Served Load'))]
       
       # Pull out just generation data
-      gen.type = key.period.gen[! Type %in% c('Load','Served Load'), ]
+      gen.type = key.period.gen.zone[! Type %in% c('Load','Served Load'), ]
       gen.type[value<0, value:=0]
       gen.type[, Period := ordered(Period, levels = period.names)]
       
       # Pull out just load data
-      gen.load = key.period.gen[Type %in% c('Load','Served Load'), ]
+      gen.load = key.period.gen.zone[Type %in% c('Load','Served Load'), ]
       
       # ###############################################################################
       # Zone Data

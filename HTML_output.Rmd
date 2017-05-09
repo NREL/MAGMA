@@ -218,12 +218,11 @@ if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.di
     source('source_scripts/d_key_period_dispatch.R')
 
     # As long as the file exists (previous source found the R script) this loop runs
-    if ( exists('key.period.gen') ) {
+    if ( exists('key.period.gen.region') | exists('key.period.gen.zone') ) {
     # Check to see if the right data is ready for plotting.
-      if ( typeof(key.period.gen)=='character' ) {
-        key.period.dispatch.total  = 'ERROR: interval_gen function not returning correct results.'
-        key.period.dispatch.zone   = 'ERROR: interval_gen function not returning correct results.'
-        key.period.dispatch.region = 'ERROR: interval_gen function not returning correct results.'
+      if ( typeof(key.period.gen.region)=='character' ) {
+        key.period.dispatch.total  = 'ERROR: interval_region_generation function not returning correct results.'
+        key.period.dispatch.region = 'ERROR: interval_region_generation function not returning correct results.'
       } else {
         # Create data if total database info was selected in input file.
         if (key.period.dispatch.total.log) {
@@ -233,15 +232,6 @@ if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.di
           key.period.dispatch.total = knit_child(text = unlist(key.plots.total))
         } else {key.period.dispatch.total  = 'Section not run according to input file.'}
           
-        # Create data if zonal dispatch stacks were selected in input file.
-        if (key.period.dispatch.zone.log) {
-            plot.zones = levels(zone.names)[!levels(zone.names) %in% ignore.zones]
-            key.plots.zone = mapply(function(p,z){knit_expand(file = 'source_scripts/p_key_period_dispatch_zone.Rmd', 
-                                                              period.name = p, zone.name = z)},
-                                    rep(period.names,length(plot.zones)), rep(plot.zones,each=n.periods))
-          key.period.dispatch.zone = knit_child(text = unlist(key.plots.zone))
-        } else {key.period.dispatch.zone   = 'Section not run according to input file.'}
-          
         # Create data if regional dispatch stacks were selected in input file.
         if (key.period.dispatch.region.log) {
           plot.regions = levels(region.names)[!levels(region.names) %in% ignore.regions]
@@ -250,6 +240,18 @@ if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.di
                                     rep(period.names,length(plot.regions)), rep(plot.regions,each=n.periods))
           key.period.dispatch.region = knit_child(text = unlist(key.plots.region))
         } else {key.period.dispatch.region = 'Section not run according to input file.'}        
+      }
+      if ( typeof(key.period.gen.zone)=='character' ) {
+        key.period.dispatch.zone   = 'ERROR: interval_zone_generation function not returning correct results.'
+      } else {
+        # Create data if zonal dispatch stacks were selected in input file.
+        if (key.period.dispatch.zone.log) {
+            plot.zones = levels(zone.names)[!levels(zone.names) %in% ignore.zones]
+            key.plots.zone = mapply(function(p,z){knit_expand(file = 'source_scripts/p_key_period_dispatch_zone.Rmd', 
+                                                              period.name = p, zone.name = z)},
+                                    rep(period.names,length(plot.zones)), rep(plot.zones,each=n.periods))
+          key.period.dispatch.zone = knit_child(text = unlist(key.plots.zone))
+        } else {key.period.dispatch.zone   = 'Section not run according to input file.'}
       }
     } else { key.period.dispatch.total  = 'Problem sourcing or running d_key_period_dispatch.R.'
              key.period.dispatch.zone   = 'Problem sourcing or running d_key_period_dispatch.R.'
