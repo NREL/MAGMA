@@ -239,7 +239,7 @@ interval_zone_generation = function(interval.zone.load, interval.zone.ue, interv
   setnames(load,'property','Type')
   
   # Pull out interval generation data, and add generation type and zone according to generator name. Then add load data.
-  int.gen = gen.type.zone.region[interval.generation[,.(scenario, name, time, value, category)]]
+  int.gen = gen.type.zone[interval.generation[,.(scenario, name, time, value, category)]]
   int.gen = int.gen[,.(value=sum(value,na.rm=TRUE)),by=.(scenario,time,Zone,Type)] 
   setkeyv(int.gen,c('time',"Zone"))
   int.gen = rbindlist(list(int.gen,load),use.names=TRUE)
@@ -251,7 +251,7 @@ interval_zone_generation = function(interval.zone.load, interval.zone.ue, interv
   # int.gen = merge(int.gen[,!dropcol,with=FALSE],rz.unique,all.y=TRUE)
   
   # Pull out interval generation capacity and add generation type and zone based on matching generator names.
-  int.avail = gen.type.zone.region[interval.avail.cap[,.(scenario, name, time, value, category)]]
+  int.avail = gen.type.zone[interval.avail.cap[,.(scenario, name, time, value, category)]]
   int.avail = int.avail[,.(value=sum(value,na.rm=TRUE)),by=.(scenario,time,Zone,Type)]
   
   if (all(re.types!='none_specified')){
