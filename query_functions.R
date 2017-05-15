@@ -722,8 +722,12 @@ revenue_calculator = function(interval.generation, interval.pump.load, interval.
 gen_diff_by_type = function(total.generation, total.avail.cap) {
   
   #*************************** Potentially make this an input
-  yr.gen = tryCatch( gen_by_type(total.generation, total.avail.cap), error = function(cond) { return('ERROR') } )
-  yr.gen = yr.gen[Type!='Curtailment', ]
+  yr.gen = tryCatch( gen_by_type(total.generation, total.avail.cap), 
+                     error = function(cond) { return('ERROR: gen_by_type function not returning correct results.') } )
+  curt.by.type = tryCatch( curt_by_type(total.generation, total.avail.cap),
+                           error = function(cond) { return('ERROR: curt_by_type function not returning correct results.') } )
+  yr.gen = rbind(yr.gen, curt.by.type[,.(Type='Curtailment', GWh=sum(Curtailment)), by=scenario])
+  
   all.combos = data.table(expand.grid(unique(yr.gen$scenario), unique(yr.gen$Type)))
   setkey(all.combos,Var1,Var2)
   setkey(yr.gen,scenario,Type)

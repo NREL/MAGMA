@@ -31,14 +31,14 @@ if (interface.flow.plots) {
         avg.interface[, time := as.POSIXct(paste(hour,minute,second, sep=":"),format="%H:%M:%S",tz='UTC')]
       
         p.int.interface = interface_plot(avg.interface, x_col = 'time', color='scenario')
-        p.int.interface = p.int.interface + facet_wrap(~interface,ncol=1,scales='free') +
+        p.int.interface = p.int.interface + facet_wrap(~interface,ncol=wrap.cols,scales='free') +
                             scale_x_datetime(breaks = date_breaks(width = "2 hour"), labels = date_format("%H:%M"), 
                                              expand = c(0, 0), timezone='UTC')
         # Make diff plots
         diff.avg.interface = avg.interface[, .(scenario, value = value-value[as.character(scenario)==ref.scenario]),
                                            by=.(time,interface)]
         p.int.interface.diff = interface_plot(diff.avg.interface, x_col = 'time', color='scenario')
-        p.int.interface.diff = p.int.interface.diff + facet_wrap(~interface,ncol=1,scales='free') +
+        p.int.interface.diff = p.int.interface.diff + facet_wrap(~interface,ncol=wrap.cols,scales='free') +
                             scale_x_datetime(breaks = date_breaks(width = "2 hour"), labels = date_format("%H:%M"), 
                                              expand = c(0, 0), timezone='UTC') + ylab("Difference in Flow (GW)")
 
@@ -50,7 +50,7 @@ if (interface.flow.plots) {
           p.daily.interface = p.daily.interface + scale_x_datetime(breaks=date_breaks(width="1 month"), 
                      labels = date_format("%b"), expand = c(0, 0), timezone='UTC')
         }
-        p.daily.interface = p.daily.interface + facet_wrap(~name,ncol=1,scales='free')
+        p.daily.interface = p.daily.interface + facet_wrap(~name,ncol=wrap.cols,scales='free')
         # Make diff plots
         diff.daily.flows = daily.flows[, .(scenario, value = value - value[as.character(scenario)==ref.scenario]), 
                                      by=.(time,name)]
@@ -59,7 +59,7 @@ if (interface.flow.plots) {
           p.daily.interface.diff = p.daily.interface.diff + scale_x_datetime(breaks=date_breaks(width="1 month"), 
                      labels = date_format("%b"), expand = c(0, 0), timezone='UTC')
         }
-        p.daily.interface.diff = p.daily.interface.diff + facet_wrap(~name,ncol=1,scales='free') + ylab("Difference in Flow (GW)")
+        p.daily.interface.diff = p.daily.interface.diff + facet_wrap(~name,ncol=wrap.cols,scales='free') + ylab("Difference in Flow (GW)")
       }
     }
   } else { p.int.interface = 'No interfaces specified. No interface data will be shown.' 

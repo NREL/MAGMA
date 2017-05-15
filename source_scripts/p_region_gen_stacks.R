@@ -22,7 +22,7 @@ if (region.gen.stacks){
                                       r.load[!Region %in% ignore.regions, ],
                                       filters = 'Region')
       print(plot.data[[1]] + theme(aspect.ratio = 2.5/(length(db.loc)-1),axis.text.x = element_text(angle = -30, hjust = 0)) +
-      	    facet_wrap(~Region, scales = 'free', ncol=3) +
+      	    facet_wrap(~Region, scales = 'free', ncol=wrap.cols) +
             scale_y_continuous(breaks=plot.data[[2]], limits=c(min(plot.data[[2]]), max(plot.data[[2]])), expand=c(0,0), label=comma))
     }
   }

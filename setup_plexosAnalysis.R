@@ -155,10 +155,10 @@ if (length(interfaces)==0) {
 } else if (any(toupper(interfaces) == 'ALL')){
   interfaces = unique(query_class_member(db,'Interface')$name)
 }
-# Update scen.pal to account for larger number of interfaces. Give warning about large number of entries
-if (length(interfaces) > length(scen.pal)){
-  message('\nYou have specified a large number of interfaces. Color palette may be hard to differentiate.')
-  scen.pal = rainbow(length(interfaces))
+# Update scen.pal to account for larger number of scenarios Give warning about large number of entries
+  if (length(scenario.names) > length(scen.pal)){
+  message('\nYou have specified a large number of scenarios Color palette may be hard to differentiate.')
+  scen.pal = rainbow(length(scenario.names))
 }
 
 # lines to look at flows for

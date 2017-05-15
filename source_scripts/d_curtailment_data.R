@@ -60,7 +60,7 @@ if (daily.curtailment) {
       p.daily = p.daily + scale_color_brewer(palette='Set1')
       
       # Calculate diffs
-      diff.daily.curt = daily.curt[, .(scenario, Curtailment = Curtailment - Curtailment[as.character(scenario)==ref.scenario]), by=.(time)]
+      diff.daily.curt = daily.curt.tot[, .(scenario, Curtailment = Curtailment - Curtailment[as.character(scenario)==ref.scenario]), by=.(time)]
       
       p.daily.diff = line_plot(diff.daily.curt, filters=c('scenario','time'), x.col='time', y.col='Curtailment', 
                      y.lab='Difference in Curtailment (MWh)', color='scenario', linesize=1.2)

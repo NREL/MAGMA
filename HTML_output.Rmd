@@ -14,33 +14,31 @@ output:
 knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, include=TRUE,
                       fig.path=fig.path.name, dev='png', fig.width=12)
 
-# Set dynamic height for figures
-if (exists('zone.names')) { z.height = ( length(zone.names[!zone.names%in%ignore.zones]) %/% 3 + 
-                                           length(zone.names[!zone.names%in%ignore.zones]) %% 3 ) * 3
-  } else { z.height = 5 }
-if (exists('region.names')) { r.height = ( length(region.names[!region.names%in%ignore.regions]) %/% 3 + 
-                                             length(region.names[!region.names%in%ignore.regions]) %% 3 ) * 5
-  } else {r.height = 5 }
-if (exists('region.names')) { r.height2 = ( length(region.names[!region.names%in%ignore.regions]) %/% 3 + 
-                                             length(region.names[!region.names%in%ignore.regions]) %% 3 ) * 3
-  } else {r.height2 = 3 }
-if (exists('region.names')) { g.height = length(region.names[!region.names%in%ignore.regions]) * 5
-  } else {g.height = 5 }
-if (exists('reserve.names')) { res.height = ( length(reserve.names) %/% 3 + length(reserve.names) %% 3 ) * 5
-  } else { res.height = 5 }
-if (exists('reserve.names')) { res.height2 = ( length(reserve.names) %/% 3 + length(reserve.names) %% 3 ) * 3
-  } else { res.height2 = 3 }
-if (exists('interfaces')) { 
-    i.height = ifelse(typeof(interfaces)=='character', 5, ( length(interfaces) ) * 5)
-  } else { i.height = 5 }
-if (exists('lines')) {
-    l.height = ifelse(typeof(lines)=='character', 5, ( length(lines) ) * 5)
-} else { l.height = 5 }
 if (!exists('wrap.cols')){
   wrap.cols = 3 #number of facet columns for wrapping
 }
+# Set dynamic height for figures
+if (exists('zone.names')) { z.height = ( length(zone.names[!zone.names%in%ignore.zones]) %/% wrap.cols + 
+                                           length(zone.names[!zone.names%in%ignore.zones]) %% wrap.cols ) * 3
+  } else { z.height = 5 }
+if (exists('region.names')) { r.height = ( length(region.names[!region.names%in%ignore.regions]) %/% wrap.cols + 
+                                             length(region.names[!region.names%in%ignore.regions]) %% wrap.cols ) * 5
+  } else {r.height = 5 }
+if (exists('region.names')) { r.height2 = ( length(region.names[!region.names%in%ignore.regions]) %/% wrap.cols + 
+                                             length(region.names[!region.names%in%ignore.regions]) %% wrap.cols ) * 3
+  } else {r.height2 = 3 }
+if (exists('region.names')) { g.height = length(region.names[!region.names%in%ignore.regions]) * 5
+  } else {g.height = 5 }
+if (exists('reserve.names')) { res.height = ( length(reserve.names) %/% wrap.cols + length(reserve.names) %% wrap.cols ) * 5
+  } else { res.height = 5 }
+if (exists('reserve.names')) { res.height2 = ( length(reserve.names) %/% wrap.cols + length(reserve.names) %% wrap.cols ) * 3
+  } else { res.height2 = 3 }
+if (exists('interfaces')) { i.height = max( length(interfaces) %/% wrap.cols + length(interfaces) %% wrap.cols, 1 ) * 3
+  } else { i.height = 5 }
+if (exists('lines')) { l.height = max( length(lines) %/% wrap.cols + length(lines) %% wrap.cols, 1) * 3
+} else { l.height = 5 }
 s.height = ( length(db.loc) ) * 4
-s.width = ( length(db.loc) %/% 3 + length(db.loc) %% 3 ) * 10
+s.width = ( length(db.loc) %/% 3 + length(db.loc) %% wrap.cols ) * 10
 p.height = ( length(period.names) %/% 2 + length(period.names) %% 2 ) * 5
 t.height = ( length(re.types) ) * 5
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -108,7 +106,7 @@ if (zone.gen.stacks) {
     plot.data = gen_stack_plot(r.z.gen[!Zone %in% ignore.zones, ],
                                load.data = z.load[!Zone %in% ignore.zones, ], 
                                filters = 'Zone', x_col='scenario')
-    print(plot.data[[1]] + facet_wrap(~Zone, scales = 'free', ncol=)+
+    print(plot.data[[1]] + facet_wrap(~Zone, scales = 'free', ncol=wrap.cols)+
       theme(aspect.ratio = 2.5/length(unique(r.z.gen$scenario)), axis.text.x = element_text(angle = -30, hjust = 0),
             text = element_text(face='bold')))
   }
@@ -128,7 +126,7 @@ if(has.multiple.scenarios){
 
 ***
 ## 3. Regional Generation
-```{r region-gen-stacks, resize.height=T, fig.height=r.height, fig.width=12}
+```{r region-gen-stacks, resize.height=TRUE, fig.height=r.height, fig.width=12}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected run in the input file
 if (region.gen.stacks) {
@@ -155,7 +153,7 @@ if (region.gen.stacks) {
       p1 <- gen_stack_plot(r.z.gen[(!Region %in% ignore.regions),],
                            load.data = plot.load[(!Region %in% ignore.regions),],
                            filters = c('Region'))
-      print(p1[[1]] + facet_wrap(~Region, scales = 'free', ncol=3) + 
+      print(p1[[1]] + facet_wrap(~Region, scales = 'free', ncol=wrap.cols) + 
         theme(aspect.ratio = 2.5/length(unique(r.z.gen$scenario)), axis.text.x = element_text(angle = -30, hjust = 0),
             text = element_text(face='bold')))
     }
@@ -632,7 +630,7 @@ source('source_scripts/d_interface_data.R')
 ```
 ***
 ## 17. Average Interval Interface Flow
-```{r interface-interval-flow-plots, resize.width=T, fig.width=10, fig.height=i.height}
+```{r interface-interval-flow-plots, resize.width=TRUE, fig.width=12, fig.height=i.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 print(p.int.interface)
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -640,7 +638,7 @@ print(p.int.interface)
 
 ***
 ## Average Daily Interface Flow
-```{r interface-daily-flow-plots, resize.width=T, fig.width=10, fig.height=i.height}
+```{r interface-daily-flow-plots, resize.width=TRUE, fig.width=12, fig.height=i.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 print(p.daily.interface)
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -648,7 +646,7 @@ print(p.daily.interface)
 
 ***
 ## 17.1. Difference in Average Interval Interface Flow
-```{r interface-interval-diff-flow-plots, resize.width=T, fig.width=10, fig.height=i.height}
+```{r interface-interval-diff-flow-plots, resize.width=TRUE, fig.width=12, fig.height=i.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if(has.multiple.scenarios){
   print(p.int.interface.diff)
@@ -658,7 +656,7 @@ if(has.multiple.scenarios){
 
 ***
 ## Difference in Average Daily Interface Flow
-```{r interface-daily-diff-flow-plots, resize.width=T, fig.width=10, fig.height=i.height}
+```{r interface-daily-diff-flow-plots, resize.width=TRUE, fig.width=12, fig.height=i.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if(has.multiple.scenarios){
   print(p.daily.interface.diff)
@@ -729,7 +727,7 @@ source('source_scripts/d_line_data.R')
 ```
 ***
 ## 20. Average Interval Line Flow
-```{r line-interval-flow-plots, resize.width=T, fig.width=10, fig.height=l.height}
+```{r line-interval-flow-plots, resize.width=TRUE, fig.width=10, fig.height=l.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 print(p.int.line)
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -737,7 +735,7 @@ print(p.int.line)
 
 ***
 ## Average Daily Line Flow
-```{r line-daily-flow-plots, resize.width=T, fig.width=10, fig.height=l.height}
+```{r line-daily-flow-plots, resize.width=TRUE, fig.width=10, fig.height=l.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 print(p.daily.line)
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -745,7 +743,7 @@ print(p.daily.line)
 
 ***
 ## 20.1. Difference in Average Interval Line Flow
-```{r line-interval-diff-flow-plots, resize.width=T, fig.width=10, fig.height=l.height}
+```{r line-interval-diff-flow-plots, resize.width=TRUE, fig.width=10, fig.height=l.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if(has.multiple.scenarios){
   print(p.int.line.diff)
@@ -755,7 +753,7 @@ if(has.multiple.scenarios){
 
 ***
 ## Difference in Average Daily Line Flow
-```{r line-daily-diff-flow-plots, resize.width=T, fig.width=10, fig.height=l.height}
+```{r line-daily-diff-flow-plots, resize.width=TRUE, fig.width=10, fig.height=l.height}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if(has.multiple.scenarios){
   print(p.daily.line.diff)
@@ -995,7 +993,7 @@ if(reserve.stack) {
     } else {
       # Create plot
       plot.data = gen_stack_plot(yr.res.scen, filters = c('Reserve','scenario'))
-      print(plot.data[[1]] + facet_wrap(~Reserve,ncol=3,scales='free') + 
+      print(plot.data[[1]] + facet_wrap(~Reserve,ncol=wrap.cols,scales='free') + 
               theme(aspect.ratio = 2.0, axis.text.x = element_text(angle = -30, hjust = 0)))
     }
   }
@@ -1023,7 +1021,7 @@ if(has.multiple.scenarios){
         yr.res.scen.diff = yr.res.scen[,.(scenario, GWh=GWh-GWh[scenario==ref.scenario]),by=.(Type,Reserve)]
         plot.data = gen_diff_stack_plot(yr.res.scen.diff, filters = c('Reserve','scenario'))
         # Create plot
-        print(plot.data[[1]] + facet_wrap(~Reserve,ncol=3,scales='free') + 
+        print(plot.data[[1]] + facet_wrap(~Reserve,ncol=wrap.cols,scales='free') + 
                 theme(aspect.ratio = 2.0, axis.text.x = element_text(angle = -30, hjust = 0),
                       text = element_text(face='bold')))
       }
