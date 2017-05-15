@@ -155,11 +155,6 @@ if (length(interfaces)==0) {
 } else if (any(toupper(interfaces) == 'ALL')){
   interfaces = unique(query_class_member(db,'Interface')$name)
 }
-# Update scen.pal to account for larger number of scenarios Give warning about large number of entries
-  if (length(scenario.names) > length(scen.pal)){
-  message('\nYou have specified a large number of scenarios Color palette may be hard to differentiate.')
-  scen.pal = rainbow(length(scenario.names))
-}
 
 # lines to look at flows for
 lines = as.character(na.omit(inputs$Lines.for.Flows))
@@ -453,7 +448,7 @@ region.zone.mapping[, Zone:=factor(Zone,levels=zone.order)]
 rz.unique = unique(region.zone.mapping[,.(Region,Zone)])
 
 # -----------------------------------------------------------------------
-# Create Generator-Color mapping 
+# Create Generator-Color mapping and scenario colors
 # -----------------------------------------------------------------------
   # Set plot color for each generation type. Use rainbow() if mapping not provided
 if(all(is.na(inputs$Gen.Type)) | all(is.na(inputs$Plot.Color))){
@@ -466,6 +461,12 @@ if(all(is.na(inputs$Gen.Type)) | all(is.na(inputs$Plot.Color))){
 # Add Curtailment if not included
 if (! 'Curtailment' %in% names(gen.color)){
   gen.color['Curtailment'] = 'red'
+}
+
+# Update scen.pal to account for larger number of scenarios Give warning about large number of entries
+if (length(scenario.names) > length(scen.pal)){
+  message('\nYou have specified a large number of scenarios Color palette may be hard to differentiate.')
+  scen.pal = rainbow(length(scenario.names))
 }
 
 # -----------------------------------------------------------------------
