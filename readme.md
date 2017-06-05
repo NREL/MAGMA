@@ -24,7 +24,7 @@ This package creates figures and an HTML file with all of those figures for plex
 ##### input_data.csv columns:
 1. ref.scenario
 	+ Name of reference scenario if comparing multiple solution files. Only used if more than one database is provided.
-	Scenario name must be the name of the folder where the solution file is contained. Each different scenario's solution must be in its own individual folder. 
+	Scenario name must be the name of the folder where the solution file is contained. Each different scenario's solution must be in its own individual folder. If multiple database solutions are provided and no ref.scenario is specified, the first one listed will default to the base or reference scenario.
 2. PLEXOS.Gen.Category
 	+ Categories in PLEXOS database. This must contain all the categories in your PLEXOS database.
 	+ Only required if "use.gen.type.csv" or "Using.Gen.Type.Mapping.CSV" is FALSE.
