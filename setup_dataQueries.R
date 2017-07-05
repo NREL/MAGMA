@@ -95,6 +95,8 @@ if ( region.zone.flow.table ) {
 
   # Total region unserved energy
   total.region.ue      = tryCatch( total_region_ue(db), error = function(cond) { return('ERROR') } ) 
+  if (typeof(total.region.ue)=='character') { 
+    message('\nMissing total region unserved energy data from solution .db file.')}
 
   # Total zone imports.
   total.zone.imports = tryCatch( total_zone_imports(db), error = function(cond) { return('ERROR') } ) 
@@ -108,8 +110,8 @@ if ( region.zone.flow.table ) {
 
   # Total zone unserved energy.
   total.zone.ue      = tryCatch( total_zone_ue(db), error = function(cond) { return('ERROR') } ) 
-  if (typeof(total.region.ue)=='character') { 
-    message('\nMissing total region unserved energy data from solution .db file.')}
+  if (typeof(total.zone.ue)=='character') { 
+    message('\nMissing total zone unserved energy data from solution .db file.')}
 }
 
 if ( annual.reserves.table ) {
@@ -186,7 +188,8 @@ if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period
     }
 }
 
-if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period.dispatch.zone.log ){
+if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period.dispatch.zone.log |
+  commit.dispatch.zone | commit.dispatch.region ){
   # interval level region ue.
   interval.region.ue  = tryCatch( interval_region_ue(db), error = function(cond) { return('ERROR') } )
   # Interval level zone ue 
@@ -194,13 +197,13 @@ if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period
   if (exists('interval.region.ue')) { 
     if (typeof(interval.region.ue)=='character') { 
       message('\nMissing interval region ue data from solution .db file.')
-      }
     }
+  }
   if (exists('interval.zone.ue')) { 
     if (typeof(interval.zone.ue)=='character') { 
       message('\nMissing interval zone ue data from solution .db file.')
-      }
     }
+  }
 }
 
 if ( interface.flow.plots | key.period.interface.flow.plots ) {
