@@ -1159,9 +1159,15 @@ total_line_flow = function(database) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # Interval level generator generation
-interval_gen = function(database) {
+interval_gen = function(database,region_zone_map) {
   interval.gen = data.table(query_interval(database, 'Generator', 'Generation', columns = c('category', 'name'))) 
-  return(interval.gen[,.(scenario, property, name, value, time, category) ])
+  setkey(interval.gen,name)
+  setkey(region_zone_map,name)
+  interval.gen <- interval.gen[region_zone_map]
+  interval.gen[,name:=category]
+  interval.gen = interval.gen[,.(value=sum(value)),by=.(scenario,property,name,time,category,Zone)]
+  gc()
+  return(interval.gen[,.(scenario, property, name, value, time, category, Zone) ])
 }
 
 # Interval level generator pump load
@@ -1171,12 +1177,18 @@ interval_pump_load = function(database) {
 }
 
 # Interval level generator capacity
-interval_avail_cap = function(database) {
+interval_avail_cap = function(database,region_zone_map) {
   interval.avail.cap = data.table(query_interval(database, 'Generator', c('Available Capacity','Units Generating'), columns = c('category', 'name'))) 
   interval.avail.cap = dcast.data.table(interval.avail.cap, scenario+name+time+category~property, value.var = "value")
   interval.avail.cap[, value:=`Available Capacity`*(`Units Generating`>0)]
   interval.avail.cap[, property:='Available Capacity']
-  return(interval.avail.cap[,.(scenario, property, name, value, time, category) ])
+  setkey(interval.avail.cap,name)
+  setkey(region_zone_map,name)
+  interval.avail.cap <- interval.avail.cap[region_zone_map]
+  interval.avail.cap[,name:=category]
+  interval.avail.cap = interval.avail.cap[,.(value=sum(value)),by=.(scenario,property,name,time,category,Zone)]
+  gc()
+  return(interval.avail.cap[,.(scenario, property, name, value, time, category, Zone) ])
 }
 
 # Interval level region load 

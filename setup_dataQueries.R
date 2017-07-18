@@ -143,9 +143,25 @@ if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period
      daily.curtailment  | daily.curtailment.type | interval.curtailment | interval.curtailment.type | 
      commit.dispatch.zone | commit.dispatch.region | revenue.plots ) {
   # Interval level generation for each generator.
-  interval.generation   = tryCatch( interval_gen(db), error = function(cond) { return('ERROR') } ) 
+  if (exists('interval.generation')){
+    interval.generation2 = tryCatch( interval_gen(db,region.zone.mapping), error = function(cond) { return('ERROR') } )
+    interval.generation = rbind(interval.generation,interval.generation2)
+    interval.generation2 = NULL
+    gc()
+  } else {
+    interval.generation   = tryCatch( interval_gen(db,region.zone.mapping), error = function(cond) { return('ERROR') } )
+    gc()
+  }
   # Interval level available capacity for each generator.
-  interval.avail.cap    = tryCatch( interval_avail_cap(db), error = function(cond) { return('ERROR') } ) 
+  if (exists('interval.avail.cap')) {
+    interval.avail.cap2 = tryCatch( interval_avail_cap(db,region.zone.mapping), error = function(cond) { return('ERROR') } ) 
+    interval.avail.cap = rbind(interval.avail.cap,interval.avail.cap2)
+    interval.avail.cap2 = NULL
+    gc()
+  } else {
+    interval.avail.cap    = tryCatch( interval_avail_cap(db,region.zone.mapping), error = function(cond) { return('ERROR') } ) 
+    gc()
+  }
   if (exists('interval.generation')) { 
     if (typeof(interval.generation)=='character') { 
       message('\nMissing interval generator generation data from solution .db file.')
