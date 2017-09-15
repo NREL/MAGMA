@@ -230,6 +230,7 @@ db.loc <- unlist(lapply(db.loc, function(x) {
 
 run.rplx.all=F
 first.missing.db=T
+ok.to.query=T
 for (i in 1:length(db.loc)) { 
   run.rplx=F
   if(length(list.files(pattern = "\\.zip$",path=db.loc[i]))!=0 ) {
@@ -256,13 +257,17 @@ for (i in 1:length(db.loc)) {
     } 
   } else if (length(list.files(pattern = '\\.db$', path=db.loc[i]))!=0 ) {
     message(paste0('\nFound .db solution file: ', list.files(pattern='\\.db$',path=db.loc[i]), '\n'))
-  } else {message('No .zip or .db file... are you in the right directory?')}
+    ok.to.query = F
+  } else {
+    message('No .zip or .db file... are you in the right directory?')
+    ok.to.query = F
+    }
 }
 # -----------------------------------------------------------------------
 # Open the database file ( must already have created this using rplexos ) 
 # -----------------------------------------------------------------------
 # Get scenario names if specified
-if(!exists('scenario.names')){
+if(!exists('scenario.names') & ok.to.query){
   scenario.names = basename(db.loc)
 }
 if ('Scenario.Names'%in%names(inputs)){
@@ -283,9 +288,15 @@ db.day.ahead.loc <- unlist(lapply(db.day.ahead.loc, function(x) {
 }))
 
 # Open database
-db = plexos_open(db.loc, scenario.names)
-attributes(db)$class = c("rplexos","data.frame","tbl_df")
-
+if(ok.to.query){
+  db = plexos_open(db.loc, scenario.names)
+  attributes(db)$class = c("rplexos","data.frame","tbl_df")
+  
+}else{
+  warning(paste("Your database doesn't exist. We will not plot anything involving that database.",
+                "If you want those plots created, please fix your database name",sep="\n"))
+  db = data.table(scenario = scenario.names,position='EMPTY',filename=db.loc,tables=0,properties=0)
+}
 # Open the day ahead database file
 db.day.ahead = tryCatch(plexos_open(db.day.ahead.loc, scenario.names), error = function(cond) { return(data.frame('ERROR'))})
 if (is.character(db.day.ahead)){
@@ -323,11 +334,12 @@ if (has.multiple.scenarios){
 # Get properties available
 # -----------------------------------------------------------------------
 # get available properties
-properties = data.table(query_property(db))
-if (typeof(db.day.ahead)!='character'){
-  properties.day.ahead = data.table(query_property(db.day.ahead))
+if(ok.to.query){
+  properties = data.table(query_property(db))
+  if (db.day.ahead!=data.frame('ERROR')){
+    properties.day.ahead = data.table(query_property(db.day.ahead))
+  }
 }
-
 # -----------------------------------------------------------------------
 # Create Generator-Type mapping 
 # -----------------------------------------------------------------------
@@ -473,7 +485,7 @@ if (length(scenario.names) > length(scen.pal)){
 # Get some time properties of your model
 # -----------------------------------------------------------------------
 # Calculate First and last day of simulation and interval length
-model.timesteps = model_timesteps(db)
+if(ok.to.query) model.timesteps = model_timesteps(db)
 model.intervals = model.timesteps[,.(scenario,timestep)]
 
 # Check to make sure no overlapping periods are created
@@ -501,7 +513,3 @@ if (length(unique(model.intervals$timestep))!=1){
 }
 # Number of intervals per day
 intervals.per.day = 24 / unique(as.numeric(model.intervals$timestep,units='hours'))
-
-
-
-
