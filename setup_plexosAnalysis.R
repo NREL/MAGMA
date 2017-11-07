@@ -298,7 +298,7 @@ if(ok.to.query){
   db = data.table(scenario = scenario.names,position='EMPTY',filename=db.loc,tables=0,properties=0)
 }
 # Open the day ahead database file
-db.day.ahead = tryCatch(plexos_open(db.day.ahead.loc, scenario.names), error = function(cond) { return(data.frame('ERROR'))})
+db.day.ahead = tryCatch(plexos_open(db.day.ahead.loc, scenario.names), error = function(cond) { return(data.frame('ERROR'))} )
 if (is.character(db.day.ahead)){
   warning(paste("Your Day Ahead database doesn't exist. We will not plot anything involving that database.",
                 "If you want those plots created, please fix your database name",sep="\n"))
@@ -336,7 +336,7 @@ if (has.multiple.scenarios){
 # get available properties
 if(ok.to.query){
   properties = data.table(query_property(db))
-  if (db.day.ahead!=data.frame('ERROR')){
+  if (db.day.ahead[1,1]!='ERROR'){
     properties.day.ahead = data.table(query_property(db.day.ahead))
   }
 }
