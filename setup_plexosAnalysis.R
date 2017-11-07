@@ -257,7 +257,7 @@ for (i in 1:length(db.loc)) {
     } 
   } else if (length(list.files(pattern = '\\.db$', path=db.loc[i]))!=0 ) {
     message(paste0('\nFound .db solution file: ', list.files(pattern='\\.db$',path=db.loc[i]), '\n'))
-    ok.to.query = F
+    ok.to.query = T
   } else {
     message('No .zip or .db file... are you in the right directory?')
     ok.to.query = F
