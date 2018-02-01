@@ -32,6 +32,7 @@ region_zone_gen = function(total.generation, total.avail.cap) {
   setkey(total.generation,'name')
   setkey(total.avail.cap,'name')
   gen.type.zone.region = region.zone.mapping[, Type:=gen.type.mapping[as.character(name)]]
+  setkey(gen.type.zone.region,'name')
   
   # Filter out generation and available capacity data and add generation type by matching generator name.
   # Also add region and zone by matching generator name in the region and zone mapping file. 
@@ -442,16 +443,16 @@ costs = function(total.emissions.cost, total.fuel.cost, total.ss.cost, total.vom
   if( !(is.character(total.emissions.cost) & is.character(total.fuel.cost) & 
         is.character(total.ss.cost) & is.character(total.vom.cost))){
     if(is.character(total.emissions.cost)){
-      total.emissions.cost = data.table(scenario = db$scenario,property = 'Emissions Cost', value=NA)
+      total.emissions.cost = data.table(scenario = db$scenario,property = 'Emissions Cost', value=NA*0)
     }
     if(is.character(total.fuel.cost)){
-      total.fuel.cost = data.table(scenario = db$scenario,property = 'Fuel Cost', value=NA)
+      total.fuel.cost = data.table(scenario = db$scenario,property = 'Fuel Cost', value=NA*0)
     }
     if(is.character(total.ss.cost)){
-      total.ss.cost = data.table(scenario = db$scenario,property = 'Start & Shutdown Cost', value=NA)
+      total.ss.cost = data.table(scenario = db$scenario,property = 'Start & Shutdown Cost', value=NA*0)
     }
     if(is.character(total.vom.cost)){
-      total.vom.cost = data.table(scenario = db$scenario,property = 'VO&M Cost', value=NA)
+      total.vom.cost = data.table(scenario = db$scenario,property = 'VO&M Cost', value=NA*0)
     }
   }
   
@@ -563,19 +564,19 @@ region_stats = function(total.region.load, total.region.imports, total.region.ex
   if( !(is.character(total.region.load) & is.character(total.region.imports) & 
         is.character(total.region.exports) & is.character(total.region.ue))){
     if(is.character(total.region.load)){
-      total.region.load = merge(data.table(scenario = db$scenario, property = 'Load', value=NA), 
+      total.region.load = merge(data.table(scenario = db$scenario, property = 'Load', value=NA*0), 
                                 data.table(name=region.names, property = 'Load'), by="property", allow.cartesian=TRUE)
     }
     if(is.character(total.region.imports)){
-      total.region.imports = merge(data.table(scenario = db$scenario, property = 'Imports', value=NA), 
+      total.region.imports = merge(data.table(scenario = db$scenario, property = 'Imports', value=NA*0), 
                                 data.table(name=region.names, property = 'Imports'), by="property", allow.cartesian=TRUE)
     }
     if(is.character(total.region.exports)){
-      total.region.exports = merge(data.table(scenario = db$scenario, property = 'Exports', value=NA), 
+      total.region.exports = merge(data.table(scenario = db$scenario, property = 'Exports', value=NA*0), 
                                 data.table(name=region.names, property = 'Exports'), by="property", allow.cartesian=TRUE)
     }
     if(is.character(total.region.ue)){
-      total.region.ue = merge(data.table(scenario = db$scenario, property = 'Unserved Energy', value=NA), 
+      total.region.ue = merge(data.table(scenario = db$scenario, property = 'Unserved Energy', value=NA*0), 
                                 data.table(name=region.names, property = 'Unserved Energy'), by="property", allow.cartesian=TRUE)
     }
   }
@@ -591,19 +592,19 @@ zone_stats = function(total.region.load, total.region.imports, total.region.expo
     if( !(is.character(total.region.load) & is.character(total.region.imports) & 
           is.character(total.region.exports) & is.character(total.region.ue))){
       if(is.character(total.region.load)){
-        total.region.load = merge(data.table(scenario = db$scenario, property = 'Load', value=NA), 
+        total.region.load = merge(data.table(scenario = db$scenario, property = 'Load', value=NA*0), 
                                   data.table(name=region.names, property = 'Load'), by="property", allow.cartesian=TRUE)
       }
       if(is.character(total.region.imports)){
-        total.region.imports = merge(data.table(scenario = db$scenario, property = 'Imports', value=NA), 
+        total.region.imports = merge(data.table(scenario = db$scenario, property = 'Imports', value=NA*0), 
                                   data.table(name=region.names, property = 'Imports'), by="property", allow.cartesian=TRUE)
       }
       if(is.character(total.region.exports)){
-        total.region.exports = merge(data.table(scenario = db$scenario, property = 'Exports', value=NA), 
+        total.region.exports = merge(data.table(scenario = db$scenario, property = 'Exports', value=NA*0), 
                                   data.table(name=region.names, property = 'Exports'), by="property", allow.cartesian=TRUE)
       }
       if(is.character(total.region.ue)){
-        total.region.ue = merge(data.table(scenario = db$scenario, property = 'Unserved Energy', value=NA), 
+        total.region.ue = merge(data.table(scenario = db$scenario, property = 'Unserved Energy', value=NA*0), 
                                   data.table(name=region.names, property = 'Unserved Energy'), by="property", allow.cartesian=TRUE)
       }
     }
@@ -619,23 +620,23 @@ zone_stats = function(total.region.load, total.region.imports, total.region.expo
     if( !(is.character(total.zone.load) & is.character(total.zone.imports) & 
           is.character(total.zone.exports) & is.character(total.zone.ue))){
       if(is.character(total.zone.load)){
-        total.zone.load = merge(data.table(scenario = db$scenario, property = 'Load', value=NA), 
+        total.zone.load = merge(data.table(scenario = db$scenario, property = 'Load', value=NA*0), 
                                   data.table(name=zone.names, property = 'Load'), by="property", allow.cartesian=TRUE)
       }
       if(is.character(total.zone.imports)){
-        total.zone.imports = merge(data.table(scenario = db$scenario, property = 'Imports', value=NA), 
+        total.zone.imports = merge(data.table(scenario = db$scenario, property = 'Imports', value=NA*0), 
                                   data.table(name=zone.names, property = 'Imports'), by="property", allow.cartesian=TRUE)
       }
       if(is.character(total.zone.exports)){
-        total.zone.exports = merge(data.table(scenario = db$scenario, property = 'Exports', value=NA), 
+        total.zone.exports = merge(data.table(scenario = db$scenario, property = 'Exports', value=NA*0), 
                                   data.table(name=zone.names, property = 'Exports'), by="property", allow.cartesian=TRUE)
       }
       if(is.character(total.zone.ue)){
-        total.zone.ue = merge(data.table(scenario = db$scenario, property = 'Unserved Energy', value=NA), 
+        total.zone.ue = merge(data.table(scenario = db$scenario, property = 'Unserved Energy', value=NA*0), 
                                   data.table(name=zone.names, property = 'Unserved Energy'), by="property", allow.cartesian=TRUE)
       }
     }
-    z.data = rbindlist(list(total.zone.load, total.zone.imports, total.zone.exports, total.zone.ue))
+    z.data = rbindlist(list(total.zone.load, total.zone.imports, total.zone.exports, total.zone.ue),use.names=TRUE)
     z.data = z.data[,.(value=sum(value)),by=.(name,property,scenario)]
     z.stats = dcast.data.table(z.data, name+scenario~property, value.var = 'value')
   }
@@ -707,7 +708,7 @@ revenue_calculator = function(interval.generation, interval.pump.load, interval.
   
   revenue = rbindlist(list(gen.data[, .(revenue=sum(revenue)), by=.(scenario,Region,Zone,Type,Revenue_Type)],
                            pump.data[, .(revenue=sum(revenue)), by=.(scenario,Region,Zone,Type,Revenue_Type)],
-                           res.data[, .(revenue=sum(revenue)), by=.(scenario,Region,Zone,Type,Revenue_Type)]))
+                           res.data[, .(revenue=sum(revenue)), by=.(scenario,Region,Zone,Type,Revenue_Type)]), use.names=TRUE)
   return(revenue)
 }
 

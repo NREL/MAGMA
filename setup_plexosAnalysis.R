@@ -30,7 +30,11 @@ if(!exists('text.plot')){
 theme_set(theme_bw())
 
 # Color scheme for line plots
-scen.pal = c("blue", "firebrick3", "goldenrod2", "darkblue", "deeppink", "chartreuse2", "seagreen4")
+# Color palette for colorblind friendly colors, max of 8. Otherwise, will pick rainbow colors
+scen.pal = c(rgb(0.0000000, 0.0000000, 0.0000000), rgb(0.9019608, 0.6235294, 0.0000000), 
+             rgb(0.3372549, 0.7058824, 0.9137255), rgb(0.0000000, 0.6196078, 0.4509804), 
+             rgb(0.9411765, 0.8941176, 0.2588235), rgb(0.0000000, 0.4470588, 0.6980392), 
+             rgb(0.8352941, 0.3686275, 0.0000000), rgb(0.8000000, 0.4745098, 0.6549020))
 
 # -----------------------------------------------------------------------
 # Determine what sections to run code for. Assign a logical to each chunk run selector. 
@@ -397,18 +401,27 @@ if ( use.gen.type.csv & length(gen.type.csv.loc>0) ) {
 if ( !exists("gen.region.zone") ) {
   if ('Gen.Region.Zone.Mapping.Filename'%in%names(inputs)){
     gen.region.zone <- as.character(na.exclude(inputs$Gen.Region.Zone.Mapping.Filename))
-  } else{
+  } else{ 
     gen.region.zone <- NULL
   }
 }
 if (length(gen.region.zone)==0) {
-  warning(paste("You did not supply a Region-Zone mapping. We will create one for you from the rplexos database",
-                "However, rplexos reassigns Zone names to the Region category. If you do not want this behavior,",
-                "please create your own mapping file. You may use the file tools/make_region_zone_csv.py to do so,",
-                "which will require COAD to be installed and part of your path."))
+  warning("You did not supply a Generator-Region mapping. We will create one for you from the rplexos database")
   gen.mapping <- query_generator(db)
-  region.zone.mapping = data.table(unique(gen.mapping[,c('name','region','zone')]))
-  setnames(region.zone.mapping, c("region","zone"), c("Region","Zone"))
+  if(all(c('Region.Name','Zone.Name')%in%names(inputs))){
+      region.zone = data.table(inputs[,.(Region=as.character(Region.Name),
+                                         Zone=as.character(Zone.Name))])
+      region.zone.mapping = merge(region.zone, data.table(unique(gen.mapping[,c('name','region')])),
+                                  by.y='region', by.x='Region')
+  } else{
+    warning(paste("You did not supply a Region-Zone mapping. We will create one for you from the rplexos database",
+                  "However, rplexos reassigns Zone names to the Region category. If you do not want this behavior,",
+                  "please create your own mapping file. You may use the file tools/make_region_zone_csv.py to do so,",
+                  "which will require COAD to be installed and part of your path. You can also use the 'Region.Name' ",
+                  "and 'Zone.Name' columns in the input sheet to map Region names to Zone names."))
+    region.zone.mapping = data.table(unique(gen.mapping[,c('name','region','zone')]))
+    setnames(region.zone.mapping, c("region","zone"), c("Region","Zone"))
+  }
 } else{
   if(length(gen.region.zone)>1){
     warning("More than one Gen.Region.Zone.Mapping.Filename found... I'll create a unique combination for you.")
@@ -426,7 +439,7 @@ if (length(gen.region.zone)==0) {
     region.zone.mapping$Zone = as.character(region.zone.mapping$Zone)
   }
 }
-region.zone.mapping = unique(region.zone.mapping[, .(name, Region, Zone)])
+region.zone.mapping = unique(region.zone.mapping, by=c('name','Region','Zone'))
 setkey(region.zone.mapping,name)
 
 # -----------------------------------------------------------------------

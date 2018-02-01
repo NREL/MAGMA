@@ -27,8 +27,6 @@ if (exists('region.names')) { r.height = ( length(region.names[!region.names%in%
 if (exists('region.names')) { r.height2 = ( length(region.names[!region.names%in%ignore.regions]) %/% wrap.cols + 
                                              length(region.names[!region.names%in%ignore.regions]) %% wrap.cols ) * 3
   } else {r.height2 = 3 }
-if (exists('region.names')) { g.height = length(region.names[!region.names%in%ignore.regions]) * 5
-  } else {g.height = 5 }
 if (exists('reserve.names')) { res.height = ( length(reserve.names) %/% wrap.cols + length(reserve.names) %% wrap.cols ) * 5
   } else { res.height = 5 }
 if (exists('reserve.names')) { res.height2 = ( length(reserve.names) %/% wrap.cols + length(reserve.names) %% wrap.cols ) * 3
@@ -37,6 +35,8 @@ if (exists('interfaces')) { i.height = max( length(interfaces) %/% wrap.cols + l
   } else { i.height = 5 }
 if (exists('lines')) { l.height = max( length(lines) %/% wrap.cols + length(lines) %% wrap.cols, 1) * 3
 } else { l.height = 5 }
+g.height = ( length(unique(gen.type.mapping)) %/% wrap.cols + 
+               length(unique(gen.type.mapping)) %% wrap.cols ) * 3
 s.height = ( length(db.loc) ) * 4
 s.width = ( length(db.loc) %/% 3 + length(db.loc) %% wrap.cols ) * 10
 p.height = ( length(period.names) %/% 2 + length(period.names) %% 2 ) * 5
