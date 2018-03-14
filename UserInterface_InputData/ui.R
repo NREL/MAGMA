@@ -6,50 +6,25 @@ shinyUI(
 fluidPage(
 
   # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  # Heading Text ----
   # Create and display heading text
   fluidRow( column( 8, headerPanel('MAGMA Input CSV Creator'), offset = 2 ) 
           ),
-  fluidRow( column(4, h5("Example HTML Report:", a("example_html", href="https://github.com/NREL/MAGMA/blob/test_shiny/Examples/reports/HTML_output_example2_states.html")) ),
+  fluidRow( column(4, h5("Example HTML Report:", a("example_html", href="https://github.com/NREL/MAGMA/blob/master/Examples/RTS-2016/reports/HTML_output.html")) ),
             column(4, h3("Sections to Run:", position = 'center') ) 
           ),
   
   # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  # Sections to Run Checkboxes ----
   # Creates the 3 parts of the input object "sectionsToRun1, sectionsToRun2, sectionsToRun3" which tell the rest of the interface what input optinos to show.
   fluidRow(
-    column(4, checkboxGroupInput('sectionsToRun1', "", sectionList[1:9]) ),
-    column(4, checkboxGroupInput('sectionsToRun2', '', sectionList[10:18]) ),
-    column(4, checkboxGroupInput('sectionsToRun3', "", sectionList[19:26]) )
+    column(4, checkboxGroupInput('sectionsToRun1', "", sectionList[1:ceiling(length(sectionList)/3)]) ),
+    column(4, checkboxGroupInput('sectionsToRun2', '', sectionList[(ceiling(length(sectionList)/3)+1):(ceiling(length(sectionList)/3)+ceiling(length(sectionList)/3))]) ),
+    column(4, checkboxGroupInput('sectionsToRun3', "", sectionList[(ceiling(length(sectionList)/3)+ceiling(length(sectionList)/3)+1):length(sectionList)]) )
   ), 
   
-  # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  # This row has the initial database location, and if required, the DA database location (for DA-RT plots)
-  # Conditional based on output DA_RT
-  fluidRow(
-    column(4, textInput('db.loc', 'Database Location:') ),
-    column(4, conditionalPanel( 
-                  condition = "output.DA_RT", 
-                  textInput("DA.RT.db.loc", 
-                  label = "DA Database Location:") ) )
-  ),
-
-  # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  # Conditional based on output genType
-  # Checks to see it output$genType is TRUE. If so, it creates the radioBUttons 'genTypeMapping' which requires a selection of how gen type is mapped.
-  fluidRow(
-     column(4, conditionalPanel( 
-                   condition = "output.genType",
-                   radioButtons('genTypeMapping', label = 'Assign Generation Type By:', 
-                       choices = list('CSV Mapping File' = 1, 'PLEXOS Category' = 2) ) ) ),
-     # Checks to see if genTypeMapping (radio button above) has either a 1 or 2 selected. Perform and display appropriate information based on that selection.
-     column(4, conditionalPanel(
-                   condition = "input.genTypeMapping == 1 && output.genType",
-                   textInput('genTypeMappingLocation', label = 'Gen Type Mapping CSV Location:') ),
-               conditionalPanel(
-                   condition = "input.genTypeMapping == 2 && output.genType",
-                   checkboxInput('reassignPlexosGenTypes', label = 'Reassign PLEXOS generator category types?') ) )
-  ),
- 
  # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ # PLEXOS Gen Category Mapping ----
  # This whole section is the list that allows you to reassign generation type from PLEXOS categories to whatever type is desired. 
  # It is only displayed if assigning gen type by plexos category, AND reassign plexos gen category is selected.
  fluidRow( column(4, conditionalPanel( condition = "input.reassignPlexosGenTypes == 1 && input.genTypeMapping == 2 && output.genType", textInput('plexosCategory1', 
@@ -86,6 +61,7 @@ fluidPage(
            column(4, conditionalPanel( condition = "input.reassignPlexosGenTypes == 1 && input.genTypeMapping == 2 && output.genType", textInput('genType15', label=NULL) ) ) ),
 
  # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ # Order and Color of Generation for Stacks ----
  # This section sets the order of generation type for the dispatch stacks as well as the plot color for the stacks.
  # It also asks if each generation type should be considered for curtailment calculations, and if selected, asks if each type should be shown in the DA-RT plots.
  # Only show genStackPlot if the sections that produce a generation dispatch stack are selected.
@@ -175,17 +151,7 @@ fluidPage(
            column(1, conditionalPanel( condition = "output.DA_RT",        checkboxInput('DA_RT_Type20', label=NULL) ), offset=2 ) ),
  
  # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- # Checkbox option to reassign what regions make up what zones. If the box is checked a new option opens up asking where the CSV mapping file is.
- fluidRow(
-   column(4, conditionalPanel(
-                  condition = 'output.zonesUsed',
-                  checkboxInput('reassignZones', label = 'Reassign PLEXOS Zones according to Regions?') ) ),
-   column(4, conditionalPanel(
-                  condition = 'input.reassignZones == 1 && output.zonesUsed',
-                  textInput('regionZoneMappingFile', label = 'Region/Zone Mapping File Location (Can be same as Gen Type as long as there are columns for Region and Zone name)') ) )
- ),
- 
- # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ # Key Period Sections ----
  # If any sections involving key periods are selected, this list allows input of key period names and start/end times.
  fluidRow( column(3, conditionalPanel( condition = "output.keyPeriodPlots", h4('Key Period Name:')) ),
            column(5, conditionalPanel( condition = "output.keyPeriodPlots", h4('Period Date Range:')) ) ),
@@ -207,6 +173,7 @@ fluidPage(
            column(5, conditionalPanel( condition = "output.keyPeriodPlots", dateRangeInput('keyPeriodRange8', label=NULL, startview='decade')) ) ),
  
  # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ # Exclude regions or zones from plots ----
  # If generation stacks are going to be created, these check boxes allow the user to select regions or zones to be exluded from the plots. 
  fluidRow( column(4, conditionalPanel( condition = "output.genStackPlot", checkboxInput('ignoreZones', label="Exclude any zones from generation stack plots?")) ),
            column(4, conditionalPanel( condition = "output.genStackPlot", checkboxInput('ignoreRegions', label="Exclude any regions from generation stack plots?")) ) ),
@@ -224,6 +191,7 @@ fluidPage(
            column(4, conditionalPanel( condition = "output.genStackPlot && input.ignoreRegions == 1", textInput('ignoreRegion5', label=NULL)) ) ),
  
  # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ # Interfaces to query ----
  # If sections involving interface data are selected, this list allows the user to input the interface names they want data for.
  fluidRow( column(5, conditionalPanel( condition = "output.interfacePlots", textInput('interface1', label='Interfaces to create results for:')) ) ),
  fluidRow( column(5, conditionalPanel( condition = "output.interfacePlots", textInput('interface2', label=NULL)) ) ),
@@ -237,6 +205,21 @@ fluidPage(
  fluidRow( column(5, conditionalPanel( condition = "output.interfacePlots", textInput('interface10', label=NULL)) ) ),
  
  # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ # Lines to query ----
+ # If sections involving line data are selected, this list allows the user to input the line names they want data for.
+ fluidRow( column(5, conditionalPanel( condition = "output.linePlots", textInput('line1', label='Lines to create results for:')) ) ),
+ fluidRow( column(5, conditionalPanel( condition = "output.linePlots", textInput('line2', label=NULL)) ) ),
+ fluidRow( column(5, conditionalPanel( condition = "output.linePlots", textInput('line3', label=NULL)) ) ),
+ fluidRow( column(5, conditionalPanel( condition = "output.linePlots", textInput('line4', label=NULL)) ) ),
+ fluidRow( column(5, conditionalPanel( condition = "output.linePlots", textInput('line5', label=NULL)) ) ),
+ fluidRow( column(5, conditionalPanel( condition = "output.linePlots", textInput('line6', label=NULL)) ) ),
+ fluidRow( column(5, conditionalPanel( condition = "output.linePlots", textInput('line7', label=NULL)) ) ),
+ fluidRow( column(5, conditionalPanel( condition = "output.linePlots", textInput('line8', label=NULL)) ) ),
+ fluidRow( column(5, conditionalPanel( condition = "output.linePlots", textInput('line9', label=NULL)) ) ),
+ fluidRow( column(5, conditionalPanel( condition = "output.linePlots", textInput('line10', label=NULL)) ) ),
+ 
+ # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ # Generation to consider curtailment ----
  # If sections involving curtailment are selected but none that produce generation stacks, this list asks what type of generation should be considered as curtailment.
  fluidRow( column(4, conditionalPanel( condition = "output.curtailmentCalcs && output.genStackPlot == false", 
                                        textInput('reType1', label='Renewable types for curtailment calculations:', value='PV')) ) ),
@@ -246,14 +229,28 @@ fluidPage(
  fluidRow( column(4, conditionalPanel( condition = "output.curtailmentCalcs && output.genStackPlot == false", textInput('reType5', label=NULL)) ) ),
 
  # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- # Location so save the HTML report
- fluidRow( column(6, textInput('reportLocation', label='Directory to save HTML report:') ),
-           column(6, conditionalPanel( condition = "output.plots", 
-                                       textInput('figureLocation', label='Directory to save figures:') ) ) ),
+ # Reference Scenario ----
+ # Option to enter reference scenario name
+ fluidRow( column(3, checkboxInput('referenceBox', label = 'Comparing Multiple Scenarios?' ) ),
+           column(3, conditionalPanel( condition = "input.referenceBox == 1", textInput('referenceName', label = 'Reference Scenario Name' ) ) ),
+           column(3, conditionalPanel( condition = "input.referenceBox == 1", numericInput('numScenarios', label = 'Number of Scenarios', value=1) ) )
+           ),
  
  # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ # Scenario Name(s) ----
+ # Names for scenarios in HTML Report
+ fluidRow( column(2, textInput('scenario1', label = 'Scenario Name' ) ),
+           column(2, conditionalPanel( condition = "input.numScenarios > 1", textInput('scenario2', label = "Scenario 2 Name" ) ) ),
+           column(2, conditionalPanel( condition = "input.numScenarios > 2", textInput('scenario3', label = "Scenario 3 Name" ) ) ),
+           column(2, conditionalPanel( condition = "input.numScenarios > 3", textInput('scenario4', label = "Scenario 4 Name" ) ) ),
+           column(2, conditionalPanel( condition = "input.numScenarios > 4", textInput('scenario5', label = "Scenario 5 Name" ) ) ),
+           column(2, conditionalPanel( condition = "input.numScenarios > 5", textInput('scenario6', label = "Scenario 6 Name" ) ) )
+           ),
+ 
+ # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ # Create CSV file button ----
  # Button to create the input CSV file. 
- fluidRow( column(4, textInput('csvLocation', label='Directory to save input CSV:') ) ),
+ fluidRow( column(4, textInput('csvLocation', label='Directory to save input CSV:') ) ), 
  fluidRow( column(4, actionButton('createCSV', label='Create input CSV file.') ) )
 
 ))
