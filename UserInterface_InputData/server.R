@@ -207,8 +207,8 @@ shinyServer(function(input, output) {
       write_data_df$Gen.Order[which(write_data_df$DA.RT.Plot.Types=="TRUE")]
     write_data_df$DA.RT.Plot.Types[which(write_data_df$DA.RT.Plot.Types=="FALSE")]=NA
 
-    save.loc = paste0(input$csvLocation,'\\input_data.csv')
-    print(save.loc)
+    save.loc = paste0(input$csvLocation,'input_data.csv')
+    print(c('Saving File to: ', save.loc))
     write.csv(write_data_df, save.loc, row.names=FALSE)
 
   })
