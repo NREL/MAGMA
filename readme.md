@@ -5,6 +5,7 @@ This package creates figures and an HTML file with all of those figures for plex
 * You must use process_folder() from the rplexos package to create a database file from the PLEXOS solution .zip, before running this code.
 * The Examples folder contains templates and examples of the input data CSV, the generator name, region, and zone mapping CSV, the R script that runs the package, and example HTML reports (within the reports folder).
 * Section_guide.md lists what sections correspond to each number for the sections to run column in the input data CSV file.
+* UserInterface_InputData contains a shiny (r package) graphical user interface that will create the input_data.csv file automatically based on what sections you want to run. Either run the app, or open the ui.R in RStudio and click "Run App" to open a new window which allows the user to select which sections to run. It then prompts the user to input the necessary data. Click "Create input CSV file" to create the csv file. 
 
 ## To Run:
 1. Copy run_html_output.R and input_data_template.csv from the Examples/ folder into another folder associated with your project specific repository.
