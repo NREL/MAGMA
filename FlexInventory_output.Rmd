@@ -1,0 +1,81 @@
+---
+title: "Multi-area Grid Metrics Analyzer\nFlexibility Inventory"
+author: "Created by: `r Sys.info()['user']`"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: 
+  html_document: 
+    css: custom.css
+    toc: yes
+---
+
+```{r setOptions, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Set up default options for chunks, turn off error or warning messages.
+knitr::opts_chunk$set(echo=FALSE, comment=NA, warning=FALSE, message=FALSE, include=TRUE,
+                      fig.path=fig.path.name, dev='png', fig.width=12)
+
+if (!exists('wrap.cols')){
+  wrap.cols = 3 #number of facet columns for wrapping
+}
+# Set dynamic height for figures
+g.height = ( length(unique(gen.type.mapping)) %/% wrap.cols + 
+               length(unique(gen.type.mapping)) %% wrap.cols ) * 3
+s.height = ( length(db.loc) ) * 4
+s.width = ( length(db.loc) %/% 3 + length(db.loc) %% wrap.cols ) * 10
+p.height = ( length(period.names) %/% 2 + length(period.names) %% 2 ) * 5
+t.height = ( length(re.types) ) * 5
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+### Data below generated for:
+"`r gsub('.*Model', 'Model', db$filename)`"
+
+***
+## Net Load 
+***
+```{r net-load}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+source('source_scripts/f_netload.R')
+print(p.nl +
+          theme(aspect.ratio = length(db.loc)/4)) 
+  # theme(aspect.ratio = 2.5/length(db.loc),
+  #       axis.text.x = element_text(angle = -30, hjust = 0),
+  #       text = element_text(face='bold')))
+
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+## Diurnal Net Load
+
+```{r diurnal-net-load}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+source('source_scripts/f_netload.R')
+print(p.nlv)
+  # theme(aspect.ratio = 2.5/length(db.loc),
+  #       axis.text.x = element_text(angle = -30, hjust = 0),
+  #       text = element_text(face='bold')))
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+## Net Load Duration
+
+```{r net-load-duration}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+source('source_scripts/f_netload.R')
+print(p.dur)#+
+#   theme(aspect.ratio = 2.5/length(db.loc),
+#         axis.text.x = element_text(angle = -30, hjust = 0),
+#         text = element_text(face='bold')))
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+```{r net-load-duration-curtailment}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+source('source_scripts/f_netload.R')
+print(p.durbar) # +
+      # theme(aspect.ratio = 2.5/length(db.loc),
+      #       axis.text.x = element_text(angle = -30, hjust = 0),
+      #       text = element_text(face='bold')))
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```

@@ -143,7 +143,7 @@ if ( line.flow.table ) {
 
 if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period.dispatch.zone.log |
      daily.curtailment  | daily.curtailment.type | interval.curtailment | interval.curtailment.type | 
-     commit.dispatch.zone | commit.dispatch.region | revenue.plots ) {
+     commit.dispatch.zone | commit.dispatch.region | revenue.plots | flex.inventory ) {
   # Interval level generation for each generator.
   interval.generation   = tryCatch( interval_gen(db), error = function(cond) { return('ERROR') } ) 
   # Interval level available capacity for each generator.
@@ -171,7 +171,7 @@ if ( revenue.plots ) {
 }
 
 if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period.dispatch.zone.log |
-     commit.dispatch.zone | commit.dispatch.region ){
+     commit.dispatch.zone | commit.dispatch.region | flex.inventory ){
   # interval level region load.
   interval.region.load  = tryCatch( interval_region_load(db), error = function(cond) { return('ERROR') } )
   # Interval level zone load 

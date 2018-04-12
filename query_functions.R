@@ -433,6 +433,71 @@ total_curtailment = function(interval.generation, interval.avail.cap) {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Interval VG Generation ----
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+total_variablegen = function(interval.generation, interval.avail.cap) {
+    
+    setkey(interval.generation,name)
+    setkey(interval.avail.cap,name)
+    
+    # Separate generation and available capacity data by type for each interval.
+    c.gen = interval.generation[, Type:=gen.type.mapping[as.character(name)] ][Type %in% re.types,.(value=sum(value)),by=.(scenario, time)]
+    c.avail = interval.avail.cap[, Type:=gen.type.mapping[as.character(name)] ][Type %in% re.types,.(value=sum(value)),by=.(scenario, time)]
+    
+    if (typeof(c.avail)=='double' & typeof(c.gen)=='double') {
+        # TO DO: find out what this does
+        curt = c.avail - c.gen
+        curt = data.table(curt.tot)
+        curt[,year := 1900+as.POSIXlt(time)[[6]]]
+        curt[,day := as.POSIXlt(time)[[8]]+1]
+        curt[,interval := 1:intervals.per.day,by=.(day)]
+    } else {
+        setkey(c.avail,scenario,time)
+        setkey(c.gen,scenario,time)
+        curt = c.avail[c.gen][,curt := value-i.value]
+        setnames(curt, c("scenario","time","Available Capacity","Generation","Curtailment"))
+    }
+    
+    return(curt)
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Interval Net Load ----
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+interval_netload = function(interval.vg, interval.region.load) {
+    
+    c.vg = interval.vg[,.(`VG Output` = sum(Generation), `VG Potential` = sum(`Available Capacity`), Curtailment = sum(Curtailment)), by = .(scenario,time)]
+    c.load = interval.region.load[,.(Load = sum(value)), by = .(scenario,time)]
+    
+    setkey(c.vg,scenario,time)
+    setkey(c.load,scenario,time)
+    c = c.vg[c.load]
+    
+    c[,`Net Load` := Load - `VG Output`]
+    c[,`Potential Net Load` := Load - `VG Potential`]
+
+    c = melt.data.table(c, id = c("scenario","time"))
+    return(c)
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Diurnal Net Load ----
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+diurnal_netload = function(interval.netload) {
+    
+    setkey(interval.netload,scenario,variable,time)
+    interval.netload = divide_quarterly(interval.netload)
+    c = interval.netload[,.(value = mean(value) ), by = .(scenario,variable,Quarter,Interval)]
+    max_int = max(c[,Interval])
+    by_int = 24.0/max_int*60.0*60.0
+    c[,time:= c(seq.POSIXt(from=as.POSIXct(strptime("00:00", "%H:%M", tz = 'UTC')), by = by_int, length.out = max_int))]
+    return(c)
+}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Cost  ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Returns a table of total run costs
@@ -1266,4 +1331,38 @@ model_timesteps = function(database){
   timesteps = data.table(query_time(database))
   timesteps = timesteps[phase=="ST", ]
   return(timesteps[, .(scenario, phase, start, end, count, timestep)])
+}
+
+divide_quarterly <- function(df ){
+    if(is.null(df[,time])){
+        df[, Quarter := "Winter"]
+        df[Month %in% c(3:5), Quarter := "Spring"]
+        df[Month %in% c(6:8), Quarter := "Summer"]
+        df[Month %in% c(9:11),Quarter := "Fall"]
+        df[, Quarter := factor(Quarter, levels = c("Spring","Summer","Fall","Winter"))]
+        return(df)
+    }
+    df <- convert_to_POSIXct(df)
+    u = difftime(df$time[2], df$time[1], units = 'mins')
+
+    steps = (24 * (60/as.double(u)))
+    df[, Interval := c(1:steps)]
+
+    df[, Day := day(df[,time])]
+    df[, Month := month(df[,time])]
+    df[, Quarter := ("Winter")]
+    df[Month %in% c(3:5), Quarter := "Spring"]
+    df[Month %in% c(6:8), Quarter := "Summer"]
+    df[Month %in% c(9:11),Quarter := "Fall"]
+    df[, Quarter := factor(Quarter, levels = c("Spring","Summer","Fall","Winter"))]
+    return(df)
+}
+
+convert_to_POSIXct <- function(df){
+    if(sum(hour(df[,time])) == 0){
+        df[, time := as.POSIXct(strptime(df[,time],"%Y-%m-%d", tz = 'UTC'))]
+    }
+    else
+        df[, time := as.POSIXct(strptime(df[,time],"%Y-%m-%d %H:%M:%S", tz = 'UTC'))]
+    return(df)
 }
