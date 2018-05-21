@@ -13,7 +13,7 @@ if (!require(pacman)){
   library(pacman)
 }
 p_load(ggplot2, reshape2, plyr, lubridate, scales, RSQLite, grid, knitr, markdown, grid, gridExtra, RColorBrewer, snow,
-       doParallel, xtable, data.table, dplyr, extrafont, tidyr, stringr, rplexos, rmarkdown, yaml)
+       doParallel, xtable, data.table, dplyr, extrafont, tidyr, stringr, rplexos, rmarkdown, yaml, datetime)
 
 # Convert inputs to data table
 inputs = data.table(inputs)
@@ -366,12 +366,47 @@ if (!exists("gen.type.csv.loc")) {
 } 
 
 # Create generator name to type mapping
-if ( use.gen.type.csv & length(gen.type.csv.loc>0) ) {
+if ( (use.gen.type.csv & length(gen.type.csv.loc>0)) | flex.inventory ) {
   # Read mapping file to map generator names to generation type
   gen.type.mapping = data.table(read.csv(gen.type.csv.loc, 
                                          stringsAsFactors=FALSE))
   gen.type.mapping = unique(gen.type.mapping[,.(name, Type)])
   gen.type.mapping = setNames(gen.type.mapping$Type, gen.type.mapping$name)
+  if( flex.inventory){
+      gen.property.mapping = data.table(read.csv(gen.type.csv.loc, 
+                                                 stringsAsFactors = FALSE))
+      gen.property.mapping[,Type:=NULL]
+      gen.property.mapping[,Region:=NULL]
+      gen.property.mapping[,Zone:=NULL]
+      ## Make sure gen.property.mapping has all required fields
+      if( !("Min.Stable.Level" %in% names(gen.property.mapping))){
+          warning("Flexibility Inventory requires Min.Stable.Level column in generator mapping csv. Using 0 MW for all generators")
+          gen.property.mapping[,`Min.Stable.Level`:=0]
+      }
+      if( !("Max.Ramp.Up" %in% names(gen.property.mapping))){
+          warning("Flexibility Inventory requires Max.Ramp.Up column in generator mapping csv. Using 1E+30 for all generators")
+          gen.property.mapping[,`Max.Ramp.Up`:=1e30]
+      }
+      if( !("Max.Ramp.Down" %in% names(gen.property.mapping))){
+          warning("Flexibility Inventory requires Max.Ramp.Down column in generator mapping csv. Using 1E+30 for all generators")
+          gen.property.mapping[,`Max.Ramp.Down`:=1e30]
+      }
+      if( !("Min.Up.Time" %in% names(gen.property.mapping))){
+          warning("Flexibility Inventory requires Min.Up.Time column in generator mapping csv. Using 0 hrs for all generators")
+          gen.property.mapping[,`Min.Up.Time`:=1e30]
+      }
+      if( !("Min.Down.Time" %in% names(gen.property.mapping))){
+          warning("Flexibility Inventory requires Min.Down.Time column in generator mapping csv. Using 0 hrs for all generators")
+          gen.property.mapping[,`Min.Down.Time`:=1e30]
+      }
+      if( !("Start.Up.Time" %in% names(gen.property.mapping))){
+          warning("Flexibility Inventory requires Start.Up.Time column in generator mapping csv. Using Ramp Rate to determine start up time")
+      }
+      if( !("Shut.Down.Time" %in% names(gen.property.mapping))){
+          warning("Flexibility Inventory requires Shut.Down.Time column in generator mapping csv. Using Ramp Rate to determine shut down time")
+      }
+      setkey(gen.property.mapping, name)
+  }
   } else {
   # Assign generation type according to PLEXOS category
     sql <- "SELECT DISTINCT name, category FROM key WHERE class = 'Generator'"

@@ -1358,6 +1358,23 @@ divide_quarterly <- function(df ){
     return(df)
 }
 
+expand_timeseries = function(dt, min_interval){
+    dt = as.data.table(dt)
+    minDate <- min(dt$time)
+    maxDate <- max(dt$time)
+    newDates <- data.table(time = seq(minDate,maxDate, by = sprintf("%i min", min_interval)))
+    mgap = floor(nrow(newDates)/nrow(dt))
+    
+    setkey(newDates,time)
+    setkey(dt,time)
+    dt <- dt[newDates]
+    dt$value = na.approx(dt$value, maxgap = mgap)
+    dt$scenario = dt$scenario[1]
+    dt$variable = dt$variable[1]
+    
+    dt <- divide_quarterly(dt)
+    return(dt)
+}  
 convert_to_POSIXct <- function(df){
     if(sum(hour(df[,time])) == 0){
         df[, time := as.POSIXct(strptime(df[,time],"%Y-%m-%d", tz = 'UTC'))]

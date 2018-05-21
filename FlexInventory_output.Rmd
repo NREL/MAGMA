@@ -79,3 +79,136 @@ print(p.durbar) # +
       #       text = element_text(face='bold')))
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
+
+## Net Load Ramps
+
+### Net Load Ramp Histogram
+
+```{r net-load-ramp-histogram}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+source('source_scripts/f_netload_ramps.R')
+for(i in flex.intervals){
+#    cat("###",i, "\n")
+    i_name = gsub(" ","",i)
+    print(get(sprintf("p%s",i_name)))
+    cat("\n")
+}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+### Net Load Ramp Seasonal Duration
+
+```{r net-load-ramp-duration}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+for(i in flex.intervals){
+#    cat("###",i, "\n")
+    i_name = gsub(" ","",i)
+    print(get(sprintf("pp%s",i_name)))
+    cat("\n")
+}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+### Net Load Ramp Statistics
+
+```{r net-load-ramp-statistics, results = 'asis'}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+for(i in flex.intervals){
+    cat("####",i, "Flex Inventory\n")
+    i_name = gsub(" ","",i)
+    print(kable(get(sprintf("up_%s",i_name)), format.args = list(big.mark = ','), digits = 2, caption = 'Net Load Up Ramps')) 
+    cat("\n")
+    print(kable(get(sprintf("down_%s",i_name)), format.args = list(big.mark = ','), digits = 2, caption = 'Net Load Down Ramps')) 
+    cat("\n")
+}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+
+### Worst Ramp Ups
+
+```{r worst-ramp-ups, results = 'asis'}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+for(i in c(1:length(unique(interval.generation$scenario)))){
+    i_name = unique(interval.generation$scenario)[i]
+    cat("####",unique(interval.generation$scenario)[i])
+    print(get(sprintf("p_rect_%s",i_name)))
+    cat("\n")
+
+}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+### Flexibility Inventory
+
+```{r flexibility-inventory, results = 'asis'}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+source('source_scripts/f_flexibility_inventory.R')
+print(kable(flex.inventory.final.results, format.args = list(big.mark = ','), digits = 0, caption = 'Lowest Flexibility Inventory')) 
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+```{r flexibility-inventory-inv-up, results = 'asis'}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+for(i in flex.intervals){
+    i_name = gsub(" ","", i)
+    cat("####",sprintf("Inventory Up for %s",i))
+    print(get(sprintf("p_invup_%s", i_name)))
+    cat("\n")
+    }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+```{r flexibility-inventory-inv-down, results = 'asis'}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+for(i in flex.intervals){
+    i_name = gsub(" ","", i)
+    cat("####",sprintf("Inventory Down for %s",i))
+    print(get(sprintf("p_invdown_%s", i_name)))
+    cat("\n")
+    }# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+```{r flexibility-inventory-totalflex, results = 'asis'}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+for(i in flex.intervals){
+    i_name = gsub(" ","", i)
+    cat("####",sprintf("Total Inventory for %s",i))
+    print(get(sprintf("p_totalflex_%s", i_name)))
+    cat("\n")
+}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+```{r flexibility-inventory-diurnalflex, results = 'asis'}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+for(i in flex.intervals){
+    i_name = gsub(" ","", i)
+    cat("####",sprintf("Total Average Daily Inventory for %s",i))
+    print(get(sprintf("p_diurnalflex_%s", i_name)))
+    cat("\n")
+}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+```{r flexibility-inventory-diurnalup, results = 'asis'}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+for(i in flex.intervals){
+    i_name = gsub(" ","", i)
+    cat("####",sprintf("Total Average Daily Inventory for %s",i))
+    print(get(sprintf("p_diup_%s", i_name)))
+    cat("\n")
+}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+```{r flexibility-inventory-diurnaldown, results = 'asis'}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+for(i in flex.intervals){
+    i_name = gsub(" ","", i)
+    cat("####",sprintf("Total Average Daily Inventory for %s",i))
+    print(get(sprintf("p_didown_%s", i_name)))
+    cat("\n")
+}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```

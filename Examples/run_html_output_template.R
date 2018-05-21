@@ -23,6 +23,8 @@ use.gen.type.csv = TRUE 'if assigning generator type with a CSV file.
 gen.type.csv.loc = '<Location of CSV mapping generator name to type.
                      NULL if above is false.>'
 gen.region.zone  = '<Location of file mapping generator names to region and zone.>'
+flex.inventory   = FALSE 'TRUE to create a flexibility inventory as separate html'
+flex.output.name = '<Desired flex inventory output name. Include .html at end.>'
 #------------------------------------------------------------------------------|
 # Run code to create HTML
 #------------------------------------------------------------------------------|

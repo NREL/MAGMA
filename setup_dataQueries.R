@@ -145,9 +145,17 @@ if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period
      daily.curtailment  | daily.curtailment.type | interval.curtailment | interval.curtailment.type | 
      commit.dispatch.zone | commit.dispatch.region | revenue.plots | flex.inventory ) {
   # Interval level generation for each generator.
-  interval.generation   = tryCatch( interval_gen(db), error = function(cond) { return('ERROR') } ) 
+  interval.generation   = tryCatch( interval_gen(db), error = function(cond) { return('ERROR') } )
   # Interval level available capacity for each generator.
   interval.avail.cap    = tryCatch( interval_avail_cap(db), error = function(cond) { return('ERROR') } ) 
+  if(use.gen.type.csv){
+      interval.generation[,Type:=gen.type.mapping[as.character(name)]]
+      interval.avail.cap[,Type:=gen.type.mapping[as.character(name)]]
+  }
+  else{
+      interval.generation[,Type:=category]
+      interval.generation[,Type:=category]
+  }
   if (exists('interval.generation')) { 
     if (typeof(interval.generation)=='character') { 
       message('\nMissing interval generator generation data from solution .db file.')
@@ -189,7 +197,7 @@ if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period
 }
 
 if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period.dispatch.zone.log |
-  commit.dispatch.zone | commit.dispatch.region ){
+  commit.dispatch.zone | commit.dispatch.region | flex.inventory){
   # interval level region ue.
   interval.region.ue  = tryCatch( interval_region_ue(db), error = function(cond) { return('ERROR') } )
   # Interval level zone ue 
@@ -226,7 +234,7 @@ if ( line.flow.plots | key.period.line.flow.plots ) {
   }
 }
 
-if ( annual.reserves.table | reserves.plots ) {
+if ( annual.reserves.table | reserves.plots | flex.inventory ) {
   # Interval level reserve provision
   interval.reserve.provision = tryCatch( interval_reserve_provision(db), error = function(cond) { return('ERROR') } ) 
   if (exists('interval.reserve.provision')) { 
