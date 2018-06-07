@@ -139,6 +139,22 @@ for(i in c(1:length(unique(interval.generation$scenario)))){
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
+
+### Worst Ramp Downs
+
+```{r worst-ramp-downs, results = 'asis'}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+for(i in c(1:length(unique(interval.generation$scenario)))){
+    i_name = unique(interval.generation$scenario)[i]
+    cat("####",unique(interval.generation$scenario)[i])
+    print(get(sprintf("p_rect_down_%s",i_name)))
+    cat("\n")
+
+}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+
 ### Flexibility Inventory
 
 ```{r flexibility-inventory, results = 'asis'}
@@ -209,6 +225,18 @@ for(i in flex.intervals){
     cat("####",sprintf("Total Average Daily Inventory for %s",i))
     print(get(sprintf("p_didown_%s", i_name)))
     cat("\n")
+}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+```{r worst-days-ramp_ability, results = 'asis'}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+for(i in flex.intervals){
+    for(j in scenario.names){
+        cat("####",sprintf("Resources used to meet largest ramps in %s, %s",i, j))
+        print(get(sprintf("p_rampability_%s_%s", j, i)))
+        cat("\n")
+    }
 }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```

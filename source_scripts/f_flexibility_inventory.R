@@ -41,6 +41,8 @@ if ( typeof(interval.generation)=='character' ) {
     master.gen[,Max.Capacity:=ifelse(Type %in% re.types,0,Max.Capacity)]
     
     flex.inventory.timeseries = NULL
+    important.periods.timeseries = NULL
+    
     data_interval = difftime(master.gen$time[2], master.gen$time[1], units = 'mins')
     for(i in flex.intervals){
         min_interval = NULL
@@ -103,6 +105,23 @@ if ( typeof(interval.generation)=='character' ) {
                                             ifelse((Intervals.At.Status - 1) >= Min.Up.Time, ifelse(Max.Ramp.Down > Generation, Generation, pmin(Generation - Min.Stable.Level, Max.Ramp.Down)),
                                                 ifelse((Intervals.At.Status - 1 + ntimes) > Min.Up.Time, ifelse(Max.Ramp.Down * (1 - (Min.Up.Time - Intervals.At.Status + 1)/ntimes) > Generation, Generation, pmin(Generation - Min.Stable.Level, Max.Ramp.Down * (1 - (Min.Up.Time - Intervals.At.Status + 1)/ntimes))), 
                                                    pmin(Generation - Min.Stable.Level, Max.Ramp.Down)))))]
+        ## timeseries of interesting periods
+        
+        ## Add biggest ramp up, biggest ramp down, interesting periods
+        for(q in scenario.names){
+            rup = temp[(time %in% unique(ramp_day[scenario ==q & interval == i,time])) & scenario == q,]
+            rup[,id:='Biggest Ramp Up']
+            rup[,i:=i,]
+            rdown = temp[(time %in% unique(ramp_day_down[scenario == q & interval == i,time])) & scenario == q,]
+            rdown[,id:='Biggest Ramp Down']
+            rdown[,i:=i,]
+            if(!is.null(important.periods.timeseries)){
+                important.periods.timeseries = rbind(important.periods.timeseries,rup,rdown)
+            }
+            if(is.null(important.periods.timeseries)){
+                important.periods.timeseries = rbind(rup,rdown)
+            }
+        }
         
         temp=temp[,.(FlexibilityUp=sum(FlexibilityUp),FlexibilityDown=sum(FlexibilityDown)), by = .(scenario,time,Type)]
         temp=rbind(temp,interval.ue)
@@ -114,6 +133,7 @@ if ( typeof(interval.generation)=='character' ) {
         if(is.null(flex.inventory.timeseries)){
             flex.inventory.timeseries = temp
         }
+
     }
     flex.total.timeseries = flex.inventory.timeseries[,.(FlexibilityUp=sum(FlexibilityUp),FlexibilityDown=sum(FlexibilityDown)),by = .(scenario,time,i,Interval,Day,Month,Quarter)]
     setkey(flex.total.timeseries,scenario,i,time,Interval,Day,Month,Quarter)
@@ -211,5 +231,37 @@ if ( typeof(interval.generation)=='character' ) {
         
         assign(sprintf("p_diurnalflex_%s",i.name),p)
         
+        ## create plots of how largest up ramp and down ramp are being accomodated
+        v = important.periods.timeseries[i == j,.(value = sum(Generation),category='Generation'), by = .(scenario,time,Type,id,i)]
+        for(k in scenario.names){
+            vv = v[scenario == k,.(interval=i,variable=Type,value,category,scenario,time,id)]
+            r = ramp_day[scenario == k & interval == j & variable %in% c("Net Load","Potential Net Load"),.(id="Biggest Ramp Up",category='Net Load'), by = .(scenario,time,variable,value,interval)]
+            r = rbind(r,ramp_day_down[scenario == k & interval == j & variable %in% c("Net Load","Potential Net Load"),.(id="Biggest Ramp Down",category='Net Load'), by = .(scenario,time,variable,value,interval)])
+            r = rbind(r,vv)
+            rr= rect[scenario == k & interval == j,.(id="Biggest Ramp Up",category='Net Load'), by = .(scenario,start,end,interval)]
+            rr= rbind(rr,rect_down[scenario == k & interval == j, .(id = "Biggest Ramp Down",category='Net Load'), by = .(scenario,start,end,interval)])
+            rr = rbind(copy(rr),copy(rr[,category:='Generation']))
+            r[,category:=factor(category,levels = c('Net Load','Generation'))]
+            rr[,category:=factor(category,levels = c('Net Load','Generation'))]
+            r[,lt:='Net Load']
+            r$lt[which(r$variable=='Potential Net Load')]='Potential Net Load'
+            p = ggplot() +
+                geom_line(data = r[variable %in% c('Potential Net Load','Net Load')],aes(x = time, y= value, linetype = lt),size = 1.1) + 
+                geom_line(data = r[!(variable %in% c('Potential Net Load','Net Load'))],aes(x = time, y= value, color = variable),size = 1.1) + 
+                geom_rect(data = rr, inherit.aes = FALSE, aes(xmin = start, xmax = end, ymin = pmin(0,min(ramp_day$value)), ymax = max(ramp_day$value)),fill = 'orange', alpha = 0.3) +
+                scale_linetype_discrete("") +
+                scale_color_manual("",values = c(gen.color,'Net Load' = 'black', 'Potential Net Load' = 'black')) +
+                ylim(NA, max(ramp_day$value)) +
+                labs(x = NULL, y = "MW") +
+                theme(text = element_text(size = 18)) +
+                facet_grid(category~id,scales = "free", space = "free_x") +
+                scale_x_datetime(breaks = date_breaks(width = '24 hour'), labels = date_format("%m-%d\n%H:%M"),
+                                 expand = c(0,0), timezone = 'UTC') +
+                guides(linetype = guide_legend(order = 1),
+                       color = guide_legend(order = 2))
+
+            assign(sprintf("p_rampability_%s_%s",k,j),p)
+
+        }
     }
 }

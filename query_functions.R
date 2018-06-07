@@ -1236,6 +1236,12 @@ interval_pump_load = function(database) {
   return(interval.pump.load[,.(scenario, property, name, value, time, category) ])
 }
 
+# Interval storage level
+interval_storage_level = function(database) {
+    interval.storage.level = data.table(query_interval(database, 'Storage', 'Initial Level', colums = c('category','name')))
+    return(interval.storage.level[,.(scenario, property, name, value, time, category) ])
+}
+
 # Interval level generator capacity
 interval_avail_cap = function(database) {
   interval.avail.cap = data.table(query_interval(database, 'Generator', c('Available Capacity','Units Generating'), columns = c('category', 'name'))) 

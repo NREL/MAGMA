@@ -11,6 +11,7 @@ if ( typeof(interval.vg)=='character' ) {
 } else{
     ramp = NULL
     ramp_day = NULL
+    ramp_day_down = NULL
     rect = NULL    
     flex.demand.timeseries = NULL
     data_interval = difftime(interval.netload$time[2], interval.netload$time[1], units = 'mins')
@@ -94,24 +95,34 @@ if ( typeof(interval.vg)=='character' ) {
         ## subsetting generation/capacity based on max ramp in flexibility interval
         for(j in c(1:length(db.loc))){
             time_up <- seq(from = as.POSIXct(netload.statistics.up[[j+1]][4], tz = 'UTC'), by=new_data_interval, length.out = ntimes+1)
+            time_down <- seq(from = as.POSIXct(netload.statistics.down[[j+1]][4], tz = 'UTC'), by=new_data_interval, length.out = ntimes+1)
             time_up_extended = NULL
+            time_down_extended = NULL
             if(grepl("h",i)){
                 hh = strsplit(i," ")[[1]][1]
                 if(as.numeric(hh) <= 9){
                     time_up_extended  <- seq(from = as.POSIXct(strsplit((netload.statistics.up[[j+1]][4])," ")[[1]][1], tz = 'UTC'),
                                              by = new_data_interval, length.out = (24*60)/as.double(new_data_interval))
+                    time_down_extended <- seq(from = as.POSIXct(strsplit((netload.statistics.down[[j+1]][4]), " ")[[1]][1], tz = 'UTC'),
+                                              by = new_data_interval, length.out = (24*60)/as.double(new_data_interval))
                 }
                 else if(as.numeric(hh) > 9 & as.numeric(hh) < 25){
                     time_up_extended <- seq(from = as.POSIXct(strsplit((netload.statistics.up[[j+1]][4])," ")[[1]][1], tz = 'UTC'),
                                             by = new_data_interval, length.out = (48*60)/as.double(new_data_interval))
+                    time_down_extended <- seq(from = as.POSIXct(strsplit((netload.statistics.down[[j+1]][4]), " ")[[1]][1], tz = 'UTC'),
+                                              by = new_data_interval, length.out = (48*60)/as.double(new_data_interval))
                 }
                 else{
                     time_up_extended <- seq(from = as.POSIXct(strsplit((netload.statistics.up[[j+1]][4])," ")[[1]][1], tz = 'UTC'),
                                             by = new_data_interval, length.out = (72*60)/as.double(new_data_interval))
+                    time_down_extended <- seq(from = as.POSIXct(strsplit((netload.statistics.down[[j+1]][4]), " ")[[1]][1], tz = 'UTC'),
+                                              by = new_data_interval, length.out = (72*60)/as.double(new_data_interval))
                 }
             }
             else{
                 time_up_extended  <- seq(from = as.POSIXct(strsplit((netload.statistics.up[[j+1]][4])," ")[[1]][1], tz = 'UTC'),
+                                         by = new_data_interval, length.out = (24*60)/as.double(new_data_interval))
+                time_down_extended  <- seq(from = as.POSIXct(strsplit((netload.statistics.down[[j+1]][4])," ")[[1]][1], tz = 'UTC'),
                                          by = new_data_interval, length.out = (24*60)/as.double(new_data_interval))
             }
             generation <- interval.generation[scenario == unique(interval.generation$scenario)[j] & time %in% time_up,]
@@ -168,6 +179,9 @@ if ( typeof(interval.vg)=='character' ) {
                         #capacity <- interval.avail.cap[scenario == unique(interval.generation$scenario)[j] & time %in% time_up,]
             addme = expand.interval.netload[scenario == unique(interval.generation$scenario)[j] & time %in% time_up_extended,]
             addme[,interval := i]
+            addme_down = expand.interval.netload[scenario == unique(interval.generation$scenario)[j] & time %in% time_down_extended,]
+            addme_down[,interval := i]
+            
             if(!is.null(ramp_day)){
                 ramp_day = rbind(ramp_day, addme)
                 rect = rbind(rect, data.table(start = min(time_up), end = max(time_up), scenario = unique(interval.generation$scenario)[j], interval=i))
@@ -175,6 +189,14 @@ if ( typeof(interval.vg)=='character' ) {
             else{
                 ramp_day = addme
                 rect = data.table(start = min(time_up), end = max(time_up), scenario = unique(interval.generation$scenario)[j], interval = i)
+            }
+            if(!is.null(ramp_day_down)){
+                ramp_day_down = rbind(ramp_day_down, addme_down)
+                rect_down = rbind(rect_down, data.table(start = min(time_down), end = max(time_down),scenario = unique(interval.generation$scenario)[j], interval = i))
+            }
+            else{
+                ramp_day_down = addme_down
+                rect_down = data.table(start = min(time_down), end = max(time_down), scenario = unique(interval.generation$scenario)[j], interval = i)
             }
         }
         expand.interval.netload[,i:=i]
@@ -195,6 +217,8 @@ if ( typeof(interval.vg)=='character' ) {
     ramp[,Type:=factor(Type,levels = gen.order)]
     ramp_day[,interval:=factor(interval,levels = flex.intervals)]
     rect[,interval:=factor(interval,levels=flex.intervals)]
+    ramp_day_down[,interval:=factor(interval,levels = flex.intervals)]
+    rect_down[,interval:=factor(interval, levels =flex.intervals)]
     for(j in c(1:length(db.loc))){
         t = ramp[scenario == unique(interval.generation$scenario)[j],]
         p <- ggplot() +
@@ -220,6 +244,20 @@ if ( typeof(interval.vg)=='character' ) {
             scale_x_datetime(breaks = date_breaks(width = '24 hour'), labels = date_format("%m-%d\n%H:%M"),
                              expand = c(0,0), timezone = 'UTC') 
         assign(sprintf("p_rect_%s",unique(interval.generation$scenario)[j]),p)
+        
+        r = ramp_day_down[scenario == unique(interval.generation$scenario)[j],]
+        rr= rect_down[scenario == unique(interval.generation$scenario)[j],]
+        p = ggplot() +
+            geom_line(data = r[(variable %in% c("Load","Net Load","VG Output","VG Potential")),],aes(x = time, y= value, color = variable),size = 1.1) + 
+            geom_rect(data = rr, inherit.aes = FALSE, aes(xmin = start, xmax = end, ymin = pmin(0,min(ramp_day_down$value)), ymax = max(ramp_day_down$value)),fill = 'orange', alpha = 0.3) +
+            scale_color_brewer("",palette = "Set1") +
+            ylim(NA, max(ramp_day_down$value)) +
+            labs(x = NULL, y = "MW") +
+            theme(text = element_text(size = 18)) +
+            facet_grid(.~interval,scales = "free", space = "free") +
+            scale_x_datetime(breaks = date_breaks(width = '24 hour'), labels = date_format("%m-%d\n%H:%M"),
+                             expand = c(0,0), timezone = 'UTC') 
+        assign(sprintf("p_rect_down_%s",unique(interval.generation$scenario)[j]),p)
         
     }
 }

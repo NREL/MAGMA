@@ -168,7 +168,7 @@ if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period
     }
 }
 
-if ( revenue.plots ) {
+if ( revenue.plots | flex.inventory ) {
   # Interval level pump load for each generator.
   interval.pump.load   = tryCatch( interval_pump_load(db), error = function(cond) { return('ERROR') } ) 
   if (exists('interval.pump.load')) { 
@@ -177,6 +177,16 @@ if ( revenue.plots ) {
     }
   }
 }
+
+# if ( flex.inventory ) {
+#     # Interval level pump load for each generator.
+#     interval.storage.level   = tryCatch( interval_storage_level(db), error = function(cond) { return('ERROR') } ) 
+#     if (exists('interval.storage.level')) { 
+#         if (typeof(interval.storage.level)=='character') { 
+#             message('\nMissing interval storage level from solution .db file.')
+#         }
+#     }
+# }
 
 if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period.dispatch.zone.log |
      commit.dispatch.zone | commit.dispatch.region | flex.inventory ){
