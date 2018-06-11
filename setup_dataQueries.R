@@ -254,7 +254,7 @@ if ( annual.reserves.table | reserves.plots | flex.inventory ) {
   }
 }
 
-if ( revenue.plots ) {
+if ( revenue.plots | flex.inventory  ) {
   # Interval level reserve provision
   interval.gen.reserve.provision = tryCatch( interval_gen_reserve_provision(db), error = function(cond) { return('ERROR') } ) 
   if (exists('interval.reserve.provision')) { 

@@ -14,10 +14,10 @@ if ( typeof(interval.generation)=='character' ) {
     master.gen = d.interval.generation[d.interval.avail.cap]
     
     # if reserves are considered
-    if( typeof(interval.reserve.provision) != 'character'){
+    if( typeof(interval.gen.reserve.provision) != 'character'){
         # remove eligible reserves
         if(!is.na(flex.reserves)){
-            d.interval.reserve.provision = interval.reserve.provision[!(parent %in% flex.reserves)]
+            d.interval.reserve.provision = interval.gen.reserve.provision[!(parent %in% flex.reserves)]
             d.interval.reserve.provision = dcast.data.table(d.interval.reserve.provision, scenario + time + name + Type ~ property,value.var = "value", fun.aggregate = sum)
         }
         else{
