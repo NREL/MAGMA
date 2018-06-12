@@ -1312,8 +1312,8 @@ interval_reserve_provision = function(database) {
 
 # Interval level reserve provisions by generator type
 interval_gen_reserve_provision = function(database) {
-  interval.gen.reserve.provision = data.table(query_interval(database, 'Reserve.Generators', 'Provision'))
-  return(interval.gen.reserve.provision[, .(scenario, property, name, parent, time, value)])
+  interval.gen.reserve.provision = data.table(query_interval(database, 'Reserve.Generators', 'Provision', columns = c("name","parent","category")))
+  return(interval.gen.reserve.provision[, .(scenario, property, name, parent, time, value, category)])
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -257,6 +257,14 @@ if ( annual.reserves.table | reserves.plots | flex.inventory ) {
 if ( revenue.plots | flex.inventory  ) {
   # Interval level reserve provision
   interval.gen.reserve.provision = tryCatch( interval_gen_reserve_provision(db), error = function(cond) { return('ERROR') } ) 
+  if(use.gen.type.csv){
+      interval.gen.reserve.provision[,Type:=gen.type.mapping[as.character(name)]]
+      interval.gen.reserve.provision[,Type:=gen.type.mapping[as.character(name)]]
+  }
+  else{
+      interval.gen.reserve.provision[,Type:=category]
+      interval.gen.reserve.provision[,Type:=category]
+  }
   if (exists('interval.reserve.provision')) { 
     if (typeof(interval.gen.reserve.provision)=='character') { 
       message('\nMissing interval reserve provision data from solution .db file.')
