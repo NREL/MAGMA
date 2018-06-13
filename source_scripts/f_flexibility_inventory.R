@@ -25,9 +25,12 @@ if ( typeof(interval.generation)=='character' ) {
         }
         setkey(d.interval.reserve.provision, scenario, name, Type, time)
         master.gen = d.interval.reserve.provision[master.gen]
+        master.gen[is.na(Provision),Provision:=0]
     }
-    master.gen[,Provision:=0]
-    
+    else{
+      master.gen[,Provision:=0]
+    }
+
     # if unserved energy
     if( typeof(interval.region.ue) != 'character'){
         interval.ue = interval.region.ue[,.(Type = property, FlexibilityUp = sum(value), FlexibilityDown = 0),by = .(scenario,time)]
@@ -85,15 +88,13 @@ if ( typeof(interval.generation)=='character' ) {
         temp[,Max.Ramp.Down:= min_interval * Max.Ramp.Down]
         
         temp[, Intervals.At.Status := seq_len(.N), by = rleid(scenario,name,Commit)]
-        temp[, RE.Ramp.Up  := c(`Available Capacity`[-(1:ntimes)] - Generation[-((length(Generation)-ntimes+1):length(Generation))], rep(0,times = ntimes)), by = .(scenario,name)]
         temp[, RE.Ramp.Down:= c(`Available Capacity`[-(1:ntimes)], rep(0,times = ntimes)), by = .(scenario,name)]
-        
 
         ## Logic: If it's already on, its upward flexibility is limited by either remaining capacity or ramp up
         ## if it's off, it's limited by min down time. if down time is not binding, it's limited by either available capacity or max ramp up
         ## if down time is binding within whole flexibility interval, flexibilityup = 0
         ## if it can turn on x time into the flexibility interval, then it's limited by available capacity or max ramp up in that more limited frame
-        temp[, FlexibilityUp:=ifelse(Type %in% re.types,pmax(0,RE.Ramp.Up),
+        temp[, FlexibilityUp:=ifelse(Type %in% re.types,pmax(0,`Available Capacity`),
                                      ifelse(Commit==1, pmin(`Available Capacity` - Generation - Provision, Max.Ramp.Up), 
                                         ifelse((Intervals.At.Status - 1) >= Min.Down.Time, pmin(Max.Capacity,Max.Ramp.Up), 
                                             ifelse((Intervals.At.Status - 1 + ntimes) > Min.Down.Time, pmin(Max.Capacity, Max.Ramp.Up * (1 - ((Min.Down.Time - Intervals.At.Status + 1)/ntimes))), 0))))]
@@ -124,7 +125,13 @@ if ( typeof(interval.generation)=='character' ) {
         }
         
         temp=temp[,.(FlexibilityUp=sum(FlexibilityUp),FlexibilityDown=sum(FlexibilityDown)), by = .(scenario,time,Type)]
-        temp=rbind(temp,interval.ue)
+        if(exists(interval.ue)){
+          temp=rbind(temp,interval.ue)
+          gen.color2 = c(gen.color, 'Unserved Energy' = "black")
+        }
+        else{
+          gen.color2 = gen.color
+        }
         temp=divide_quarterly(temp)
         temp[,i := i]
         if(!is.null(flex.inventory.timeseries)){
@@ -209,7 +216,7 @@ if ( typeof(interval.generation)=='character' ) {
             geom_bar(data = t[variable=="FlexibilityUp",], aes( x = scenario, y = value/1000.0, fill = Type),position = "dodge", stat = "identity") +
             geom_bar(data = t[variable=="FlexibilityDown",], aes( x = scenario, y = value/1000.0*-1.0, fill = Type),position = "dodge", stat = "identity") +
             geom_abline(slope = 0, intercept = 0, size = 1.3) + 
-            scale_fill_manual("",values = c(gen.color, 'Unserved Energy' = "black")) + 
+            scale_fill_manual("",values = gen.color2) + 
             labs(x = NULL, y = "Flexibility Available (GW)") +
             theme(text = element_text(size = 18),
                   axis.text.x = element_text(angle = 90,vjust = 0.5, hjust = 0.5)) 
@@ -224,7 +231,7 @@ if ( typeof(interval.generation)=='character' ) {
             geom_bar(data = u[variable=="FlexibilityDown",], aes( x = Interval, y = value*-1.0, fill = Type), stat = "identity") +
             facet_grid(scenario~Quarter) + 
             geom_abline(slope = 0, intercept = 0, size = 1.3) + 
-            scale_fill_manual("",values = c(gen.color, 'Unserved Energy' = "black")) + 
+            scale_fill_manual("",values = gen.color2) + 
             labs(x = NULL, y = "Mean Available Flexibility (MW)") +
             theme(text = element_text(size = 18)) +
             scale_x_continuous(breaks = c(0,max(master.flex.summary[,Interval])/2)) 
@@ -250,7 +257,7 @@ if ( typeof(interval.generation)=='character' ) {
                 geom_line(data = r[!(variable %in% c('Potential Net Load','Net Load'))],aes(x = time, y= value, color = variable),size = 1.1) + 
                 geom_rect(data = rr, inherit.aes = FALSE, aes(xmin = start, xmax = end, ymin = pmin(0,min(ramp_day$value)), ymax = max(ramp_day$value)),fill = 'orange', alpha = 0.3) +
                 scale_linetype_discrete("") +
-                scale_color_manual("",values = c(gen.color,'Net Load' = 'black', 'Potential Net Load' = 'black')) +
+                scale_color_manual("",values = c(gen.color2,'Net Load' = 'black', 'Potential Net Load' = 'black')) +
                 ylim(NA, max(ramp_day$value)) +
                 labs(x = NULL, y = "MW") +
                 theme(text = element_text(size = 18)) +

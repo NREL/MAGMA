@@ -36,8 +36,7 @@ t.height = ( length(re.types) ) * 5
 ```{r net-load}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 source('source_scripts/f_netload.R')
-print(p.nl +
-          theme(aspect.ratio = length(db.loc)/4)) 
+print(p.nl) 
   # theme(aspect.ratio = 2.5/length(db.loc),
   #       axis.text.x = element_text(angle = -30, hjust = 0),
   #       text = element_text(face='bold')))
@@ -72,7 +71,6 @@ print(p.dur)#+
 ```
 ```{r net-load-duration-curtailment}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-source('source_scripts/f_netload.R')
 print(p.durbar) # +
       # theme(aspect.ratio = 2.5/length(db.loc),
       #       axis.text.x = element_text(angle = -30, hjust = 0),

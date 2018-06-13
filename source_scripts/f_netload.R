@@ -44,6 +44,7 @@ if ( typeof(interval.region.load)=='character' ) {
             d.nl[,value:=value/1000.0]
             d.nlv[,value:=value/1000.0]
             d.int[,value:=value/1000.0]
+            d.cur[,value:=value/1000.0]
         }
     
         p.nl = ggplot(d.nl, aes(x = time, y = value, color = variable)) + geom_line(size = 1.1) + 
@@ -72,13 +73,13 @@ if ( typeof(interval.region.load)=='character' ) {
     
         p.durbar = ggplot() +
             geom_line(data = d.cur, aes(x = Dummy, y = value, color = scenario, linetype = 'Net Load'), size = 1.1) +
-            labs(x = 'Intervals of Year', y = y.lab) +
             facet_wrap(~scenario, ncol = 1,scales = 'free') +
             scale_color_brewer("",palette='Set1') +
             scale_linetype_discrete("") +
             geom_bar(data = d.cur, aes(x = Dummy, y = i.value, fill = scenario, size = 'Curtailment'), alpha = 0.5, stat = 'identity') +
             scale_fill_brewer("",palette='Set1') +
             scale_size_discrete("") +
-            theme(text = element_text(size = 18))
+            theme(text = element_text(size = 18)) +
+            labs(x = 'Intervals of Year', y = y.lab) 
     }
 }
