@@ -405,6 +405,10 @@ if ( (use.gen.type.csv & length(gen.type.csv.loc>0)) | flex.inventory ) {
       if( !("Shut.Down.Time" %in% names(gen.property.mapping))){
           warning("Flexibility Inventory requires Shut.Down.Time column in generator mapping csv. Using Ramp Rate to determine shut down time")
       }
+      if( !("Must.Run" %in% names(gen.property.mapping))){
+          warning("Flexibility Inventory requires commit parameter for must-run-units. Using must run = false for all generators")
+          gen.property.mapping[,`Must.Run`:=0]
+      }
       setkey(gen.property.mapping, name)
   }
   } else {

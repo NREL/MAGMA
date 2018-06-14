@@ -45,6 +45,7 @@ if ( typeof(interval.region.load)=='character' ) {
             d.nlv[,value:=value/1000.0]
             d.int[,value:=value/1000.0]
             d.cur[,value:=value/1000.0]
+            d.cur[,i.value:=i.value/1000.0]
         }
     
         p.nl = ggplot(d.nl, aes(x = time, y = value, color = variable)) + geom_line(size = 1.1) + 

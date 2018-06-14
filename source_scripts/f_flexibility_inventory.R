@@ -83,6 +83,8 @@ if ( typeof(interval.generation)=='character' ) {
         ## converting up time/down time from hours to data_interval
         temp[,Min.Up.Time:=as.double(as.hour(Min.Up.Time)/as.hour(as.minute(as.double(new_data_interval))))]
         temp[,Min.Down.Time:=as.double(as.hour(Min.Down.Time)/as.hour(as.minute(as.double(new_data_interval))))]
+        ## setting Min.Up.Time to infinity if unit is Must RUn
+        temp[Must.Run==1,Min.Up.Time:=1e8]
         ## converting ramp up/down from MW/min to MW/data_interval
         temp[,Max.Ramp.Up  := min_interval * Max.Ramp.Up ]
         temp[,Max.Ramp.Down:= min_interval * Max.Ramp.Down]
@@ -125,7 +127,7 @@ if ( typeof(interval.generation)=='character' ) {
         }
         
         temp=temp[,.(FlexibilityUp=sum(FlexibilityUp),FlexibilityDown=sum(FlexibilityDown)), by = .(scenario,time,Type)]
-        if(exists(interval.ue)){
+        if(sum(interval.ue$value) > 1){
           temp=rbind(temp,interval.ue)
           gen.color2 = c(gen.color, 'Unserved Energy' = "black")
         }
