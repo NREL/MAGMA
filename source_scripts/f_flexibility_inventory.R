@@ -105,9 +105,9 @@ if ( typeof(interval.generation)=='character' ) {
         ## If it's on, it can either turn off (if min.up.time allows) or turn down.
         temp[, FlexibilityDown:=ifelse(Type %in% re.types, pmax(0,RE.Ramp.Down),
                                        ifelse(Commit==0, 0, 
-                                            ifelse((Intervals.At.Status - 1) >= Min.Up.Time, ifelse(Max.Ramp.Down > Generation, Generation, pmin(Generation - Min.Stable.Level, Max.Ramp.Down)),
-                                                ifelse((Intervals.At.Status - 1 + ntimes) > Min.Up.Time, ifelse(Max.Ramp.Down * (1 - (Min.Up.Time - Intervals.At.Status + 1)/ntimes) > Generation, Generation, pmin(Generation - Min.Stable.Level, Max.Ramp.Down * (1 - (Min.Up.Time - Intervals.At.Status + 1)/ntimes))), 
-                                                   pmin(Generation - Min.Stable.Level, Max.Ramp.Down)))))]
+                                            ifelse((Intervals.At.Status - 1) >= Min.Up.Time, ifelse(Max.Ramp.Down > Generation, Generation, pmin(pmax(Generation - Min.Stable.Level,0), Max.Ramp.Down)),
+                                                ifelse((Intervals.At.Status - 1 + ntimes) > Min.Up.Time, ifelse(Max.Ramp.Down * (1 - (Min.Up.Time - Intervals.At.Status + 1)/ntimes) > Generation, Generation, pmin(pmax(Generation - Min.Stable.Level,0), Max.Ramp.Down * (1 - (Min.Up.Time - Intervals.At.Status + 1)/ntimes))), 
+                                                   pmin(pmax(Generation - Min.Stable.Level,0), Max.Ramp.Down)))))]
         ## timeseries of interesting periods
         
         ## Add biggest ramp up, biggest ramp down, interesting periods
