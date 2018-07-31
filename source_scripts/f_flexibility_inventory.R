@@ -98,8 +98,9 @@ if ( typeof(interval.generation)=='character' ) {
         ## if it can turn on x time into the flexibility interval, then it's limited by available capacity or max ramp up in that more limited frame
         temp[, FlexibilityUp:=ifelse(Type %in% re.types,pmax(0,`Available Capacity`),
                                      ifelse(Commit==1, pmin(`Available Capacity` - Generation - Provision, Max.Ramp.Up), 
-                                        ifelse((Intervals.At.Status - 1) >= Min.Down.Time, pmin(Max.Capacity,Max.Ramp.Up), 
-                                            ifelse((Intervals.At.Status - 1 + ntimes) > Min.Down.Time, pmin(Max.Capacity, Max.Ramp.Up * (1 - ((Min.Down.Time - Intervals.At.Status + 1)/ntimes))), 0))))]
+                                        ifelse((Intervals.At.Status - 1) >= Min.Down.Time, pmin(Max.Capacity,ifelse(Max.Ramp.Up<Min.Stable.Level,0,Max.Ramp.Up)), 
+                                            ifelse((Intervals.At.Status - 1 + ntimes) > Min.Down.Time, pmin(Max.Capacity, ifelse(Max.Ramp.Up * (1 - ((Min.Down.Time - Intervals.At.Status + 1)/ntimes))<Min.Stable.Level,0,Max.Ramp.Up * (1 - ((Min.Down.Time - Intervals.At.Status + 1)/ntimes)))), 
+                                                   0))))]
         
         ## Logic: If it's already off, it can't move downward (will have to change for storage)
         ## If it's on, it can either turn off (if min.up.time allows) or turn down.
