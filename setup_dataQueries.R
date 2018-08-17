@@ -192,18 +192,30 @@ if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period
      commit.dispatch.zone | commit.dispatch.region | flex.inventory ){
   # interval level region load.
   interval.region.load  = tryCatch( interval_region_load(db), error = function(cond) { return('ERROR') } )
+  interval.region.gen   = tryCatch( interval_region_gen(db), error = function(cond) { return('ERROR') } )
   # Interval level zone load 
   interval.zone.load    = tryCatch( interval_zone_load(db), error = function(cond) { return('ERROR') } ) 
+  interval.zone.gen     = tryCatch( interval_zone_gen(db), error = function(cond) { return('ERROR') } )
   if (exists('interval.region.load')) { 
     if (typeof(interval.region.load)=='character') { 
       message('\nMissing interval region load data from solution .db file.')
       }
+  }
+  if (exists('interval.region.gen')) {
+    if (typeof(interval.region.gen)=='character') {
+      message('\nMissing interval region generation data from solution .db file.')
     }
+  }
   if (exists('interval.zone.load')) { 
     if (typeof(interval.zone.load)=='character') { 
       message('\nMissing interval zone load data from solution .db file.')
       }
+  }
+  if(exists('interval.zone.gen')) {
+    if (typeof(interval.zone.gen)=='character') {
+      message('\nMissing interval zone generation data from solution .db file.')
     }
+  }
 }
 
 if ( key.period.dispatch.total.log | key.period.dispatch.region.log | key.period.dispatch.zone.log |

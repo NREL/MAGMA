@@ -441,9 +441,18 @@ total_variablegen = function(interval.generation, interval.avail.cap) {
     setkey(interval.generation,name)
     setkey(interval.avail.cap,name)
     
+    # first separate focus region if applicable
+    geos = unique(gen.geo.mapping$name)
+    if( !is.na(focus.region)){
+      geos = gen.geo.mapping[name %in% gen.geo.mapping[Region %in% focus.region,name],name]
+    }
+    if( !is.na(focus.zone)){
+      geos = gen.geo.mapping[name %in% gen.geo.mapping[Zone %in% focus.zone,name],name]
+    }
+    
     # Separate generation and available capacity data by type for each interval.
-    c.gen = interval.generation[, Type:=gen.type.mapping[as.character(name)] ][Type %in% re.types,.(value=sum(value)),by=.(scenario, time)]
-    c.avail = interval.avail.cap[, Type:=gen.type.mapping[as.character(name)] ][Type %in% re.types,.(value=sum(value)),by=.(scenario, time)]
+    c.gen = interval.generation[, Type:=gen.type.mapping[as.character(name)] ][Type %in% re.types & name %in% geos,.(value=sum(value)),by=.(scenario, time)]
+    c.avail = interval.avail.cap[, Type:=gen.type.mapping[as.character(name)] ][Type %in% re.types & name %in% geos,.(value=sum(value)),by=.(scenario, time)]
     
     if (typeof(c.avail)=='double' & typeof(c.gen)=='double') {
         # TO DO: find out what this does
@@ -463,6 +472,46 @@ total_variablegen = function(interval.generation, interval.avail.cap) {
 }
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Interval Imports ----
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+interval_imports = function(interval.generation, interval.load) {
+  
+  setkey(interval.generation,name)
+  setkey(interval.load,name)
+  
+  # first separate focus region if applicable
+  geos = unique(interval.load$name)
+  if( !is.na(focus.region)){
+    geos = focus.region
+  }
+  if( !is.na(focus.zone)){
+    geos = focus.zone
+  }
+  
+  # Separate generation and available capacity data by type for each interval.
+  c.gen = interval.generation[name %in% geos,.(Generation=sum(value)),by=.(scenario, time)]
+  c.load = interval.load[name %in% geos,.(Load=sum(value)),by=.(scenario, time)]
+  
+  if (typeof(c.load)=='double' & typeof(c.gen)=='double') {
+    # TO DO: find out what this does
+    imports = c.load - c.gen
+    imports = data.table(imports)
+    imports[,year := 1900+as.POSIXlt(time)[[6]]]
+    imports[,day := as.POSIXlt(time)[[8]]+1]
+    imports[,interval := 1:intervals.per.day,by=.(day)]
+  } else {
+    setkey(c.load,scenario,time)
+    setkey(c.gen,scenario,time)
+    imports = c.load[c.gen][,Imports := Load-Generation]
+  }
+  
+  return(imports)
+}
+
+
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Interval Net Load ----
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -470,6 +519,12 @@ interval_netload = function(interval.vg, interval.region.load) {
     
     c.vg = interval.vg[,.(`VG Output` = sum(Generation), `VG Potential` = sum(`Available Capacity`), Curtailment = sum(Curtailment)), by = .(scenario,time)]
     c.load = interval.region.load[,.(Load = sum(value)), by = .(scenario,time)]
+    if(!is.na(focus.region)){
+      c.load = interval.region.load[name %in% focus.region,.(Load = sum(value)), by = .(scenario,time)]
+    }
+    if(!is.na(focus.zone)){
+      c.load = interval.region.load[name %in% focus.zone,.(Load = sum(value)), by = .(scenario,time)]
+    }
     
     setkey(c.vg,scenario,time)
     setkey(c.load,scenario,time)
@@ -1258,6 +1313,12 @@ interval_region_load = function(database) {
   return(interval.region.load[, .(scenario, property, name, time, value)])
 }
 
+interval_region_gen = function(database) {
+  interval.region.gen = data.table(query_interval(database, 'Region', 'Generation'))
+  interval.region.gen[,name:=factor(name,region.order)]
+  return(interval.region.gen[, .(scenario, property, name, time, value)])
+}
+
 # Interval level region ue 
 interval_region_ue = function(database) {
   interval.region.ue = data.table(query_interval(database, 'Region', 'Unserved Energy'))
@@ -1282,6 +1343,12 @@ interval_reserve_price = function(database) {
 interval_zone_load = function(database) {
   interval.zone.load = data.table(query_interval(database, 'Zone', 'Load'))
   interval.zone.load[, name:=factor(name,zone.order)]
+  return(interval.zone.load[, .(scenario, property, name, time, value)])
+}
+
+interval_zone_gen = function(database) {
+  interval.zone.gen = data.table(query_interval(database, 'Zone', 'Generation'))
+  interval.zone.gen[, name:=factor(name,zone.order)]
   return(interval.zone.load[, .(scenario, property, name, time, value)])
 }
 

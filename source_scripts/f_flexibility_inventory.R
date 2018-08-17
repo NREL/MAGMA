@@ -6,22 +6,60 @@ if ( typeof(interval.generation)=='character' ) {
     print('INPUT ERROR: generator.property.mapping characteristics must be specified.')
 } else{
     ## create a table
-    d.interval.generation = dcast.data.table(interval.generation,scenario+time+name+Type ~ property,value.var = "value")
+    geos = unique(gen.geo.mapping$name)
+    if(focus){
+      if( !is.na(focus.region[1])){
+        geos = gen.geo.mapping[name %in% gen.geo.mapping[Region %in% focus.region,name],name]
+      }
+      if( !is.na(focus.zone[1])){
+        geos = gen.geo.mapping[name %in% gen.geo.mapping[Zone %in% focus.zone,name],name]
+        interval.region.gen = interval.zonal.gen
+        interval.region.load = interval.zonal.load
+      }
+      interval.imports = tryCatch( interval_imports(interval.region.gen, interval.region.load), error = function(cond) { return('ERROR')})
+      
+      if( "Imports" %in% gen.property.mapping[,name]){
+        interval.imports = interval.imports[,name:="Imports"]
+        interval.imports = interval.imports[,Type:="Imports"]
+        interval.imports = interval.imports[,Generation:=Imports]
+        interval.imports = interval.imports[,`Available Capacity`:=gen.property.mapping[name=="Imports",Max.Capacity]]
+        interval.imports[, c("Load","Imports"):=NULL]
+      }
+      else{
+        print('WARNING: "Imports" not specified as generator in generator CSV. Infinite Flexibility assumed!!')
+        interval.imports = interval.imports[,name:="Imports"]
+        interval.imports = interval.imports[,Type:="Imports"]
+        interval.imports = interval.imports[,Generation:=Imports]
+        interval.imports = interval.imports[,`Available Capacity`:=max(Generation)]
+        interval.imports[, c("Load","Imports"):=NULL]
+        gen.property.mapping = rbind(gen.property.mapping, data.table(name='Imports',Max.Capacity=max(interval.imports$`Available Capacity`),
+                                                                      Min.Stable.Level=min(interval.imports$Generation),Max.Ramp.Up=100000,Max.Ramp.Down=100000,
+                                                                      Min.Up.Time=0,Min.Down.Time=0,Must.Run=0))
+        setkey(gen.property.mapping,name)
+      }
+      
+    }
+
+    d.interval.generation = dcast.data.table(interval.generation[name %in% geos,],scenario+time+name+Type ~ property,value.var = "value")
     setkey(d.interval.generation, scenario, name, Type, time)
-    d.interval.avail.cap  = dcast.data.table(interval.avail.cap,scenario+time+name+Type ~ property,value.var = "value")
+    d.interval.avail.cap  = dcast.data.table(interval.avail.cap[name %in% geos,],scenario+time+name+Type ~ property,value.var = "value")
     setkey(d.interval.avail.cap, scenario, name, Type, time)
     
     master.gen = d.interval.generation[d.interval.avail.cap]
+    if(focus){
+      master.gen=rbind(master.gen,interval.imports)
+      setkey(master.gen, scenario, name, Type, time)
+    }
     
     # if reserves are considered
     if( typeof(interval.gen.reserve.provision) != 'character'){
         # remove eligible reserves
         if(!is.na(flex.reserves)){
-            d.interval.reserve.provision = interval.gen.reserve.provision[!(parent %in% flex.reserves)]
+            d.interval.reserve.provision = interval.gen.reserve.provision[!(parent %in% flex.reserves) & name %in% geos,]
             d.interval.reserve.provision = dcast.data.table(d.interval.reserve.provision, scenario + time + name + Type ~ property,value.var = "value", fun.aggregate = sum)
         }
         else{
-            d.interval.reserve.provision = dcast.data.table(interval.reserve.provision, scenario + time + name + Type ~ property,value.var = "value", fun.aggregate = sum)
+            d.interval.reserve.provision = dcast.data.table(interval.reserve.provision[name %in% geos,], scenario + time + name + Type ~ property,value.var = "value", fun.aggregate = sum)
         }
         setkey(d.interval.reserve.provision, scenario, name, Type, time)
         master.gen = d.interval.reserve.provision[master.gen]
@@ -34,9 +72,15 @@ if ( typeof(interval.generation)=='character' ) {
     # if unserved energy
     if( typeof(interval.region.ue) != 'character'){
         interval.ue = interval.region.ue[,.(Type = property, FlexibilityUp = sum(value), FlexibilityDown = 0),by = .(scenario,time)]
+        if(!is.na(focus.region[1])){
+          interval.ue = interval.region.ue[name %in% focus.region,.(Type = property, FlexibilityUp = sum(value), FlexibilityDown = 0),by = .(scenario,time)]          
+        }
     }
     else{
         interval.ue = interval.zone.ue[,.(Type = property, FlexibilityUp = sum(value), FlexibilityDown = 0), by = .(scenario,time)]
+        if(!is.na(focus.zone[1])){
+          interval.ue = interval.zone.ue[name %in% focus.zone,.(Type = property, FlexibilityUp = sum(value), FlexibilityDown = 0), by = .(scenario,time)]
+        }
     }
     
     setkey(master.gen, name)
@@ -109,6 +153,17 @@ if ( typeof(interval.generation)=='character' ) {
                                             ifelse((Intervals.At.Status - 1) >= Min.Up.Time, ifelse(Max.Ramp.Down > Generation, Generation, pmin(pmax(Generation - Min.Stable.Level,0), Max.Ramp.Down)),
                                                 ifelse((Intervals.At.Status - 1 + ntimes) > Min.Up.Time, ifelse(Max.Ramp.Down * (1 - (Min.Up.Time - Intervals.At.Status + 1)/ntimes) > Generation, Generation, pmin(pmax(Generation - Min.Stable.Level,0), Max.Ramp.Down * (1 - (Min.Up.Time - Intervals.At.Status + 1)/ntimes))), 
                                                    pmin(pmax(Generation - Min.Stable.Level,0), Max.Ramp.Down)))))]
+        ## special cases
+        ## special case #1: Imports
+        if("Imports"%in%unique(gen.property.mapping[,name])){
+          temp[name=="Imports",FlexibilityUp:=ifelse((Intervals.At.Status - 1) >= Min.Down.Time, pmin(Max.Ramp.Up,Max.Capacity-Generation),
+                                                     ifelse((Intervals.At.Status - 1 + ntimes) > Min.Down.Time, pmin(Max.Capacity-Generation, ifelse(Max.Ramp.Up * (1 - ((Min.Down.Time - Intervals.At.Status + 1)/ntimes))<Min.Stable.Level,0,Max.Ramp.Up * (1 - ((Min.Down.Time - Intervals.At.Status + 1)/ntimes)))), 
+                                                            0))]
+          temp[name=="Imports", FlexibilityDown:=ifelse((Intervals.At.Status - 1) >= Min.Up.Time, pmin(Max.Ramp.Down,Generation-Min.Stable.Level),
+                                                       ifelse((Intervals.At.Status - 1 + ntimes) > Min.Up.Time, ifelse(Max.Ramp.Down * (1 - (Min.Up.Time - Intervals.At.Status + 1)/ntimes) > Generation, Generation-Min.Stable.Level, pmin(pmax(Generation - Min.Stable.Level,0), Max.Ramp.Down * (1 - (Min.Up.Time - Intervals.At.Status + 1)/ntimes))), 
+                                                              pmin(pmax(Generation - Min.Stable.Level,0), Max.Ramp.Down)))]
+        }
+        
         ## timeseries of interesting periods
         
         ## Add biggest ramp up, biggest ramp down, interesting periods

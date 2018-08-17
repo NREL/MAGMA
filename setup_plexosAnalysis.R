@@ -373,6 +373,9 @@ if ( (use.gen.type.csv & length(gen.type.csv.loc>0)) | flex.inventory ) {
   gen.type.mapping = unique(gen.type.mapping[,.(name, Type)])
   gen.type.mapping = setNames(gen.type.mapping$Type, gen.type.mapping$name)
   if( flex.inventory){
+      gen.geo.mapping = data.table(read.csv(gen.type.csv.loc,
+                                                stringsAsFactors = FALSE))
+      gen.geo.mapping = subset(gen.geo.mapping, columns = c("name","Region","Zone"))
       gen.property.mapping = data.table(read.csv(gen.type.csv.loc, 
                                                  stringsAsFactors = FALSE))
       gen.property.mapping[,Type:=NULL]

@@ -92,6 +92,16 @@ if ( typeof(interval.vg)=='character' ) {
         
         assign(sprintf("pp%s",i_name),p)
         
+        geos = unique(gen.geo.mapping$name)
+        if(focus){
+          if( !is.na(focus.region[1])){
+            geos = gen.geo.mapping[name %in% gen.geo.mapping[Region %in% focus.region,name],name]
+          }
+          if( !is.na(focus.zone[1])){
+            geos = gen.geo.mapping[name %in% gen.geo.mapping[Zone %in% focus.zone,name],name]
+          }
+        }
+
         ## subsetting generation/capacity based on max ramp in flexibility interval
         for(j in c(1:length(db.loc))){
             time_up <- seq(from = as.POSIXct(netload.statistics.up[[j+1]][4], tz = 'UTC'), by=new_data_interval, length.out = ntimes+1)
@@ -125,8 +135,8 @@ if ( typeof(interval.vg)=='character' ) {
                 time_down_extended  <- seq(from = as.POSIXct(strsplit((netload.statistics.down[[j+1]][4])," ")[[1]][1], tz = 'UTC'),
                                          by = new_data_interval, length.out = (24*60)/as.double(new_data_interval))
             }
-            generation <- interval.generation[scenario == unique(interval.generation$scenario)[j] & time %in% time_up,]
-            capacity   <- interval.avail.cap[scenario == unique(interval.avail.cap$scenario)[j] & time %in% time_up,]
+            generation <- interval.generation[scenario == unique(interval.generation$scenario)[j] & time %in% time_up & name %in% geos,]
+            capacity   <- interval.avail.cap[scenario == unique(interval.avail.cap$scenario)[j] & time %in% time_up & name %in% geos,]
             curtail        <- rbind(generation[(Type %in% re.types),],capacity[(Type %in% re.types),])
             
             generation <- generation[!(Type %in% re.types),]
@@ -154,8 +164,8 @@ if ( typeof(interval.vg)=='character' ) {
                 ramp = total
             }
             time_down <- seq(from = as.POSIXct(netload.statistics.down[[j+1]][4], tz = 'UTC'), by=new_data_interval, length.out = ntimes+1) 
-            generation <- interval.generation[scenario == unique(interval.generation$scenario)[j] & time %in% time_down,]
-            capacity   <- interval.avail.cap[scenario == unique(interval.avail.cap$scenario)[j] & time %in% time_down,]
+            generation <- interval.generation[scenario == unique(interval.generation$scenario)[j] & time %in% time_down & name %in% geos,]
+            capacity   <- interval.avail.cap[scenario == unique(interval.avail.cap$scenario)[j] & time %in% time_down & name %in% geos,]
             curtail        <- rbind(generation[(Type %in% re.types),],capacity[(Type %in% re.types),])
             
             generation <- generation[!(Type %in% re.types),]
