@@ -311,10 +311,10 @@ if ( typeof(interval.generation)=='character' ) {
         setkey(v,scenario,i)
         setkey(agg,scenario,i)
         v = agg[v]
-        v[,FlexUpPerc:=FlexibilityUp/TotalFlexUp]
-        v[,FlexDownPerc:=FlexibilityDown/TotalFlexDown]
-        v[,TotalCap:=Capacity/TotalCapacity]
-        v = v[,.(i,scenario,Type,FlexUpPerc,FlexDownPerc,TotalCap)]
+        v[,'Flex Up Fraction':=FlexibilityUp/TotalFlexUp]
+        v[,'Flex Down Fraction':=FlexibilityDown/TotalFlexDown]
+        v[,'Capacity Fraction':=Capacity/TotalCapacity]
+        v = v[,.(i,scenario,Type,'Flex Up Fraction','Flex Down Fraction','Capacity Fraction')]
         v = melt.data.table(v, id = c('i','scenario','Type'))
         p = ggplot() + 
           geom_bar(data = v, aes(x = variable, y = value*100.0, fill = Type), position = "stack",stat = "identity") +
