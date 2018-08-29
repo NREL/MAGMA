@@ -194,6 +194,17 @@ for(i in flex.intervals){
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
+```{r flexibility-inventory-percflex, results = 'asis'}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+for(i in flex.intervals){
+    i_name = gsub(" ","", i)
+    cat("####",sprintf("Inventory for %s as a Percentage",i))
+    print(get(sprintf("p_percflex_%s", i_name)))
+    cat("\n")
+}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
 ```{r flexibility-inventory-diurnalflex, results = 'asis'}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for(i in flex.intervals){

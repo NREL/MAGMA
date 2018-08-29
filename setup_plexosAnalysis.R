@@ -375,7 +375,7 @@ if ( (use.gen.type.csv & length(gen.type.csv.loc>0)) | flex.inventory ) {
   if( flex.inventory){
       gen.geo.mapping = data.table(read.csv(gen.type.csv.loc,
                                                 stringsAsFactors = FALSE))
-      gen.geo.mapping = subset(gen.geo.mapping, columns = c("name","Region","Zone"))
+      gen.geo.mapping = subset(gen.geo.mapping, select = c("name","Region","Zone"))
       gen.property.mapping = data.table(read.csv(gen.type.csv.loc, 
                                                  stringsAsFactors = FALSE))
       gen.property.mapping[,Type:=NULL]

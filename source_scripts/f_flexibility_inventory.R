@@ -39,6 +39,21 @@ if ( typeof(interval.generation)=='character' ) {
       }
       
     }
+    ## Must name your storage "Storage","Batteries","Battery","PHES","PHS","PSH","Stor"
+    stor_names = c("Storage","Batteries","Battery","PHES","PHS","PSH","Stor")
+    if(any(stor_names %in% unique(interval.generation[,Type]))){
+      storage = interval.generation[Type %in% stor_names,]
+      interval.generation = interval.generation[!(Type %in% stor_names),]
+      setkey(storage,scenario,time,name)
+      setkey(interval.pump.load,scenario,time,name)
+      storage = storage[interval.pump.load]
+      if(nrow(storage)!=nrow(interval.pump.load)){
+        print('possible discrepancy in storage - pump load and generation might not match')
+      }
+      storage[,value:=value-i.value]
+      storage = storage[,.(scenario,property,name,value,time,category,Type)]
+      interval.generation = rbind(interval.generation,storage)
+    }
 
     d.interval.generation = dcast.data.table(interval.generation[name %in% geos,],scenario+time+name+Type ~ property,value.var = "value")
     setkey(d.interval.generation, scenario, name, Type, time)
@@ -164,6 +179,15 @@ if ( typeof(interval.generation)=='character' ) {
                                                               pmin(pmax(Generation - Min.Stable.Level,0), Max.Ramp.Down)))]
         }
         
+        if(any(stor_names%in%unique(temp[,Type]))){
+          temp[Type %in% stor_names,FlexibilityUp:=ifelse((Intervals.At.Status - 1) >= Min.Down.Time, pmin(Max.Ramp.Up,Max.Capacity-Generation),
+                                                     ifelse((Intervals.At.Status - 1 + ntimes) > Min.Down.Time, pmin(Max.Capacity-Generation, ifelse(Max.Ramp.Up * (1 - ((Min.Down.Time - Intervals.At.Status + 1)/ntimes))<Min.Stable.Level,0,Max.Ramp.Up * (1 - ((Min.Down.Time - Intervals.At.Status + 1)/ntimes)))), 
+                                                            0))]
+          temp[Type %in% stor_names, FlexibilityDown:=ifelse((Intervals.At.Status - 1) >= Min.Up.Time, pmin(Max.Ramp.Down,pmax(Generation+Max.Capacity,0)),
+                                                        ifelse((Intervals.At.Status - 1 + ntimes) > Min.Up.Time, ifelse(Max.Ramp.Down * (1 - (Min.Up.Time - Intervals.At.Status + 1)/ntimes) > Generation,pmax(Generation+Max.Capacity,0), pmin(pmax(Generation +Max.Capacity,0), Max.Ramp.Down * (1 - (Min.Up.Time - Intervals.At.Status + 1)/ntimes))), 
+                                                               pmin(pmax(Generation + Max.Capacity,0), Max.Ramp.Down)))]
+          
+        }
         ## timeseries of interesting periods
         
         ## Add biggest ramp up, biggest ramp down, interesting periods
@@ -182,7 +206,7 @@ if ( typeof(interval.generation)=='character' ) {
             }
         }
         
-        temp=temp[,.(FlexibilityUp=sum(FlexibilityUp),FlexibilityDown=sum(FlexibilityDown)), by = .(scenario,time,Type)]
+        temp=temp[,.(FlexibilityUp=sum(FlexibilityUp),FlexibilityDown=sum(FlexibilityDown),Capacity=sum(`Available Capacity`)), by = .(scenario,time,Type)]
         if(sum(interval.ue$value) > 1){
           temp=rbind(temp,interval.ue)
           gen.color2 = c(gen.color, 'Unserved Energy' = "black")
@@ -268,7 +292,7 @@ if ( typeof(interval.generation)=='character' ) {
         assign(sprintf("p_didown_%s",i.name),p)
         
         ## total flexibility sources by type and scenario
-        t = flex.inventory.timeseries[i == j, .(FlexibilityUp = sum(FlexibilityUp),FlexibilityDown = sum(FlexibilityDown)), by = .(scenario,i,Type)]
+        t = flex.inventory.timeseries[i == j & !(Type %in% re.types), .(FlexibilityUp = sum(FlexibilityUp),FlexibilityDown = sum(FlexibilityDown)), by = .(scenario,i,Type)]
         t = melt.data.table(t, id  = c("scenario","i","Type"))
         p = ggplot() +
             geom_bar(data = t[variable=="FlexibilityUp",], aes( x = scenario, y = value/1000.0, fill = Type),position = "dodge", stat = "identity") +
@@ -281,8 +305,29 @@ if ( typeof(interval.generation)=='character' ) {
         
         assign(sprintf("p_totalflex_%s",i.name),p)
         
+        ##total flexibility sources compared to total generator capacities
+        v = flex.inventory.timeseries[i == j & !(Type %in% re.types), .(FlexibilityUp = sum(FlexibilityUp),FlexibilityDown = sum(FlexibilityDown),Capacity=max(Capacity)), by = .(scenario,i,Type)]
+        agg = v[,.(TotalFlexUp=sum(FlexibilityUp),TotalFlexDown=sum(FlexibilityDown),TotalCapacity=sum(Capacity)),by = .(scenario,i)]
+        setkey(v,scenario,i)
+        setkey(agg,scenario,i)
+        v = agg[v]
+        v[,FlexUpPerc:=FlexibilityUp/TotalFlexUp]
+        v[,FlexDownPerc:=FlexibilityDown/TotalFlexDown]
+        v[,TotalCap:=Capacity/TotalCapacity]
+        v = v[,.(i,scenario,Type,FlexUpPerc,FlexDownPerc,TotalCap)]
+        v = melt.data.table(v, id = c('i','scenario','Type'))
+        p = ggplot() + 
+          geom_bar(data = v, aes(x = variable, y = value*100.0, fill = Type), position = "stack",stat = "identity") +
+          scale_fill_manual("",values = gen.color2) +
+          labs(x = NULL, y  = "%") +
+          theme(text = element_text(size = 18),
+                axis.text.x = element_text(angle=90,vjust = 0.5, hjust = 0.5))
+        
+        assign(sprintf("p_percflex_%s",i.name),p)
+        
+        
         ## diurnal flexibility of sources by type and scenario?
-        u = flex.inventory.timeseries[i == j, .(FlexibilityUp = mean(FlexibilityUp),FlexibilityDown = mean(FlexibilityDown)), by = .(scenario,i,Type,Quarter,Interval)]
+        u = flex.inventory.timeseries[i == j & !(Type %in% re.types), .(FlexibilityUp = mean(FlexibilityUp),FlexibilityDown = mean(FlexibilityDown)), by = .(scenario,i,Type,Quarter,Interval)]
         u = melt.data.table(u, id  = c("scenario","i","Type","Quarter","Interval"))
         p = ggplot() +
             geom_bar(data = u[variable=="FlexibilityUp",], aes( x = Interval, y = value, fill = Type), stat = "identity") +
