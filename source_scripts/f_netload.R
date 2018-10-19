@@ -12,17 +12,23 @@ if ( typeof(interval.region.load)=='character' ) {
 
     interval.vg = tryCatch( total_variablegen(interval.generation, interval.avail.cap), error = function(cond) { return('ERROR')})
 
-    if ( interval.zone.load != "ERROR" ) {
+    if ( !is.null(nrow(interval.zone.load)) & !is.na(focus.zone)) {
         interval.netload = tryCatch( interval_netload(interval.vg, interval.zone.load), error = function(cond) { return('ERROR')})
     }
     else{
         interval.netload = tryCatch( interval_netload(interval.vg, interval.region.load), error = function(cond) { return('ERROR')})
+    }
+    if(exists("exclude.dates")){
+      for(i in length(exclude.dates)){
+        interval.netload = interval.netload[!grepl(exclude.dates[i], time), ]  
+      }
     }
     
     diurnal.netload = tryCatch( diurnal_netload(interval.netload), error = function(cond) { return('ERROR')})
     if( typeof(interval.netload) == 'character'){
         print('INPUT ERROR OF UNKNOWN TYPE')
     }
+    
     else{
         d.nl = diurnal.netload[variable %in% c("Load","VG Potential","VG Output")]
         d.nlv = diurnal.netload[variable %in% c("Net Load","Potential Net Load")]

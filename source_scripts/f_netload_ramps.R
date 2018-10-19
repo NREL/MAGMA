@@ -135,8 +135,8 @@ if ( typeof(interval.vg)=='character' ) {
                 time_down_extended  <- seq(from = as.POSIXct(strsplit((netload.statistics.down[[j+1]][4])," ")[[1]][1], tz = 'UTC'),
                                          by = new_data_interval, length.out = (24*60)/as.double(new_data_interval))
             }
-            generation <- interval.generation[scenario == unique(interval.generation$scenario)[j] & time %in% time_up & name %in% geos,]
-            capacity   <- interval.avail.cap[scenario == unique(interval.avail.cap$scenario)[j] & time %in% time_up & name %in% geos,]
+            generation <- interval.generation[scenario == names(netload.statistics.up)[j+1] & time %in% time_up & name %in% geos,]
+            capacity   <- interval.avail.cap[scenario == names(netload.statistics.up)[j+1]& time %in% time_up & name %in% geos,]
             curtail        <- rbind(generation[(Type %in% re.types),],capacity[(Type %in% re.types),])
             
             generation <- generation[!(Type %in% re.types),]
@@ -145,16 +145,21 @@ if ( typeof(interval.vg)=='character' ) {
             generation[, DiffCommit:= c(diff(Commitment, lag = ntimes),rep(NA,times = ntimes)), by = .(name)]
             
             commit  = generation[DiffCommit!=0,.(total=sum(DiffGen,na.rm=TRUE),method = "Commit",ramp = "Up", interval = i),by = .(scenario,Type)]
-            curtail = dcast.data.table(curtail,scenario+time~property,value.var = "value", fun.aggregate = sum)
-            curtail[,Curtailment:=`Available Capacity` - Generation]
-            curtail[,DiffCurtail:=c((diff(Curtailment, lag = ntimes)*-1.0),rep(NA,times=ntimes)), by = .(scenario)]
-            
-            curtail=curtail[,.(total=sum(DiffCurtail,na.rm=TRUE),method = "Commit",ramp = "Up", interval=i, Type = "Curtailment"), by = .(scenario)]
             dispatch= generation[DiffCommit==0,.(total=sum(DiffGen,na.rm=TRUE),method = "Dispatch",ramp = "Up", interval = i),by = .(scenario,Type)]
             total = rbind(commit,dispatch)
-            #only include curtailment if it's "helping" with ramp, not "hurting"
-            if(curtail$total>0){
+
+            #sometimes, there's no curtailment
+            if(nrow(curtail)>0){
+              curtail = dcast.data.table(curtail,scenario+time~property,value.var = "value", fun.aggregate = sum)
+              curtail[,Curtailment:=`Available Capacity` - Generation]
+              curtail[,DiffCurtail:=c((diff(Curtailment, lag = ntimes)*-1.0),rep(NA,times=ntimes)), by = .(scenario)]
+              
+              #only include curtailment if it's "helping" with ramp, not "hurting"
+              curtail=curtail[,.(total=sum(DiffCurtail,na.rm=TRUE),method = "Commit",ramp = "Up", interval=i, Type = "Curtailment"), by = .(scenario)]
+              
+              if(curtail$total>0){
                 total = rbind(total,curtail)
+              }
             }
             
             if(!is.null(ramp)){
@@ -164,8 +169,8 @@ if ( typeof(interval.vg)=='character' ) {
                 ramp = total
             }
             time_down <- seq(from = as.POSIXct(netload.statistics.down[[j+1]][4], tz = 'UTC'), by=new_data_interval, length.out = ntimes+1) 
-            generation <- interval.generation[scenario == unique(interval.generation$scenario)[j] & time %in% time_down & name %in% geos,]
-            capacity   <- interval.avail.cap[scenario == unique(interval.avail.cap$scenario)[j] & time %in% time_down & name %in% geos,]
+            generation <- interval.generation[scenario == names(netload.statistics.up)[j+1] & time %in% time_down & name %in% geos,]
+            capacity   <- interval.avail.cap[scenario == names(netload.statistics.up)[j+1] & time %in% time_down & name %in% geos,]
             curtail        <- rbind(generation[(Type %in% re.types),],capacity[(Type %in% re.types),])
             
             generation <- generation[!(Type %in% re.types),]
@@ -174,39 +179,41 @@ if ( typeof(interval.vg)=='character' ) {
             generation[, DiffCommit:= c((diff(Commitment, lag = ntimes)),rep(NA,times = ntimes)), by = .(name)]
             
             commit  = generation[DiffCommit!=0,.(total=sum(DiffGen,na.rm=TRUE),method = "Commit",ramp = "Down",interval = i),by = .(scenario,Type)]
-            curtail = dcast.data.table(curtail,scenario+time~property,value.var = "value", fun.aggregate = sum)
-            curtail[,Curtailment:=`Available Capacity` - Generation]
-            curtail[,DiffCurtail:=c((diff(Curtailment, lag = ntimes)*-1.0),rep(NA,times=ntimes)), by = .(scenario)]
-            
-            curtail=curtail[,.(total=sum(DiffCurtail,na.rm=TRUE),method = "Commit",ramp = "Down", interval=i, Type = "Curtailment"), by = .(scenario)]
             dispatch= generation[DiffCommit==0,.(total=sum(DiffGen,na.rm=TRUE),method = "Dispatch",ramp = "Down",interval = i),by = .(scenario,Type)]
             total = rbind(commit,dispatch)
-            #only include curtailment if it's "helping" with ramp, not "hurting"
-            if(curtail$total<0){
-                total = rbind(total,curtail)
-            }        
+            if(nrow(curtail)>0){
+              curtail = dcast.data.table(curtail,scenario+time~property,value.var = "value", fun.aggregate = sum)
+              curtail[,Curtailment:=`Available Capacity` - Generation]
+              curtail[,DiffCurtail:=c((diff(Curtailment, lag = ntimes)*-1.0),rep(NA,times=ntimes)), by = .(scenario)]
+              
+              curtail=curtail[,.(total=sum(DiffCurtail,na.rm=TRUE),method = "Commit",ramp = "Down", interval=i, Type = "Curtailment"), by = .(scenario)]
+              #only include curtailment if it's "helping" with ramp, not "hurting"
+              if(curtail$total<0){
+                  total = rbind(total,curtail)
+              }   
+            }
             ramp = rbind(ramp,total)
                         #capacity <- interval.avail.cap[scenario == unique(interval.generation$scenario)[j] & time %in% time_up,]
-            addme = expand.interval.netload[scenario == unique(interval.generation$scenario)[j] & time %in% time_up_extended,]
+            addme = expand.interval.netload[scenario == names(netload.statistics.up)[j+1] & time %in% time_up_extended,]
             addme[,interval := i]
-            addme_down = expand.interval.netload[scenario == unique(interval.generation$scenario)[j] & time %in% time_down_extended,]
+            addme_down = expand.interval.netload[scenario == names(netload.statistics.up)[j+1] & time %in% time_down_extended,]
             addme_down[,interval := i]
             
             if(!is.null(ramp_day)){
                 ramp_day = rbind(ramp_day, addme)
-                rect = rbind(rect, data.table(start = min(time_up), end = max(time_up), scenario = unique(interval.generation$scenario)[j], interval=i))
+                rect = rbind(rect, data.table(start = min(time_up), end = max(time_up), scenario = names(netload.statistics.up)[j+1], interval=i))
             }
             else{
                 ramp_day = addme
-                rect = data.table(start = min(time_up), end = max(time_up), scenario = unique(interval.generation$scenario)[j], interval = i)
+                rect = data.table(start = min(time_up), end = max(time_up), scenario = names(netload.statistics.up)[j+1], interval = i)
             }
             if(!is.null(ramp_day_down)){
                 ramp_day_down = rbind(ramp_day_down, addme_down)
-                rect_down = rbind(rect_down, data.table(start = min(time_down), end = max(time_down),scenario = unique(interval.generation$scenario)[j], interval = i))
+                rect_down = rbind(rect_down, data.table(start = min(time_down), end = max(time_down),scenario = names(netload.statistics.up)[j+1], interval = i))
             }
             else{
                 ramp_day_down = addme_down
-                rect_down = data.table(start = min(time_down), end = max(time_down), scenario = unique(interval.generation$scenario)[j], interval = i)
+                rect_down = data.table(start = min(time_down), end = max(time_down), scenario = names(netload.statistics.up)[j+1], interval = i)
             }
         }
         expand.interval.netload[,i:=i]
@@ -214,7 +221,6 @@ if ( typeof(interval.vg)=='character' ) {
         expand.interval.netload[,DemandDown:=ifelse(dif<0,dif,0)]
         expand.interval.netload[,dif:=NULL]
         temp=expand.interval.netload[variable=='Potential Net Load',]
-        temp[,value:=NULL]
         temp[,variable:=NULL]
         if(!is.null(flex.demand.timeseries)){
             flex.demand.timeseries = rbind(flex.demand.timeseries,temp)
@@ -223,6 +229,7 @@ if ( typeof(interval.vg)=='character' ) {
             flex.demand.timeseries = temp
         }
     }
+    ## problem is above this note
     ramp[,interval:=factor(interval,levels = flex.intervals)]
     ramp[,Type:=factor(Type,levels = gen.order)]
     ramp_day[,interval:=factor(interval,levels = flex.intervals)]

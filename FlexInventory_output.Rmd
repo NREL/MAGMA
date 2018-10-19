@@ -183,6 +183,7 @@ for(i in flex.intervals){
     }# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
+
 ```{r flexibility-inventory-totalflex, results = 'asis'}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for(i in flex.intervals){
@@ -193,6 +194,31 @@ for(i in flex.intervals){
 }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
+
+
+```{r flexibility-inventory-durationflexup, results = 'asis'}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+for(i in flex.intervals){
+    i_name = gsub(" ","", i)
+    cat("####",sprintf("Total Inventory Up for %s",i))
+    print(get(sprintf("p_flexup_duration_%s", i_name)))
+    cat("\n")
+}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+
+```{r flexibility-inventory-durationflexdown, results = 'asis'}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+for(i in flex.intervals){
+    i_name = gsub(" ","", i)
+    cat("####",sprintf("Total Inventory Down for %s",i))
+    print(get(sprintf("p_flexdown_duration_%s", i_name)))
+    cat("\n")
+}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
 
 ```{r flexibility-inventory-percflex, results = 'asis'}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -244,6 +270,42 @@ for(i in flex.intervals){
     for(j in scenario.names){
         cat("####",sprintf("Resources used to meet largest ramps in %s, %s",i, j))
         print(get(sprintf("p_rampability_%s_%s", j, i)))
+        cat("\n")
+    }
+}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+```{r diurnal-flexibility, results = 'asis'}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+for(i in flex.intervals){
+    for(j in scenario.names){
+        cat("####",sprintf("Diurnal Average Flexibility Range in %s, %s",i, j))
+        print(get(sprintf("p_diurnal_flexribbon_%s_%s", j, i)))
+        cat("\n")
+    }
+}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+```{r minup-flexribbon, results = 'asis'}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+for(i in flex.intervals){
+    for(j in scenario.names){
+        cat("####",sprintf("Lowest Upward Flexibility Period in %s, %s",i, j))
+        print(get(sprintf("p_minup_flexribbon_%s_%s", j, i)))
+        cat("\n")
+    }
+}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+```{r mindown-flexribbon, results = 'asis'}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+for(i in flex.intervals){
+    for(j in scenario.names){
+        cat("####",sprintf("Lowest Downward Flexibility Period in in %s, %s",i, j))
+        print(get(sprintf("p_mindown_flexribbon_%s_%s", j, i)))
         cat("\n")
     }
 }

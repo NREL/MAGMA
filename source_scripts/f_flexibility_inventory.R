@@ -32,15 +32,17 @@ if ( typeof(interval.generation)=='character' ) {
         interval.imports = interval.imports[,Generation:=Imports]
         interval.imports = interval.imports[,`Available Capacity`:=max(Generation)]
         interval.imports[, c("Load","Imports"):=NULL]
-        gen.property.mapping = rbind(gen.property.mapping, data.table(name='Imports',Max.Capacity=max(interval.imports$`Available Capacity`),
-                                                                      Min.Stable.Level=min(interval.imports$Generation),Max.Ramp.Up=100000,Max.Ramp.Down=100000,
-                                                                      Min.Up.Time=0,Min.Down.Time=0,Must.Run=0))
+        if(sum(interval.imports$Generation)>1000){
+          gen.property.mapping = rbind(gen.property.mapping, data.table(name='Imports',Max.Capacity=max(interval.imports$`Available Capacity`),
+                                                                        Min.Stable.Level=min(interval.imports$Generation),Max.Ramp.Up=100000,Max.Ramp.Down=100000,
+                                                                        Min.Up.Time=0,Min.Down.Time=0,Must.Run=0))
+        }
         setkey(gen.property.mapping,name)
       }
       
     }
     ## Must name your storage "Storage","Batteries","Battery","PHES","PHS","PSH","Stor"
-    stor_names = c("Storage","Batteries","Battery","PHES","PHS","PSH","Stor")
+    stor_names = c("Storage","Batteries","Battery","PHES","PHS","PSH","Stor","Shadow")
     if(any(stor_names %in% unique(interval.generation[,Type]))){
       storage = interval.generation[Type %in% stor_names,]
       interval.generation = interval.generation[!(Type %in% stor_names),]
@@ -61,9 +63,18 @@ if ( typeof(interval.generation)=='character' ) {
     setkey(d.interval.avail.cap, scenario, name, Type, time)
     
     master.gen = d.interval.generation[d.interval.avail.cap]
+
     if(focus){
-      master.gen=rbind(master.gen,interval.imports)
-      setkey(master.gen, scenario, name, Type, time)
+      if(sum(interval.imports$Generation)>1000){
+        master.gen=rbind(master.gen,interval.imports)
+        setkey(master.gen, scenario, name, Type, time)
+      }
+    }
+    
+    if(exists("exclude.dates")){
+      for(i in length(exclude.dates)){
+        master.gen = master.gen[!grepl(exclude.dates[i], time), ]  
+      }
     }
     
     # if reserves are considered
@@ -71,11 +82,29 @@ if ( typeof(interval.generation)=='character' ) {
         # remove eligible reserves
         if(!is.na(flex.reserves)){
             d.interval.reserve.provision = interval.gen.reserve.provision[!(parent %in% flex.reserves) & name %in% geos,]
-            d.interval.reserve.provision = dcast.data.table(d.interval.reserve.provision, scenario + time + name + Type ~ property,value.var = "value", fun.aggregate = sum)
+            if(nrow(d.interval.reserve.provision)>0){
+              d.interval.reserve.provision = dcast.data.table(d.interval.reserve.provision, scenario + time + name + Type ~ property,value.var = "value", fun.aggregate = sum)
+            }
+            else{
+              master.gen[,Provision:=0]
+            }
         }
         else{
-            d.interval.reserve.provision = dcast.data.table(interval.reserve.provision[name %in% geos,], scenario + time + name + Type ~ property,value.var = "value", fun.aggregate = sum)
+            d.interval.reserve.provision = interval.gen.reserve.provision[name %in% geos,]
+            if(nrow(d.interval.reserve.provision)>0){
+              d.interval.reserve.provision = dcast.data.table(d.interval.reserve.provision, scenario + time + name + Type ~ property,value.var = "value", fun.aggregate = sum)
+            }
+            else{
+              master.gen[,Provision:=0]
+            }
         }
+      
+        if(exists("exclude.dates")){
+          for(i in length(exclude.dates)){
+            d.interval.reserve.provision = d.interval.reserve.provision[!grepl(exclude.dates[i], time), ]  
+          }
+        }
+      
         setkey(d.interval.reserve.provision, scenario, name, Type, time)
         master.gen = d.interval.reserve.provision[master.gen]
         master.gen[is.na(Provision),Provision:=0]
@@ -88,13 +117,23 @@ if ( typeof(interval.generation)=='character' ) {
     if( typeof(interval.region.ue) != 'character'){
         interval.ue = interval.region.ue[,.(Type = property, FlexibilityUp = sum(value), FlexibilityDown = 0),by = .(scenario,time)]
         if(!is.na(focus.region[1])){
-          interval.ue = interval.region.ue[name %in% focus.region,.(Type = property, FlexibilityUp = sum(value), FlexibilityDown = 0),by = .(scenario,time)]          
+          interval.ue = interval.region.ue[name %in% focus.region,.(Type='Unserved Energy',FlexibilityUp=sum(value),FlexibilityDown=0, Capacity = 0),by=.(scenario,time)]          
+        }
+        if(exists("exclude.dates")){
+          for(i in length(exclude.dates)){
+            interval.ue = interval.ue[!grepl(exclude.dates[i], time), ]  
+          }
         }
     }
     else{
         interval.ue = interval.zone.ue[,.(Type = property, FlexibilityUp = sum(value), FlexibilityDown = 0), by = .(scenario,time)]
         if(!is.na(focus.zone[1])){
-          interval.ue = interval.zone.ue[name %in% focus.zone,.(Type = property, FlexibilityUp = sum(value), FlexibilityDown = 0), by = .(scenario,time)]
+          interval.ue = interval.zone.ue[name %in% focus.zone,.(Type = 'Unserved Energy', FlexibilityUp = sum(value), FlexibilityDown = 0, Capacity = 0), by = .(scenario,time)]
+        }
+        if(exists("exclude.dates")){
+          for(i in length(exclude.dates)){
+            interval.ue = interval.ue[!grepl(exclude.dates[i], time), ]  
+          }
         }
     }
     
@@ -150,7 +189,20 @@ if ( typeof(interval.generation)=='character' ) {
         
         temp[, Intervals.At.Status := seq_len(.N), by = rleid(scenario,name,Commit)]
         temp[, RE.Ramp.Down:= c(`Available Capacity`[-(1:ntimes)], rep(0,times = ntimes)), by = .(scenario,name)]
-
+        
+        ## only here for KZ!!
+        inflexiblegens = c("Akmola_SUBCRITICAL-COAL_180_15","Akmola_SUBCRITICAL-COAL_22_13","Akmola_SUBCRITICAL-COAL_480_14","Aktobe_CCGT-GAS_37_5","Aktobe_CE-GAS_2.9_7","Aktobe_CE-GAS_38.92_6","Aktobe_CE-GAS_6.2_8",
+        "Aktobe_CT-GAS_152_2","Aktobe_CT-GAS_33.8_3","Aktobe_CT-GAS_97.8_4","Aktobe_GAS-BOILER_118_1","Almaty_GAS-BOILER_145_17","Almaty_SUBCRITICAL-COAL_173_19","Almaty_SUBCRITICAL-COAL_24_23","Almaty_SUBCRITICAL-COAL_510_18",
+        "CENTRAL_ASIA","East-Kazakhstan_SUBCRITICAL-COAL_18_42","East-Kazakhstan_SUBCRITICAL-COAL_252.5_38","East-Kazakhstan_SUBCRITICAL-COAL_59_40","East-Kazakhstan_SUBCRITICAL-COAL_75_39","Karaganda_CT-GAS_103_70",
+        "Karaganda_CT-GAS_87_71","Karaganda_SUBCRITICAL-COAL_115_68","Karaganda_SUBCRITICAL-COAL_132_64","Karaganda_SUBCRITICAL-COAL_152_69","Karaganda_SUBCRITICAL-COAL_18_72","Karaganda_SUBCRITICAL-COAL_32_66","Karaganda_SUBCRITICAL-COAL_435_65",
+        "Karaganda_SUBCRITICAL-COAL_560_67","Kizilorda_CT-Gas_46_77","Kizilorda_GAS-BOILER_67_78","Kostanai_GAS-BOILER_12_54","Kostanai_SUBCRITICAL-COAL_267_53","North-Kazakhstan_SUBCRITICAL-COAL_434_16","Pavlodar_SUBCRITICAL-COAL_110_59",
+        "Pavlodar_SUBCRITICAL-COAL_12_61","Pavlodar_SUBCRITICAL-COAL_350_58","Pavlodar_SUBCRITICAL-COAL_520_60","RUSSIA_VOLGA","South-Kazakhstan_SUBCRITICAL-COAL_12.5_76","South-Kazakhstan_SUBCRITICAL-COAL_160_74","Zhambil_GAS-BOILER_60_75")
+        temp[(name %in% inflexiblegens) & (scenario=="2500MW-RE"),Max.Ramp.Up:= 0]
+        temp[(name %in% inflexiblegens) & (scenario=="2500MW-RE"),Max.Ramp.Down:=0]
+        temp[(name %in% inflexiblegens) & (scenario=="2500MW-RE"),Min.Up.Time:=10000000]
+        temp[(name %in% inflexiblegens) & (scenario=="2500MW-RE"),Min.Down.Time:=10000000]
+        ## only here for KZ!!
+        
         ## Logic: If it's already on, its upward flexibility is limited by either remaining capacity or ramp up
         ## if it's off, it's limited by min down time. if down time is not binding, it's limited by either available capacity or max ramp up
         ## if down time is binding within whole flexibility interval, flexibilityup = 0
@@ -171,17 +223,18 @@ if ( typeof(interval.generation)=='character' ) {
         ## special cases
         ## special case #1: Imports
         if("Imports"%in%unique(gen.property.mapping[,name])){
-          temp[name=="Imports",FlexibilityUp:=ifelse((Intervals.At.Status - 1) >= Min.Down.Time, pmin(Max.Ramp.Up,Max.Capacity-Generation),
-                                                     ifelse((Intervals.At.Status - 1 + ntimes) > Min.Down.Time, pmin(Max.Capacity-Generation, ifelse(Max.Ramp.Up * (1 - ((Min.Down.Time - Intervals.At.Status + 1)/ntimes))<Min.Stable.Level,0,Max.Ramp.Up * (1 - ((Min.Down.Time - Intervals.At.Status + 1)/ntimes)))), 
+          temp[name=="Imports",FlexibilityUp:=ifelse((Intervals.At.Status - 1) >= Min.Down.Time, pmin(Max.Ramp.Up,pmax(Max.Capacity-Generation,0)),
+                                                     ifelse((Intervals.At.Status - 1 + ntimes) > Min.Down.Time, pmin(pmax(Max.Capacity-Generation,0), ifelse(Max.Ramp.Up * (1 - ((Min.Down.Time - Intervals.At.Status + 1)/ntimes))<Min.Stable.Level,0,Max.Ramp.Up * (1 - ((Min.Down.Time - Intervals.At.Status + 1)/ntimes)))), 
                                                             0))]
-          temp[name=="Imports", FlexibilityDown:=ifelse((Intervals.At.Status - 1) >= Min.Up.Time, pmin(Max.Ramp.Down,Generation-Min.Stable.Level),
-                                                       ifelse((Intervals.At.Status - 1 + ntimes) > Min.Up.Time, ifelse(Max.Ramp.Down * (1 - (Min.Up.Time - Intervals.At.Status + 1)/ntimes) > Generation, Generation-Min.Stable.Level, pmin(pmax(Generation - Min.Stable.Level,0), Max.Ramp.Down * (1 - (Min.Up.Time - Intervals.At.Status + 1)/ntimes))), 
+          temp[name=="Imports", FlexibilityDown:=ifelse((Intervals.At.Status - 1) >= Min.Up.Time, pmin(Max.Ramp.Down,pmax(Generation-Min.Stable.Level,0)),
+                                                       ifelse((Intervals.At.Status - 1 + ntimes) > Min.Up.Time, ifelse(Max.Ramp.Down * (1 - (Min.Up.Time - Intervals.At.Status + 1)/ntimes) > Generation, pmax(Generation-Min.Stable.Level,0), pmin(pmax(Generation - Min.Stable.Level,0), Max.Ramp.Down * (1 - (Min.Up.Time - Intervals.At.Status + 1)/ntimes))), 
                                                               pmin(pmax(Generation - Min.Stable.Level,0), Max.Ramp.Down)))]
         }
-        
+        ## special case #2: Storage
         if(any(stor_names%in%unique(temp[,Type]))){
-          temp[Type %in% stor_names,FlexibilityUp:=ifelse((Intervals.At.Status - 1) >= Min.Down.Time, pmin(Max.Ramp.Up,Max.Capacity-Generation),
-                                                     ifelse((Intervals.At.Status - 1 + ntimes) > Min.Down.Time, pmin(Max.Capacity-Generation, ifelse(Max.Ramp.Up * (1 - ((Min.Down.Time - Intervals.At.Status + 1)/ntimes))<Min.Stable.Level,0,Max.Ramp.Up * (1 - ((Min.Down.Time - Intervals.At.Status + 1)/ntimes)))), 
+          temp=temp[!(is.na(temp$Generation)),]
+          temp[Type %in% stor_names,FlexibilityUp:=ifelse((Intervals.At.Status - 1) >= Min.Down.Time, pmin(Max.Ramp.Up,Max.Capacity-Generation-Provision),
+                                                     ifelse((Intervals.At.Status - 1 + ntimes) > Min.Down.Time, pmin(Max.Capacity-Generation-Provision, ifelse(Max.Ramp.Up * (1 - ((Min.Down.Time - Intervals.At.Status + 1)/ntimes))<Min.Stable.Level,0,Max.Ramp.Up * (1 - ((Min.Down.Time - Intervals.At.Status + 1)/ntimes)))), 
                                                             0))]
           temp[Type %in% stor_names, FlexibilityDown:=ifelse((Intervals.At.Status - 1) >= Min.Up.Time, pmin(Max.Ramp.Down,pmax(Generation+Max.Capacity,0)),
                                                         ifelse((Intervals.At.Status - 1 + ntimes) > Min.Up.Time, ifelse(Max.Ramp.Down * (1 - (Min.Up.Time - Intervals.At.Status + 1)/ntimes) > Generation,pmax(Generation+Max.Capacity,0), pmin(pmax(Generation +Max.Capacity,0), Max.Ramp.Down * (1 - (Min.Up.Time - Intervals.At.Status + 1)/ntimes))), 
@@ -207,9 +260,9 @@ if ( typeof(interval.generation)=='character' ) {
         }
         
         temp=temp[,.(FlexibilityUp=sum(FlexibilityUp),FlexibilityDown=sum(FlexibilityDown),Capacity=sum(`Available Capacity`)), by = .(scenario,time,Type)]
-        if(sum(interval.ue$value) > 1){
+        if(sum(interval.ue$FlexibilityUp) > 1){
           temp=rbind(temp,interval.ue)
-          gen.color2 = c(gen.color, 'Unserved Energy' = "black")
+          gen.color2 = c(gen.color, 'Unserved Energy' = "gray80")
         }
         else{
           gen.color2 = gen.color
@@ -243,15 +296,14 @@ if ( typeof(interval.generation)=='character' ) {
                                                   TimeDown = time[which(InventoryDown == min(InventoryDown, na.rm = TRUE))]), by = .(scenario,i)]
     setnames(flex.inventory.final.results,c("Scenario","Flexibility Interval","Inventory Up (MW)","Inventory Down (MW)","Time Up","Time Down"))
     
-    for(j in flex.intervals){
-        
-        i.name = gsub(" ","",j)
+    for(int in flex.intervals){
+        i.name = gsub(" ","",int)
         num = nrow(master.flex[i == unique(master.flex[,i])[1] & scenario == unique(master.flex[,scenario])[1],])
         setorder(master.flex, scenario,i,-InventoryUp)
         master.flex[,Dummy := c(1:num)]
         
         p = ggplot() +
-            geom_line(data = master.flex[i == j,], aes(x = Dummy, y = InventoryUp, color = scenario), size = 1.1) +
+            geom_line(data = master.flex[i == int,], aes(x = Dummy, y = InventoryUp, color = scenario), size = 1.1) +
             labs(x = 'Intervals of Year', y = "Flexibility Up Surplus") +
             scale_color_brewer("",palette='Set1') +
             theme(text = element_text(size = 18))
@@ -262,17 +314,41 @@ if ( typeof(interval.generation)=='character' ) {
         master.flex[,Dummy := c(1:num)]
         
         p = ggplot() +
-            geom_line(data = master.flex[i == j,], aes(x = Dummy, y = InventoryDown, color = scenario), size = 1.1) +
+            geom_line(data = master.flex[i == int,], aes(x = Dummy, y = InventoryDown, color = scenario), size = 1.1) +
             labs(x = 'Intervals of Year', y = "Flexibility Down Surplus") +
             scale_color_brewer("",palette='Set1') +
             theme(text = element_text(size = 18))
         
         assign(sprintf("p_invdown_%s",i.name),p)
+        
+        flex.total = flex.total.timeseries
+        setorder(flex.total, scenario, i,-FlexibilityUp)
+        num = nrow(flex.total[i == unique(flex.total[,i])[1] & scenario == unique(master.flex[,scenario])[1],])
+        flex.total[,Dummy:= c(1:num)]
+        
+        p = ggplot() + 
+          geom_line(data = flex.total[i==int,],aes(x=Dummy,y =FlexibilityUp, color = scenario), size = 1.1) +
+          labs( x = "Intervals of Year", y = "Flexibility Up Inventory") +
+          scale_color_brewer("", palette = 'Set1') +
+          theme(text = element_text(size = 18))
+        
+        assign(sprintf("p_flexup_duration_%s",i.name),p)
+        
+        setorder(flex.total, scenario, i, -FlexibilityDown)
+        flex.total[,Dummy:=c(1:num)]
+        
+        p = ggplot() + 
+          geom_line(data = flex.total[i==int],aes(x=Dummy, y = FlexibilityDown, color = scenario), size=1.1) +
+          labs(x="Intervals of Year", y = "Flexibility Down Inventory") +
+          scale_color_brewer("", palette = 'Set1') + 
+          theme(text = element_text(size = 18))
+        
+        assign(sprintf("p_flexdown_duration_%s",i.name),p)
     
         ## diurnal curves of inventory up and down
         
         p = ggplot() + 
-            geom_line(data = master.flex.summary[i == j,], aes(x = Interval, y = InventoryUp, color = scenario), size = 1.1) + 
+            geom_line(data = master.flex.summary[i == int,], aes(x = Interval, y = InventoryUp, color = scenario), size = 1.1) + 
             facet_grid(.~Quarter, scales = 'free') +
             labs(x = NULL, y = "Flexibility Up Surplus") +
             scale_color_brewer("",palette='Set1') +
@@ -282,7 +358,7 @@ if ( typeof(interval.generation)=='character' ) {
         assign(sprintf("p_diup_%s",i.name),p)
         
         p = ggplot() + 
-            geom_line(data = master.flex.summary[i == j,], aes(x = Interval, y = InventoryDown, color = scenario), size = 1.1) + 
+            geom_line(data = master.flex.summary[i == int,], aes(x = Interval, y = InventoryDown, color = scenario), size = 1.1) + 
             facet_grid(.~Quarter, scales = 'free') +
             labs(x = NULL, y = "Flexibility Down Surplus") +
             scale_color_brewer("",palette='Set1') +
@@ -292,7 +368,7 @@ if ( typeof(interval.generation)=='character' ) {
         assign(sprintf("p_didown_%s",i.name),p)
         
         ## total flexibility sources by type and scenario
-        t = flex.inventory.timeseries[i == j & !(Type %in% re.types), .(FlexibilityUp = sum(FlexibilityUp),FlexibilityDown = sum(FlexibilityDown)), by = .(scenario,i,Type)]
+        t = flex.inventory.timeseries[i == int & !(Type %in% re.types), .(FlexibilityUp = sum(FlexibilityUp),FlexibilityDown = sum(FlexibilityDown)), by = .(scenario,i,Type)]
         t = melt.data.table(t, id  = c("scenario","i","Type"))
         p = ggplot() +
             geom_bar(data = t[variable=="FlexibilityUp",], aes( x = scenario, y = value/1000.0, fill = Type),position = "dodge", stat = "identity") +
@@ -306,20 +382,21 @@ if ( typeof(interval.generation)=='character' ) {
         assign(sprintf("p_totalflex_%s",i.name),p)
         
         ##total flexibility sources compared to total generator capacities
-        v = flex.inventory.timeseries[i == j & !(Type %in% re.types), .(FlexibilityUp = sum(FlexibilityUp),FlexibilityDown = sum(FlexibilityDown),Capacity=max(Capacity)), by = .(scenario,i,Type)]
+        v = flex.inventory.timeseries[i == int & !(Type %in% re.types), .(FlexibilityUp = sum(FlexibilityUp),FlexibilityDown = sum(FlexibilityDown),Capacity=max(Capacity)), by = .(scenario,i,Type)]
         agg = v[,.(TotalFlexUp=sum(FlexibilityUp),TotalFlexDown=sum(FlexibilityDown),TotalCapacity=sum(Capacity)),by = .(scenario,i)]
         setkey(v,scenario,i)
         setkey(agg,scenario,i)
         v = agg[v]
-        v[,'Flex Up Fraction':=FlexibilityUp/TotalFlexUp]
-        v[,'Flex Down Fraction':=FlexibilityDown/TotalFlexDown]
-        v[,'Capacity Fraction':=Capacity/TotalCapacity]
-        v = v[,.(i,scenario,Type,'Flex Up Fraction','Flex Down Fraction','Capacity Fraction')]
+        v[,`Flex Up Fraction`:=FlexibilityUp/TotalFlexUp]
+        v[,`Flex Down Fraction`:=FlexibilityDown/TotalFlexDown]
+        v[,`Capacity Fraction`:=Capacity/TotalCapacity]
+        v = v[,.(i,scenario,Type,`Flex Up Fraction`,`Flex Down Fraction`,`Capacity Fraction`)]
         v = melt.data.table(v, id = c('i','scenario','Type'))
         p = ggplot() + 
           geom_bar(data = v, aes(x = variable, y = value*100.0, fill = Type), position = "stack",stat = "identity") +
           scale_fill_manual("",values = gen.color2) +
           labs(x = NULL, y  = "%") +
+          facet_grid(scenario~.)+
           theme(text = element_text(size = 18),
                 axis.text.x = element_text(angle=90,vjust = 0.5, hjust = 0.5))
         
@@ -327,7 +404,7 @@ if ( typeof(interval.generation)=='character' ) {
         
         
         ## diurnal flexibility of sources by type and scenario?
-        u = flex.inventory.timeseries[i == j & !(Type %in% re.types), .(FlexibilityUp = mean(FlexibilityUp),FlexibilityDown = mean(FlexibilityDown)), by = .(scenario,i,Type,Quarter,Interval)]
+        u = flex.inventory.timeseries[i == int & !(Type %in% re.types), .(FlexibilityUp = mean(FlexibilityUp),FlexibilityDown = mean(FlexibilityDown)), by = .(scenario,i,Type,Quarter,Interval)]
         u = melt.data.table(u, id  = c("scenario","i","Type","Quarter","Interval"))
         p = ggplot() +
             geom_bar(data = u[variable=="FlexibilityUp",], aes( x = Interval, y = value, fill = Type), stat = "identity") +
@@ -342,14 +419,14 @@ if ( typeof(interval.generation)=='character' ) {
         assign(sprintf("p_diurnalflex_%s",i.name),p)
         
         ## create plots of how largest up ramp and down ramp are being accomodated
-        v = important.periods.timeseries[i == j,.(value = sum(Generation),category='Generation'), by = .(scenario,time,Type,id,i)]
+        v = important.periods.timeseries[i == int,.(value = sum(Generation),category='Generation'), by = .(scenario,time,Type,id,i)]
         for(k in scenario.names){
             vv = v[scenario == k,.(interval=i,variable=Type,value,category,scenario,time,id)]
-            r = ramp_day[scenario == k & interval == j & variable %in% c("Net Load","Potential Net Load"),.(id="Biggest Ramp Up",category='Net Load'), by = .(scenario,time,variable,value,interval)]
-            r = rbind(r,ramp_day_down[scenario == k & interval == j & variable %in% c("Net Load","Potential Net Load"),.(id="Biggest Ramp Down",category='Net Load'), by = .(scenario,time,variable,value,interval)])
+            r = ramp_day[scenario == k & interval == int & variable %in% c("Net Load","Potential Net Load"),.(id="Biggest Ramp Up",category='Net Load'), by = .(scenario,time,variable,value,interval)]
+            r = rbind(r,ramp_day_down[scenario == k & interval == int & variable %in% c("Net Load","Potential Net Load"),.(id="Biggest Ramp Down",category='Net Load'), by = .(scenario,time,variable,value,interval)])
             r = rbind(r,vv)
-            rr= rect[scenario == k & interval == j,.(id="Biggest Ramp Up",category='Net Load'), by = .(scenario,start,end,interval)]
-            rr= rbind(rr,rect_down[scenario == k & interval == j, .(id = "Biggest Ramp Down",category='Net Load'), by = .(scenario,start,end,interval)])
+            rr= rect[scenario == k & interval == int,.(id="Biggest Ramp Up",category='Net Load'), by = .(scenario,start,end,interval)]
+            rr= rbind(rr,rect_down[scenario == k & interval == int, .(id = "Biggest Ramp Down",category='Net Load'), by = .(scenario,start,end,interval)])
             rr = rbind(copy(rr),copy(rr[,category:='Generation']))
             r[,category:=factor(category,levels = c('Net Load','Generation'))]
             rr[,category:=factor(category,levels = c('Net Load','Generation'))]
@@ -370,7 +447,112 @@ if ( typeof(interval.generation)=='character' ) {
                 guides(linetype = guide_legend(order = 1),
                        color = guide_legend(order = 2))
 
-            assign(sprintf("p_rampability_%s_%s",k,j),p)
+            assign(sprintf("p_rampability_%s_%s",k,int),p)
+            
+            flex.ribbon = master.flex[scenario == k & i == int & !(is.na(DemandUp)),]
+            ##aggregated results
+            flex.ribbon.agg = flex.ribbon[,.(Netload=mean(value),FlexUp=mean(FlexibilityUp),FlexDown=mean(FlexibilityDown)), by = .(Quarter,Interval,scenario,i)]
+            
+            p = ggplot() + 
+              geom_ribbon(data = flex.ribbon.agg, aes(x = Interval, ymin = Netload - FlexDown, ymax = Netload + FlexUp, fill =scenario), alpha = 0.5) +
+              geom_line(data = flex.ribbon.agg, aes(x = Interval, y = Netload)) +
+              facet_grid(~Quarter) +
+              #scale_fill_discrete('Flexibility Range') +
+              scale_fill_brewer("",palette='Set1') +
+              scale_x_continuous(breaks = c(0,12)) +
+              theme(text = element_text(size = 18)) + 
+              labs(y = "Net Load (MW)", x = "Hour of Day") + 
+              ylim(0,NA)
+            
+            assign(sprintf("p_diurnal_flexribbon_%s_%s",k,int),p)
+            
+            small.time=flex.ribbon[FlexibilityUp==min(flex.ribbon$FlexibilityUp),time]
+            if(grepl("h",int)){
+              small.time.end=small.time+hours(as.numeric(sapply(strsplit(int, " "), "[[", 1)))
+            }
+            if(grepl("m",int)){
+              small.time.end=small.time+minutes(as.numeric(sapply(strsplit(int, " "), "[[", 1)))
+            }
+            small.date=sapply(strsplit(as.character(small.time)," "),"[[",1)
+            if(grepl("h",int)){
+              if(as.numeric(sapply(strsplit(int, " "), "[[", 1))>12){
+                small.date=c(small.date,sapply(strsplit(as.character(small.time+hours(24))," "),"[[",1))
+              }
+            }
+            if(length(small.date)==1){
+              flex.ribbon.smallup = flex.ribbon[grepl(small.date,time),]
+            }
+            if(length(small.date)>1){
+              flex.ribbon.smallup = NULL
+              for(m in small.date){
+                if(!is.null(flex.ribbon.smallup)){
+                  flex.ribbon.smallup=rbind(flex.ribbon.smallup,flex.ribbon[grepl(m,time),])
+                }
+                else{
+                  flex.ribbon.smallup=flex.ribbon[grepl(m,time),]
+                }
+              }
+            }
+            p = ggplot() + 
+              geom_rect(data = flex.ribbon.smallup, inherit.aes = FALSE, aes(xmin = small.time, xmax = small.time.end, ymin = 0, ymax = max(value+FlexibilityUp)),fill = 'orange', alpha = 0.3) +
+              geom_ribbon(data = flex.ribbon.smallup,aes(x=time, ymin=value - FlexibilityDown, ymax= value + FlexibilityUp, fill = scenario), alpha = 0.5) + 
+              geom_line(data = flex.ribbon.smallup, aes(x=time, y = value)) +
+              scale_color_brewer("",palette='Set1') +
+              theme(text = element_text(size = 18)) + 
+              labs(y = "Net Load (MW)", x = NULL) +
+              ylim(0, NA) +
+              scale_x_datetime(breaks = date_breaks(width = '12 hour'), labels = date_format("%m-%d\n%H:%M"),
+                               expand = c(0,0), timezone = 'UTC') 
+            
+            assign(sprintf("p_minup_flexribbon_%s_%s",k,int),p)
+            
+            small.time=flex.ribbon[FlexibilityDown==min(flex.ribbon$FlexibilityDown),time]
+            if(grepl("h",int)){
+              small.time.end=small.time+hours(as.numeric(sapply(strsplit(int, " "), "[[", 1)))
+            }
+            if(grepl("m",int)){
+              small.time.end=small.time+minutes(as.numeric(sapply(strsplit(int, " "), "[[", 1)))
+            }
+            small.date=sapply(strsplit(as.character(small.time)," "),"[[",1)
+            if(grepl("h",int)){
+              if(as.numeric(sapply(strsplit(int, " "), "[[", 1))>12){
+                small.date=c(small.date,sapply(strsplit(as.character(small.time+hours(24))," "),"[[",1))
+              }
+            }
+            if(length(small.date)==1){
+              flex.ribbon.smallup = flex.ribbon[grepl(small.date,time),]
+            }
+            if(length(small.date)>1){
+              flex.ribbon.smallup = NULL
+              for(m in small.date){
+                if(!is.null(flex.ribbon.smallup)){
+                  flex.ribbon.smallup=rbind(flex.ribbon.smallup,flex.ribbon[grepl(m,time),])
+                }
+                else{
+                  flex.ribbon.smallup=flex.ribbon[grepl(m,time),]
+                }
+              }
+            }
+            if(grepl("h",int)){
+              small.time.end=small.time+hours(as.numeric(sapply(strsplit(int, " "), "[[", 1)))
+            }
+            if(grepl("m",int)){
+              small.time.end=small.time+minutes(as.numeric(sapply(strsplit(int, " "), "[[", 1)))
+            }
+            small.date=sapply(strsplit(as.character(small.time)," "),"[[",1)
+            flex.ribbon.smalldown = flex.ribbon[grepl(small.date,time),]
+            p = ggplot() + 
+              geom_rect(data = flex.ribbon.smalldown, inherit.aes = FALSE, aes(xmin = small.time, xmax = small.time.end, ymin = 0, ymax = max(value+FlexibilityUp)),fill = 'orange', alpha=0.3) +
+              geom_ribbon(data = flex.ribbon.smalldown,aes(x=time, ymin=value - FlexibilityDown, ymax= value + FlexibilityUp, fill = scenario), alpha = 0.5) + 
+              geom_line(data = flex.ribbon.smalldown, aes(x=time, y = value)) +
+              scale_color_brewer("",palette='Set1') +
+              theme(text = element_text(size = 18)) + 
+              labs(y = "Net Load (MW)", x = NULL) +
+              ylim(0, NA) +
+              scale_x_datetime(breaks = date_breaks(width = '12 hour'), labels = date_format("%m-%d\n%H:%M"),
+                               expand = c(0,0), timezone = 'UTC') 
+            
+            assign(sprintf("p_mindown_flexribbon_%s_%s",k,int),p)
 
         }
     }

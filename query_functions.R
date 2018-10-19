@@ -1,4 +1,3 @@
-
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # This file contains functions for the general PLEXOS solution analysis that reports an HTML of common figures.
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -529,6 +528,8 @@ interval_netload = function(interval.vg, interval.region.load) {
     setkey(c.vg,scenario,time)
     setkey(c.load,scenario,time)
     c = c.vg[c.load]
+    ## occassionally, there's no VG
+    c[is.na(c)] = 0
     
     c[,`Net Load` := Load - `VG Output`]
     c[,`Potential Net Load` := Load - `VG Potential`]
@@ -1126,7 +1127,7 @@ total_region_load = function(database) {
     total.region.load = data.table(query_interval(database, 'Region','Load', columns = c('category','name')))
     total.region.load = total.region.load[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
   }
-  total.region.load[, name:=factor(name,region.order)]
+  #total.region.load[, name:=factor(name,region.order)]
   return(total.region.load[, .(value=sum(value)), by=.(scenario, property, name)])
 }
 
@@ -1138,7 +1139,7 @@ total_region_imports = function(database) {
     total.region.imports = data.table(query_interval(database, 'Region','Imports', columns = c('category','name')))
     total.region.imports = total.region.imports[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
   }
-  total.region.imports[, name:=factor(name,region.order)]
+  #total.region.imports[, name:=factor(name,region.order)]
   return(total.region.imports[, .(value=sum(value)), by=.(scenario, property, name)])
 }
 
@@ -1150,7 +1151,7 @@ total_region_exports = function(database) {
     total.region.exports = data.table(query_interval(database, 'Region','Exports', columns = c('category','name')))
     total.region.exports = total.region.exports[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
   }
-  total.region.exports[, name:=factor(name,region.order)]
+  #total.region.exports[, name:=factor(name,region.order)]
   return(total.region.exports[, .(value=sum(value)), by=.(scenario, property, name)])
 }
 
@@ -1162,7 +1163,7 @@ total_region_ue = function(database) {
     total.region.ue = data.table(query_interval(database, 'Region','Unserved Energy', columns = c('category','name')))
     total.region.ue = total.region.ue[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name)]
   }
-  total.region.ue[, name:=factor(name,region.order)]
+  #total.region.ue[, name:=factor(name,region.order)]
   return(total.region.ue[, .(value=sum(value)), by=.(scenario, property, name)])
 }
 
@@ -1309,27 +1310,27 @@ interval_avail_cap = function(database) {
 # Interval level region load 
 interval_region_load = function(database) {
   interval.region.load = data.table(query_interval(database, 'Region', 'Load'))
-  interval.region.load[, name:=factor(name,region.order)]
+  #interval.region.load[, name:=factor(name,region.order)]
   return(interval.region.load[, .(scenario, property, name, time, value)])
 }
 
 interval_region_gen = function(database) {
   interval.region.gen = data.table(query_interval(database, 'Region', 'Generation'))
-  interval.region.gen[,name:=factor(name,region.order)]
+  #interval.region.gen[,name:=factor(name,region.order)]
   return(interval.region.gen[, .(scenario, property, name, time, value)])
 }
 
 # Interval level region ue 
 interval_region_ue = function(database) {
   interval.region.ue = data.table(query_interval(database, 'Region', 'Unserved Energy'))
-  interval.region.ue[, name:=factor(name,region.order)]
+  #interval.region.ue[, name:=factor(name,region.order)]
   return(interval.region.ue[, .(scenario, property, name, time, value)])
 }
 
 # Interval level region load and price
 interval_region_price = function(database) {
   interval.region.price = data.table(query_interval(database, 'Region', 'Price'))
-  interval.region.price[, name:=factor(name,region.order)]
+  #interval.region.price[, name:=factor(name,region.order)]
   return(interval.region.price[, .(scenario, property, Region=name, time, value)])
 }
 
