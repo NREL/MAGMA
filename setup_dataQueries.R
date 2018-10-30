@@ -270,12 +270,16 @@ if ( revenue.plots | flex.inventory  ) {
   # Interval level reserve provision
   interval.gen.reserve.provision = tryCatch( interval_gen_reserve_provision(db), error = function(cond) { return('ERROR') } ) 
   if(use.gen.type.csv){
+    if(!(interval.gen.reserve.provision=="ERROR")){
       interval.gen.reserve.provision[,Type:=gen.type.mapping[as.character(name)]]
       interval.gen.reserve.provision[,Type:=gen.type.mapping[as.character(name)]]
+    }
   }
   else{
+    if(!(interval.gen.reserve.provision=="ERROR")){
       interval.gen.reserve.provision[,Type:=category]
       interval.gen.reserve.provision[,Type:=category]
+    }
   }
   if (exists('interval.reserve.provision')) { 
     if (typeof(interval.gen.reserve.provision)=='character') { 
