@@ -768,24 +768,24 @@ if(has.multiple.scenarios){
 if (key.period.line.flow.plots) {
   if (length(lines)>0) {
     if (length(period.names)>0) {
-      
+
       # Pull out line flow data for only specified periods in input file
       source('source_scripts/d_key_period_line_flow.R')
-      
+
       # As long as the file exists (previous source found the R script) this loop runs
       if ( exists('plot.flows') ) {
         # Check to see if the right data is ready for plotting.
         if ( typeof(plot.flows)=='character' ) {
           print('ERROR: interval_line_flows function not returning correct results.')
-        } else {        
+        } else {
           # Create data for each plot for the interesting periods
           figure.height = l.height
           key.plots = lapply(period.names, function(p){
             knit_expand(file = 'source_scripts/p_key_period_line_flow.Rmd', period.name = p)
-          }) 
+          })
           # Reconstruct the plot data into a format that will be output into the HTML below
           key.period.line.flow = knit_child(text = unlist(key.plots))
-          
+
         }
       } else { key.period.line.flow = 'Problem sourcing or running d_key_period_line_flow.R.' }
     } else { key.period.line.flow = 'You didnt specify key periods. Cannot run this section.'}
