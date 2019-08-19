@@ -21,7 +21,7 @@ This package creates figures and an HTML file with all of those figures for plex
 2. You can choose to run individual chunks or the entire package. This is setup in the input_data.csv file. Running the entire package could take a long time, particularly for large solution files and if the solution file has to be processed by rplexos (done the first time MAGMA is run).
 3. The name of your database file must start with "Model".
 4. Report any problems or issues to Matt O'Connell or Brady Stoll at NREL. matthew.oconnell@nrel.gov or Brady.Stoll@nrel.gov
-5. If you'd like to run the "Flexibility Inventory" MAGMA script, use the flexibility_inventory branch. Specific questions about the flexibility inventory should be directed to Jennie.Jorgenson@nrel.gov.
+5. If you'd like to run the "Flexibility Inventory" MAGMA script, use the flexibility-inventory branch. Specific questions about the flexibility inventory should be directed to Jennie.Jorgenson@nrel.gov.
 
 ##### input_data.csv columns:
 1. ref.scenario
