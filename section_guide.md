@@ -52,6 +52,8 @@
 34. **Generation Comparison by Generator Type in Each Region**
 35. **Model Run Times**
 36. **Installed Capacity**
+37. **Line and Transformer Violations**
+38. **Line and Transformer Loading**
 
 ## Required PLEXOS outputs in report for each section to run:
 
@@ -164,8 +166,14 @@
 36. **Installed Capacity**
  + **Total:**
  + Generator - installed capacity
-
-
+37. **Line and Transformer Violations**
++**Interval:**
++Line - violation
++Transformer - violation
+38. **Line and Transformer Loading**
++**Interval:**
++Line - loading
++Transformer - loading
 
 
 
