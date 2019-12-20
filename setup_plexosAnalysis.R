@@ -6,22 +6,38 @@ currency = "$"
 # -----------------------------------------------------------------------
 # Load packages
 # -----------------------------------------------------------------------
-# Manual package loading without pacman
-library(ggplot2)
-library(reshape2)
-library(plyr)
-library(lubridate)
-library(scales)
-library(RSQLite)
-library(grid)
-library(knitr)
-library(markdown)
-library(gridExtra)
-library(RColorBrewer)
-library(doParallel)
-## missing snow, xtable, extrafont recommended by MAGMA
+# if (!require(pacman)){
+#   install.packages("pacman", dependencies=TRUE, repos = "http://cran.rstudio.com/")
+#   library(pacman)
+# }else{
+#   library(pacman)
+# }
+# p_load(ggplot2, reshape2, plyr, lubridate, scales, RSQLite, grid, knitr, markdown, grid, gridExtra, RColorBrewer, snow,
+       # doParallel, xtable, data.table, dplyr, extrafont, tidyr, stringr, rplexos, rmarkdown, yaml)
 
+# Manual package loading without pacman
+library(ggplot2) 
+library(reshape2) 
+library(plyr) 
+library(lubridate) 
+library(scales) 
+library(RSQLite)
+library(grid) 
+library(knitr) 
+library(markdown) 
+library(gridExtra) 
+library(RColorBrewer)
+library(doParallel) 
+library(data.table) 
+library(dplyr) 
+library(tidyr) 
+library(stringr) 
+library(rplexos)
+library(rmarkdown) 
+library(yaml)
+#don't have snow,xtable,extrafont
 # Convert inputs to data table
+
 inputs = data.table(inputs)
 
 # -----------------------------------------------------------------------
@@ -82,7 +98,8 @@ if(33 %in% run.sections) {compare.dispatch.zone=TRUE}           else {compare.di
 if(34 %in% run.sections) {compare.dispatch.region=TRUE}         else {compare.dispatch.region=FALSE}
 if(35 %in% run.sections) {runtime.table=TRUE}                   else {runtime.table=FALSE}
 if(36 %in% run.sections) {installed.cap.plot=TRUE}              else {installed.cap.plot=FALSE}
-
+if(37 %in% run.sections) {line.violation.table=TRUE}            else {line.violation.table=FALSE}
+if(38 %in% run.sections) {line.loading.table=TRUE}              else {line.loading.table=FALSE}
 # -----------------------------------------------------------------------
 # Read in the data from the input_data.csv file that was just loaded
 # -----------------------------------------------------------------------
@@ -158,26 +175,7 @@ if(length(na.omit(inputs$Start.Time)) > 0){
   }
 }
 
-# Interfaces to look at flows for
-interfaces = as.character(na.omit(inputs$Interfaces.for.Flows))
-if (length(interfaces)==0) {
-  message('\nNo interfaces specified. No interface data will be shown.')
-} else if (any(toupper(interfaces) == 'ALL')){
-  interfaces = unique(query_class_member(db,'Interface')$name)
-}
 
-# lines to look at flows for
-lines = as.character(na.omit(inputs$Lines.for.Flows))
-if (length(lines)==0) {
-  message('\nNo lines specified. No line data will be shown.')
-} else if (any(lines == 'ALL')){
-  lines = unique(query_class_member(db,'Line')$name)
-}
-# Update scen.pal to account for larger number of lines. Give warning about large number of entries
-if (length(lines) > length(scen.pal)){
-  message('\nYou have specified a large number of lines. Color palette may be hard to differentiate.')
-  scen.pal = rainbow(length(lines))
-}
 
 # -----------------------------------------------------------------------
 # Set up things for plotting
@@ -314,6 +312,31 @@ if (is.character(db.day.ahead)){
                 "If you want those plots created, please fix your database name",sep="\n"))
 }
 attributes(db.day.ahead)$class = c('rplexos', 'data.frame', 'tbl_df')
+
+# ----------------------------------------------------------------------
+# Set up lines & interfaces for plotting
+# ----------------------------------------------------------------------
+# Interfaces to look at flows for
+interfaces = as.character(na.omit(inputs$Interfaces.for.Flows))
+if (length(interfaces)==0) {
+  message('\nNo interfaces specified. No interface data will be shown.')
+} else if (any(toupper(interfaces) == 'ALL')){
+  interfaces = unique(query_class_member(db,'Interface')$name)
+}
+
+# lines to look at flows for
+lines = as.character(na.omit(inputs$Lines.for.Flows))
+if (length(lines)==0) {
+  message('\nNo lines specified. No line data will be shown.')
+} else if (any(lines == 'ALL')){
+  lines = unique(query_class_member(db,'Line')$name)
+}
+# Update scen.pal to account for larger number of lines. Give warning about large number of entries
+if (length(lines) > length(scen.pal)){
+  message('\nYou have specified a large number of lines. Color palette may be hard to differentiate.')
+  scen.pal = rainbow(length(lines))
+}
+
 
 # -----------------------------------------------------------------------
 # Set up for comparisons if using
@@ -532,3 +555,4 @@ if (length(unique(model.intervals$timestep))!=1){
 }
 # Number of intervals per day
 intervals.per.day = 24 / unique(as.numeric(model.intervals$timestep,units='hours'))
+

@@ -153,9 +153,11 @@ if (region.gen.stacks) {
       p1 <- gen_stack_plot(r.z.gen[(!Region %in% ignore.regions),],
                            load.data = plot.load[(!Region %in% ignore.regions),],
                            filters = c('Region'))
-      print(p1[[1]] + facet_wrap(~Region, scales = 'free', ncol=wrap.cols) + 
+      print(p1[[1]] + facet_wrap(~Region, ncol=wrap.cols) + 
         theme(aspect.ratio = 2.5/length(unique(r.z.gen$scenario)), axis.text.x = element_text(angle = -30, hjust = 0),
             text = element_text(face='bold')))
+      
+      
     }
   }
 } else { print('Section not run according to input file.') }
@@ -201,12 +203,11 @@ if(individual.region.stacks.log) {
 } else { individual.region.stacks = 'Section not run according to input file.' }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
-`r individual.region.stacks`
 
 
 ***
 ## 5-7. Specified Period Dispatch Stacks
-``` {r key-period-dispatch, cache=FALSE, include=FALSE}
+```{r key-period-dispatch, cache=FALSE, include=FALSE}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Check if this section was selected to run in the input file
 if (key.period.dispatch.total.log | key.period.dispatch.zone.log | key.period.dispatch.region.log){  
@@ -401,6 +402,7 @@ if (annual.generation.table){
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
+
 ***
 ## 12.1 Total Gen Difference
 #### GWh Generation Difference
@@ -428,6 +430,60 @@ if(has.multiple.scenarios){
 } else{print("You only have one scenario. Skipping Difference plots")}
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
+
+***
+## 12.2 Total Gen by Region GWh
+```{r annual-generation-table-region, fig.width=10}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (annual.generation.table){
+  if ( typeof(total.generation)=='character' | typeof(total.avail.cap) == 'character' ) {
+    print('INPUT ERROR: total.generation or total.avail.cap has errors. Cannot run this section.')
+  } else {
+    
+    
+    # Set the order level that generatino type will be displayed.
+    r.z.gen[, Type := factor(Type, levels = c(gen.order))] 
+    setorder(r.z.gen,Type)
+    
+    r.z.gen = r.z.gen[Type!='Curtailment', ]
+    
+    # Calculate the percent generation of each type
+    r.z.gen[, Total:=sum(GWh), by=.(scenario,Region)]
+    r.z.gen[, Percent:=GWh/Total*100]
+    r.z.gen[, Total:=NULL]
+
+    # recast so scenarios are columns
+    r.z.gen.val = dcast(r.z.gen, Type+Region~scenario, value.var='GWh')
+    
+    kable(r.z.gen.val[order(Region)], format.args = list(big.mark = ','), digits=2) 
+    
+  }
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+#### Percent of Total Generation by Region
+```{r annual-percent-generation-table-region, fig.width=10}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if (annual.generation.table){
+  if ( typeof(total.generation)=='character' | typeof(total.avail.cap) == 'character' ) {
+    print('INPUT ERROR: total.generation or total.avail.cap has errors. Cannot run this section.')
+  } else {
+    if ( typeof(yr.gen)=='character' ) {
+      yr.gen.percent = 'ERROR: gen_by_type function not returning correct results'
+    } else {
+
+    # recast so scenarios are columns
+    r.z.gen.percent = dcast(r.z.gen, Type+Region~scenario, value.var='Percent')
+
+    kable(r.z.gen.percent[order(Region)], format.args = list(big.mark = ','), digits=2) 
+
+    }
+  }
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
 
 ***
 ## 13. Total Curtailment (GWh)
@@ -1107,7 +1163,7 @@ if(capacity.factor.table) {
     if(length(unique(cf$scenario))>1){
         kable(cf, format.args = list(big.mark = ','), digits=2)
       } else{
-        kable(cf[, .(Type, `MaxCap (GWh)`, `Gen (GWh)`, `Capacity Factor (%)`)], format.args = list(big.mark = ',')) 
+        kable(cf[,.(Type, `MaxCap (GWh)`, `Gen (GWh)`, `Capacity Factor (%)`)], format.args = list(big.mark = ',')) 
       }
   }
 } else { print('Section not run according to input file.') }
@@ -1281,8 +1337,206 @@ if(installed.cap.plot) {
             theme(aspect.ratio = 2.0, axis.text.x = element_text(angle = -30, hjust = 0),
             text = element_text(face='bold')))
   }
+  
+  # if ( typeof(total.rated.cap)=='character' ) {
+  #   print('INPUT ERROR: total.rated.cap has errors. Cannot run this section.')
+  # } else{
+  #   # Add type
+  #   total.rated.cap[, Type:=gen.type.mapping[as.character(name)] ]
+  #   total.rated.cap[, GWh:=value] # Changing this so we can use gen_stack_plot
+  #   # Create plot
+  #   plot.data = gen_stack_plot(total.rated.cap)
+  #   print(plot.data[[1]] + scale_y_continuous(breaks=plot.data[[2]], limits=c(min(plot.data[[2]]), max(plot.data[[2]])), 
+  #                            expand=c(0,0), label=comma) + 
+  #           ylab("Rated Capacity, GW") +
+  #           theme(aspect.ratio = 2.0, axis.text.x = element_text(angle = -30, hjust = 0),
+  #           text = element_text(face='bold')))
+  # }
+  
 } else { print('Section not run according to input file.') }
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ```
 
 
+***
+## 37. Line Violation Table
+```{r line-violation-table}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Check if this section was selected to run in the input file
+if(line.violation.table) {
+  if (length(lines)>0) {
+    if (typeof(total.line.violation)=='character'){
+      print('INPUT ERROR: total.line.flow has errors. Cannot run this section')
+    } else{
+      # Call the query function to get line flows for the lines selected in the input file.
+      line.violations = tryCatch( annual_line_violation(total.line.violation), 
+                             error=function(cond) {return('ERROR: line_flows query not returning correct results.')})
+      
+      # Print data 
+      line.violations.sum<-line.violations[,.(`Abs Val GWh`=sum(GWh)),by=.(scenario)]
+      kable(line.violations.sum, digits=1)
+     
+    }
+  } else { print('No lines specified. No line data will be shown.')}
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+
+
+***
+## 37. Line Violation Histogram
+```{r line-violation-hist}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Check if this section was selected to run in the input file
+if(line.violation.table) {
+  if (length(lines)>0) {
+    if (typeof(total.line.violation)=='character'){
+      print('INPUT ERROR: total.line.flow has errors. Cannot run this section')
+    } else{
+      # Call the query function to get line flows for the lines selected in the input file.
+      line.violations = tryCatch( annual_line_violation(total.line.violation), 
+                             error=function(cond) {return('ERROR: line_flows query not returning correct results.')})
+      
+      # Print histogram
+      ggplot(line.violations[GWh>0.1,])+geom_histogram(aes(GWh,fill=scenario),binwidth=1,position="dodge")+ylab('Number of lines')+xlab('Absolute value of annual violation GWh (excluding <0.1)')+
+        theme(legend.key = element_rect(color = "grey70", size = 0.8),
+               legend.key.size = grid::unit(1.5, "lines"),
+               legend.text = element_text(size=text.plot,face = 'bold'),
+               text=element_text(size=text.plot,face = 'bold'),
+               strip.text=element_text(size=rel(0.8),face = 'bold'),
+               axis.text.x=element_text(size=text.plot/1.8),
+               axis.text.y=element_text(size=text.plot/1.2),
+               axis.title=element_text(size=text.plot, face='bold'),
+               panel.grid.major = element_line(colour = "grey85"),
+               panel.grid.minor = element_line(colour = "grey93"),
+               panel.spacing = unit(0.45, "lines"))
+    }
+  } else { print('No lines specified. No line data will be shown.')}
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## 37. Transformer Violation Table
+```{r trans-violation-table}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Check if this section was selected to run in the input file
+if(line.violation.table) {
+  if (length(lines)>0) {
+    if (typeof(total.trans.violation)=='character'){
+      print('INPUT ERROR: total.trans.flow has errors. Cannot run this section')
+    } else{
+      # Call the query function to get line flows for the lines selected in the input file.
+      trans.violations = tryCatch( annual_trans_violation(total.trans.violation), 
+                             error=function(cond) {return('ERROR: annual_trans_violation query not returning correct results.')})
+      
+      # Print data 
+     trans.violations.sum<-trans.violations[,.(`Abs Val GWh`=sum(GWh)),by=.(scenario)]
+      kable(trans.violations.sum, digits=1)
+     
+    }
+  } else { print('No lines specified. No line data will be shown.')}
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+***
+
+***
+## 37. Transformer Violation Histogram
+```{r trans-violation-hist}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Check if this section was selected to run in the input file
+if(line.violation.table) {
+  if (length(lines)>0) {
+    if (typeof(total.trans.violation)=='character'){
+      print('INPUT ERROR: total.line.flow has errors. Cannot run this section')
+    } else{
+      # Call the query function to get line flows for the lines selected in the input file.
+      trans.violations = tryCatch( annual_trans_violation(total.trans.violation), 
+                             error=function(cond) {return('ERROR: annual_trans_violation query not returning correct results.')})
+      
+      # Print histogram
+      ggplot(trans.violations[GWh>0.1,])+geom_histogram(aes(GWh,fill=scenario),binwidth=1,position="dodge")+ylab('Number of lines')+xlab('Absolute value of annual violation GWh (excluding <0.1)')+
+        theme(legend.key = element_rect(color = "grey70", size = 0.8),
+               legend.key.size = grid::unit(1.5, "lines"),
+               legend.text = element_text(size=text.plot,face = 'bold'),
+               text=element_text(size=text.plot,face = 'bold'),
+               strip.text=element_text(size=rel(0.8),face = 'bold'),
+               axis.text.x=element_text(size=text.plot/1.8),
+               axis.text.y=element_text(size=text.plot/1.2),
+               axis.title=element_text(size=text.plot, face='bold'),
+               panel.grid.major = element_line(colour = "grey85"),
+               panel.grid.minor = element_line(colour = "grey93"),
+               panel.spacing = unit(0.45, "lines"))
+    }
+  } else { print('No lines specified. No line data will be shown.')}
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## 38. Line Loading Histogram
+```{r line-loading-hist}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Check if this section was selected to run in the input file
+if(line.loading.table) {
+  if (length(lines)>0) {
+    if (typeof(total.line.loading)=='character'){
+      print('INPUT ERROR: total.line.loading has errors. Cannot run this section')
+    } else{
+      # Call the query function to get line flows for the lines selected in the input file.
+      line.loading = tryCatch( avg_line_loading(total.line.loading), 
+                             error=function(cond) {return('ERROR: avg_line_loading query not returning correct results.')})
+      
+      # Print histogram
+      ggplot(line.loading[Loading>0.0,])+geom_histogram(aes(Loading,fill=scenario),binwidth=5,position="dodge")+ylab('Number of lines')+xlab('Average Loading % (bin width 5%)')+
+        theme(legend.key = element_rect(color = "grey70", size = 0.8),
+               legend.key.size = grid::unit(1.5, "lines"),
+               legend.text = element_text(size=text.plot,face = 'bold'),
+               text=element_text(size=text.plot,face = 'bold'),
+               strip.text=element_text(size=rel(0.8),face = 'bold'),
+               axis.text.x=element_text(size=text.plot/1.8),
+               axis.text.y=element_text(size=text.plot/1.2),
+               axis.title=element_text(size=text.plot, face='bold'),
+               panel.grid.major = element_line(colour = "grey85"),
+               panel.grid.minor = element_line(colour = "grey93"),
+               panel.spacing = unit(0.45, "lines"))
+    }
+  } else { print('No lines specified. No line data will be shown.')}
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```
+
+***
+## 38. Transformer Loading Histogram
+```{r trans-loading-hist}
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Check if this section was selected to run in the input file
+if(line.loading.table) {
+  if (length(lines)>0) {
+    if (typeof(total.trans.loading)=='character'){
+      print('INPUT ERROR: total.line.loading has errors. Cannot run this section')
+    } else{
+      # Call the query function to get line flows for the lines selected in the input file.
+      trans.loading = tryCatch( avg_trans_loading(total.trans.loading), 
+                             error=function(cond) {return('ERROR: avg_trans_loading query not returning correct results.')})
+      
+      # Print histogram
+      ggplot(trans.loading[Loading>0.0,])+geom_histogram(aes(Loading,fill=scenario),binwidth=5,position="dodge")+ylab('Number of transformers')+xlab('Average Loading % (bin width 5%)')+
+        theme(legend.key = element_rect(color = "grey70", size = 0.8),
+               legend.key.size = grid::unit(1.5, "lines"),
+               legend.text = element_text(size=text.plot,face = 'bold'),
+               text=element_text(size=text.plot,face = 'bold'),
+               strip.text=element_text(size=rel(0.8),face = 'bold'),
+               axis.text.x=element_text(size=text.plot/1.8),
+               axis.text.y=element_text(size=text.plot/1.2),
+               axis.title=element_text(size=text.plot, face='bold'),
+               panel.grid.major = element_line(colour = "grey85"),
+               panel.grid.minor = element_line(colour = "grey93"),
+               panel.spacing = unit(0.45, "lines"))
+    }
+  } else { print('No lines specified. No line data will be shown.')}
+} else { print('Section not run according to input file.') }
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+```

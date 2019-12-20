@@ -548,6 +548,26 @@ annual_line_flows = function(total.line.flow) {
   return(year.flows[,.(GWh=sum(value)), by=.(name,scenario)])
 }
 
+annual_line_violation = function(total.line.violation) {
+  year.violations = total.line.violation[name %in% lines,.(scenario,name,time,value)]  
+  return(year.violations[,.(GWh=sum(value)), by=.(name,scenario)])
+}
+
+annual_trans_violation = function(total.trans.violation) {
+  year.violations = total.trans.violation[,.(scenario,name,time,value)]  
+  return(year.violations[,.(GWh=sum(value)), by=.(name,scenario)])
+}
+
+avg_line_loading = function(absolute.line.loading) {
+  year.loading = absolute.line.loading[,.(scenario,name,time,value)]  
+  return(year.loading[,.(Loading=mean(value)), by=.(name,scenario)])
+}
+
+avg_trans_loading = function(absolute.trans.loading) {
+  year.loading = absolute.trans.loading[,.(scenario,name,time,value)]  
+  return(year.loading[,.(Loading=mean(value)), by=.(name,scenario)])
+}
+
 interval_line_flows = function(interval.line.flow) {
   int.flows = interval.line.flow[name %in% lines,.(scenario,name,time,value)]   
   return(int.flows)
@@ -983,6 +1003,17 @@ total_installed_cap = function(database) {
   return(total.installed.cap[, .(value=sum(value)), by=.(scenario, property, name, category)])
 }
 
+# Full run ratedcapacity
+total_rated_cap = function(database) {
+  if ("Rated Capacity" %in% properties[is_summary==1 & collection=="Generator",property]){
+    total.rated.cap = data.table(query_year(database, 'Generator', 'Rated Capacity', columns = c('category', 'name')))
+  } else if ("Rated Capacity" %in% properties[is_summary==0 & collection=="Generator", property]){
+    total.rated.cap = data.table(query_interval(database, 'Generator', 'Rated Capacity', columns = c('category', 'name')))
+    total.rated.cap = total.rated.cap[, .(value=max(value)/1000), by=.(scenario, property, name, category)]
+  }
+  return(total.rated.cap[, .(value=sum(value)), by=.(scenario, property, name, category)])
+}
+
 # Full run reserve provision
 total_gen_reserve_provision = function(database) {
   if ("Provision" %in% properties[is_summary==1 & collection=="Reserve.Generators",property]){
@@ -1152,6 +1183,58 @@ total_line_flow = function(database) {
     total.line = total.line[, .(value = sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name, time)]
   }
   return(total.line[, .(value=sum(value)), by=.(scenario, property, name, time)])
+}
+
+# Full run line violations
+total_line_violation = function(database) {
+  if ("Violation" %in% properties[is_summary==0 & collection=="Line", property]){
+    total.line = data.table(query_interval(database, 'Line','Violation', columns = c('category','name')))
+    total.line = total.line[, .(value = sum(abs(value))/(intervals.per.day/24)/1000), by=.(scenario, property, name, time)]
+      } else
+  {
+    #add error
+      }
+
+  return(total.line[, .(value=sum(value)), by=.(scenario, property, name, time)])
+}
+
+# Full run transformer violations
+total_trans_violation = function(database) {
+  if ("Violation" %in% properties[is_summary==0 & collection=="Transformer", property]){
+    total.trans = data.table(query_interval(database, 'Transformer','Violation', columns = c('category','name')))
+    total.trans = total.trans[, .(value = sum(abs(value))/(intervals.per.day/24)/1000), by=.(scenario, property, name, time)]
+  } else
+  {
+    #add error
+  }
+  
+  return(total.trans[, .(value=sum(value)), by=.(scenario, property, name, time)])
+}
+
+# Interval line loading
+absolute_line_loading = function(database) {
+  if ("Loading" %in% properties[is_summary==0 & collection=="Line", property]){
+    abs.loading = data.table(query_interval(database, 'Line','Loading', columns = c('category','name')))
+    abs.loading = abs.loading[, .(value = sum(abs(value))), by=.(scenario, property, name, time)]
+  } else
+  {
+    #add error
+  }
+  
+  return(abs.loading)
+}
+
+# Interval transformer loading
+absolute_trans_loading = function(database) {
+  if ("Loading" %in% properties[is_summary==0 & collection=="Transformer", property]){
+    abs.loading = data.table(query_interval(database, 'Transformer','Loading', columns = c('category','name')))
+    abs.loading = abs.loading[, .(value = sum(abs(value))), by=.(scenario, property, name, time)]
+  } else
+  {
+    #add error
+  }
+  
+  return(abs.loading)
 }
 
 

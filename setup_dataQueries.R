@@ -52,6 +52,12 @@ if ( capacity.factor.table | installed.cap.plot ) {
   if (typeof(total.installed.cap)=='character') { message('\nMissing total generator installed capacity data from solution .db file.')}
 }
 
+if (  installed.cap.plot ) {
+  # Total rated capacity
+  total.rated.cap  = tryCatch( total_rated_cap(db), error = function(cond) { return('ERROR') } ) 
+  if (typeof(total.rated.cap)=='character') { message('\nMissing total generator installed capacity data from solution .db file.')}
+}
+
 if ( region.zone.flow.table | total.gen.stack | region.gen.stacks | zone.gen.stacks |
      individual.region.stacks.log | region.zone.gen.table | key.period.dispatch.total.log | key.period.dispatch.region.log | 
      key.period.dispatch.zone.log | commit.dispatch.zone | commit.dispatch.region) {
@@ -135,6 +141,29 @@ if ( line.flow.table ) {
   if (typeof(total.line.flow)=='character') { message('\nMissing total line flow data from solution .db file.')}
 }
 
+if ( line.violation.table ) {
+  # Total line flow violation for each selected line
+  total.line.violation = tryCatch( total_line_violation(db), error = function(cond) { return('ERROR') } ) 
+  if (typeof(total.line.violation)=='character') { message('\nMissing total line flow data from solution .db file.')}
+}
+
+if ( line.violation.table ) {
+  # Total transformer flow for each selected line
+  total.trans.violation = tryCatch( total_trans_violation(db), error = function(cond) { return('ERROR') } ) 
+  if (typeof(total.trans.violation)=='character') { message('\nMissing total line flow data from solution .db file.')}
+}
+
+if ( line.loading.table ) {
+  # Total line loading for each selected line
+  total.line.loading = tryCatch( absolute_line_loading(db), error = function(cond) { return('ERROR') } ) 
+  if (typeof(total.line.loading)=='character') { message('\nMissing total line loading data from solution .db file.')}
+}
+
+if ( line.loading.table ) {
+  # Total trans loading for each selected line
+  total.trans.loading = tryCatch( absolute_trans_loading(db), error = function(cond) { return('ERROR') } ) 
+  if (typeof(total.trans.loading)=='character') { message('\nMissing total transformer loading data from solution .db file.')}
+}
 
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
