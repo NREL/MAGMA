@@ -6,14 +6,20 @@ currency = "$"
 # -----------------------------------------------------------------------
 # Load packages
 # -----------------------------------------------------------------------
-if (!require(pacman)){
-  install.packages("pacman", dependencies=TRUE, repos = "http://cran.rstudio.com/")
-  library(pacman)
-}else{
-  library(pacman)
-}
-p_load(ggplot2, reshape2, plyr, lubridate, scales, RSQLite, grid, knitr, markdown, grid, gridExtra, RColorBrewer, snow,
-       doParallel, xtable, data.table, dplyr, extrafont, tidyr, stringr, rplexos, rmarkdown, yaml)
+# Manual package loading without pacman
+library(ggplot2)
+library(reshape2)
+library(plyr)
+library(lubridate)
+library(scales)
+library(RSQLite)
+library(grid)
+library(knitr)
+library(markdown)
+library(gridExtra)
+library(RColorBrewer)
+library(doParallel)
+## missing snow, xtable, extrafont recommended by MAGMA
 
 # Convert inputs to data table
 inputs = data.table(inputs)
