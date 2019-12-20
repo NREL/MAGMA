@@ -167,13 +167,13 @@
  + **Total:**
  + Generator - installed capacity
 37. **Line and Transformer Violations**
-+**Interval:**
-+Line - violation
-+Transformer - violation
+ + **Interval:**
+ + Line - violation
+ + Transformer - violation
 38. **Line and Transformer Loading**
-+**Interval:**
-+Line - loading
-+Transformer - loading
+ + **Interval:**
+ + Line - loading
+ + Transformer - loading
 
 
 
