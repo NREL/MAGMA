@@ -917,6 +917,17 @@ total_generation = function(database) {
   return(total.gen[, .(value=sum(value)), by=.(scenario, property, name, category)])
 }
 
+# Full run pump load data
+total_pump_load = function(database) {
+  if ("Pump Load" %in% properties[is_summary==1 & collection=="Generator",property]){
+    total.pump = data.table(query_year(database, 'Generator', 'Pump Load', columns = c('category', 'name')))
+  } else if ("Pump Load" %in% properties[is_summary==0 & collection=="Generator",property]){
+    total.pump = data.table(query_interval(database, 'Generator', 'Pump Load', columns = c('category', 'name')))
+    total.pump = total.gen[, .(value=sum(value)/(intervals.per.day/24)/1000), by=.(scenario, property, name, category)]
+  }
+  return(total.pump[, .(value=sum(value)), by=.(scenario, property, name, category)])
+}
+
 # Full run available capacity
 total_avail_cap = function(database) {
   if ("Available Energy" %in% properties[is_summary==1 & collection=="Generator",property]){
