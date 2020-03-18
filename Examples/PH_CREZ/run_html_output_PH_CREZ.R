@@ -1,0 +1,48 @@
+
+#------------------------------------------------------------------------------|
+# USER INPUT: set input parameters ----
+#------------------------------------------------------------------------------|
+magma.dir        = 'C:/Users/ADYRESON/Documents/R/R-3.3.2/library/MAGMA_PH/MAGMA' #paste0(dirname(sys.frame(1)$ofile), '../../..')
+input.csv        = 'Examples/PH_CREZ/input_data_update_short.csv'
+db.loc           = c('Examples/PH_CREZ/solutions/Case 2 TX1',
+                     'Examples/PH_CREZ/solutions/Case 2 TX2A',
+                     'Examples/PH_CREZ/solutions/Case 2 TX2B')                     
+output.dir       = 'Examples/PH_CREZ/reports/'
+fig.path.name    = 'Examples/PH_CREZ/plots/'  #NOTE this is always interpreted relative to the base directory
+output.name      = 'CREZ_MED_Case_2_compare_example_4.html'
+db.day.ahead.loc = NULL
+query.data       = TRUE
+save.data        = FALSE
+load.data        = '<Name of file to load if query.data=FALSE >'
+save.data.name   = ''
+reassign.zones   = FALSE
+use.gen.type.csv = TRUE
+gen.type.csv.loc = 'Examples/PH_CREZ/gen_name_mapping_case2_v2.csv'
+gen.region.zone  = 'Examples/PH_CREZ/gen_name_mapping_case2_v2.csv'
+#------------------------------------------------------------------------------|
+# Run code to create HTML
+#------------------------------------------------------------------------------|
+setwd(magma.dir)
+
+# Sourcing the setup file and required functions
+source(file.path('query_functions.R'))
+source(file.path('plot_functions.R'))
+
+# Read CSV file with all inputs
+inputs = read.csv(file.path(input.csv))
+inputs[inputs==""]=NA
+
+# Either query data from database or load existing data
+source(file.path('setup_plexosAnalysis.R'))
+if (query.data){
+  source(file.path('setup_dataQueries.R'), echo=TRUE)
+} else{
+  load(load.data)
+}
+
+render(input=file.path('HTML_output.Rmd'), c("html_document"),
+       output_file=output.name, output_dir = file.path(output.dir,''))
+
+if (save.data){
+  save(list=ls(), file=file.path(output.dir,save.data.name))
+}

@@ -6,6 +6,7 @@ output:
   html_document: 
     css: custom.css
     toc: yes
+    smart: false
 ---
 
 ```{r setOptions, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE}
