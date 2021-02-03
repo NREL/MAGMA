@@ -1,0 +1,17 @@
+scenario,color
+Ref-NoFlex,#666666
+Ref-HiFlex,#7570B3
+High-NoFlex,#E6AB02
+High-LoFlex,#67A620
+High-HiFlex,#E72A8A
+High-HiRE-NoFlex,#D95F02
+High-HiRE-LoFlex,#1B9E77
+High-HiRE-HiFlex,#A6761D
+Ref NoFlex,#666666
+Ref HiFlex,#7570B3
+High NoFlex,#E6AB02
+High LoFlex,#67A620
+High HiFlex,#E72A8A
+High HiRE NoFlex,#D95F02
+High HiRE LoFlex,#1B9E77
+High HiRE HiFlex,#A6761D
